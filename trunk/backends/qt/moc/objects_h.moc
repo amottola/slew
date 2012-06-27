@@ -1,0 +1,251 @@
+/****************************************************************************
+** Meta object code from reading C++ file 'objects.h'
+**
+** Created: Wed Jun 27 16:35:04 2012
+**      by: The Qt Meta Object Compiler version 63 (Qt 4.8.2)
+**
+** WARNING! All changes made in this file will be lost!
+*****************************************************************************/
+
+#include "../objects.h"
+#if !defined(Q_MOC_OUTPUT_REVISION)
+#error "The header file 'objects.h' doesn't include <QObject>."
+#elif Q_MOC_OUTPUT_REVISION != 63
+#error "This file was generated using the moc from 4.8.2. It"
+#error "cannot be used with the include files from this version of Qt."
+#error "(The moc has changed too much.)"
+#endif
+
+QT_BEGIN_MOC_NAMESPACE
+static const uint qt_meta_data_DataModel_Impl[] = {
+
+ // content:
+       6,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       3,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       2,       // signalCount
+
+ // signals: signature, parameters, type, tag, flags
+      29,   16,   15,   15, 0x05,
+      86,   55,   15,   15, 0x05,
+
+ // slots: signature, parameters, type, tag, flags
+     152,   15,   15,   15, 0x08,
+
+       0        // eod
+};
+
+static const char qt_meta_stringdata_DataModel_Impl[] = {
+    "DataModel_Impl\0\0column,order\0"
+    "sorted(int,Qt::SortOrder)\0"
+    "headerPos,elideMode,resizeMode\0"
+    "configureHeader(QPoint,Qt::TextElideMode,QHeaderView::ResizeMode)\0"
+    "handleReset()\0"
+};
+
+void DataModel_Impl::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        Q_ASSERT(staticMetaObject.cast(_o));
+        DataModel_Impl *_t = static_cast<DataModel_Impl *>(_o);
+        switch (_id) {
+        case 0: _t->sorted((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< Qt::SortOrder(*)>(_a[2]))); break;
+        case 1: _t->configureHeader((*reinterpret_cast< const QPoint(*)>(_a[1])),(*reinterpret_cast< Qt::TextElideMode(*)>(_a[2])),(*reinterpret_cast< QHeaderView::ResizeMode(*)>(_a[3]))); break;
+        case 2: _t->handleReset(); break;
+        default: ;
+        }
+    }
+}
+
+const QMetaObjectExtraData DataModel_Impl::staticMetaObjectExtraData = {
+    0,  qt_static_metacall 
+};
+
+const QMetaObject DataModel_Impl::staticMetaObject = {
+    { &QAbstractItemModel::staticMetaObject, qt_meta_stringdata_DataModel_Impl,
+      qt_meta_data_DataModel_Impl, &staticMetaObjectExtraData }
+};
+
+#ifdef Q_NO_DATA_RELOCATION
+const QMetaObject &DataModel_Impl::getStaticMetaObject() { return staticMetaObject; }
+#endif //Q_NO_DATA_RELOCATION
+
+const QMetaObject *DataModel_Impl::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
+}
+
+void *DataModel_Impl::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_DataModel_Impl))
+        return static_cast<void*>(const_cast< DataModel_Impl*>(this));
+    return QAbstractItemModel::qt_metacast(_clname);
+}
+
+int DataModel_Impl::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QAbstractItemModel::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 3)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 3;
+    }
+    return _id;
+}
+
+// SIGNAL 0
+void DataModel_Impl::sorted(int _t1, Qt::SortOrder _t2)
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
+}
+
+// SIGNAL 1
+void DataModel_Impl::configureHeader(const QPoint & _t1, Qt::TextElideMode _t2, QHeaderView::ResizeMode _t3)const
+{
+    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)) };
+    QMetaObject::activate(const_cast< DataModel_Impl *>(this), &staticMetaObject, 1, _a);
+}
+static const uint qt_meta_data_ItemDelegate[] = {
+
+ // content:
+       6,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       1,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: signature, parameters, type, tag, flags
+      20,   14,   13,   13, 0x0a,
+
+       0        // eod
+};
+
+static const char qt_meta_stringdata_ItemDelegate[] = {
+    "ItemDelegate\0\0index\0startEditing(QModelIndex)\0"
+};
+
+void ItemDelegate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        Q_ASSERT(staticMetaObject.cast(_o));
+        ItemDelegate *_t = static_cast<ItemDelegate *>(_o);
+        switch (_id) {
+        case 0: _t->startEditing((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
+        default: ;
+        }
+    }
+}
+
+const QMetaObjectExtraData ItemDelegate::staticMetaObjectExtraData = {
+    0,  qt_static_metacall 
+};
+
+const QMetaObject ItemDelegate::staticMetaObject = {
+    { &QItemDelegate::staticMetaObject, qt_meta_stringdata_ItemDelegate,
+      qt_meta_data_ItemDelegate, &staticMetaObjectExtraData }
+};
+
+#ifdef Q_NO_DATA_RELOCATION
+const QMetaObject &ItemDelegate::getStaticMetaObject() { return staticMetaObject; }
+#endif //Q_NO_DATA_RELOCATION
+
+const QMetaObject *ItemDelegate::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
+}
+
+void *ItemDelegate::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_ItemDelegate))
+        return static_cast<void*>(const_cast< ItemDelegate*>(this));
+    return QItemDelegate::qt_metacast(_clname);
+}
+
+int ItemDelegate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QItemDelegate::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    }
+    return _id;
+}
+static const uint qt_meta_data_HeaderStyle[] = {
+
+ // content:
+       6,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+static const char qt_meta_stringdata_HeaderStyle[] = {
+    "HeaderStyle\0"
+};
+
+void HeaderStyle::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    Q_UNUSED(_o);
+    Q_UNUSED(_id);
+    Q_UNUSED(_c);
+    Q_UNUSED(_a);
+}
+
+const QMetaObjectExtraData HeaderStyle::staticMetaObjectExtraData = {
+    0,  qt_static_metacall 
+};
+
+const QMetaObject HeaderStyle::staticMetaObject = {
+    { &QWindowsStyle::staticMetaObject, qt_meta_stringdata_HeaderStyle,
+      qt_meta_data_HeaderStyle, &staticMetaObjectExtraData }
+};
+
+#ifdef Q_NO_DATA_RELOCATION
+const QMetaObject &HeaderStyle::getStaticMetaObject() { return staticMetaObject; }
+#endif //Q_NO_DATA_RELOCATION
+
+const QMetaObject *HeaderStyle::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
+}
+
+void *HeaderStyle::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_HeaderStyle))
+        return static_cast<void*>(const_cast< HeaderStyle*>(this));
+    return QWindowsStyle::qt_metacast(_clname);
+}
+
+int HeaderStyle::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QWindowsStyle::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    return _id;
+}
+QT_END_MOC_NAMESPACE
