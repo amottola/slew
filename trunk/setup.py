@@ -111,6 +111,11 @@ defines = [
 ]
 
 
+if not os.path.exists(os.path.join('backends', 'qt', 'moc')):
+	os.mkdir(os.path.join('backends', 'qt', 'moc'))
+if not os.path.exists(os.path.join('backends', 'qt', 'constants')):
+	os.mkdir(os.path.join('backends', 'qt', 'constants'))
+
 sources += glob.glob(os.path.join('backends', 'qt', '*.cpp'))
 for source in sources:
 	target = '%s.moc' % os.path.split(source)[-1][:-4]
