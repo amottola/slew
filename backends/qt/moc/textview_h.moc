@@ -1,0 +1,123 @@
+/****************************************************************************
+** Meta object code from reading C++ file 'textview.h'
+**
+** Created: Wed Jun 27 16:35:04 2012
+**      by: The Qt Meta Object Compiler version 63 (Qt 4.8.2)
+**
+** WARNING! All changes made in this file will be lost!
+*****************************************************************************/
+
+#include "../textview.h"
+#if !defined(Q_MOC_OUTPUT_REVISION)
+#error "The header file 'textview.h' doesn't include <QObject>."
+#elif Q_MOC_OUTPUT_REVISION != 63
+#error "This file was generated using the moc from 4.8.2. It"
+#error "cannot be used with the include files from this version of Qt."
+#error "(The moc has changed too much.)"
+#endif
+
+QT_BEGIN_MOC_NAMESPACE
+static const uint qt_meta_data_TextView_Impl[] = {
+
+ // content:
+       6,       // revision
+       0,       // classname
+       0,    0, // classinfo
+      12,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: signature, parameters, type, tag, flags
+      15,   14,   14,   14, 0x0a,
+      35,   14,   14,   14, 0x0a,
+      63,   14,   14,   14, 0x0a,
+      80,   14,   14,   14, 0x0a,
+     113,  103,   14,   14, 0x0a,
+     139,  103,   14,   14, 0x0a,
+     165,   14,   14,   14, 0x0a,
+     178,   14,   14,   14, 0x0a,
+     191,   14,   14,   14, 0x0a,
+     203,   14,   14,   14, 0x0a,
+     217,   14,   14,   14, 0x0a,
+     237,  232,   14,   14, 0x0a,
+
+       0        // eod
+};
+
+static const char qt_meta_stringdata_TextView_Impl[] = {
+    "TextView_Impl\0\0handleTextChanged()\0"
+    "updateLineNumberAreaWidth()\0"
+    "highlightLines()\0updateLineNumberArea()\0"
+    "available\0handleUndoAvailable(bool)\0"
+    "handleRedoAvailable(bool)\0handleUndo()\0"
+    "handleRedo()\0handleCut()\0handlePaste()\0"
+    "handleDelete()\0link\0handleAnchorClicked(QUrl)\0"
+};
+
+void TextView_Impl::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        Q_ASSERT(staticMetaObject.cast(_o));
+        TextView_Impl *_t = static_cast<TextView_Impl *>(_o);
+        switch (_id) {
+        case 0: _t->handleTextChanged(); break;
+        case 1: _t->updateLineNumberAreaWidth(); break;
+        case 2: _t->highlightLines(); break;
+        case 3: _t->updateLineNumberArea(); break;
+        case 4: _t->handleUndoAvailable((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 5: _t->handleRedoAvailable((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 6: _t->handleUndo(); break;
+        case 7: _t->handleRedo(); break;
+        case 8: _t->handleCut(); break;
+        case 9: _t->handlePaste(); break;
+        case 10: _t->handleDelete(); break;
+        case 11: _t->handleAnchorClicked((*reinterpret_cast< const QUrl(*)>(_a[1]))); break;
+        default: ;
+        }
+    }
+}
+
+const QMetaObjectExtraData TextView_Impl::staticMetaObjectExtraData = {
+    0,  qt_static_metacall 
+};
+
+const QMetaObject TextView_Impl::staticMetaObject = {
+    { &QTextBrowser::staticMetaObject, qt_meta_stringdata_TextView_Impl,
+      qt_meta_data_TextView_Impl, &staticMetaObjectExtraData }
+};
+
+#ifdef Q_NO_DATA_RELOCATION
+const QMetaObject &TextView_Impl::getStaticMetaObject() { return staticMetaObject; }
+#endif //Q_NO_DATA_RELOCATION
+
+const QMetaObject *TextView_Impl::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
+}
+
+void *TextView_Impl::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_TextView_Impl))
+        return static_cast<void*>(const_cast< TextView_Impl*>(this));
+    if (!strcmp(_clname, "WidgetInterface"))
+        return static_cast< WidgetInterface*>(const_cast< TextView_Impl*>(this));
+    return QTextBrowser::qt_metacast(_clname);
+}
+
+int TextView_Impl::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QTextBrowser::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 12)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 12;
+    }
+    return _id;
+}
+QT_END_MOC_NAMESPACE

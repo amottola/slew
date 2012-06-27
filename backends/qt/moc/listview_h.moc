@@ -1,0 +1,111 @@
+/****************************************************************************
+** Meta object code from reading C++ file 'listview.h'
+**
+** Created: Wed Jun 27 16:35:04 2012
+**      by: The Qt Meta Object Compiler version 63 (Qt 4.8.2)
+**
+** WARNING! All changes made in this file will be lost!
+*****************************************************************************/
+
+#include "../listview.h"
+#if !defined(Q_MOC_OUTPUT_REVISION)
+#error "The header file 'listview.h' doesn't include <QObject>."
+#elif Q_MOC_OUTPUT_REVISION != 63
+#error "This file was generated using the moc from 4.8.2. It"
+#error "cannot be used with the include files from this version of Qt."
+#error "(The moc has changed too much.)"
+#endif
+
+QT_BEGIN_MOC_NAMESPACE
+static const uint qt_meta_data_ListView_Impl[] = {
+
+ // content:
+       6,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       6,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: signature, parameters, type, tag, flags
+      35,   15,   14,   14, 0x0a,
+      95,   89,   14,   14, 0x0a,
+     128,  124,   14,   14, 0x0a,
+     175,   14,  154,   14, 0x0a,
+     192,   14,   14,   14, 0x0a,
+     206,   14,   14,   14, 0x0a,
+
+       0        // eod
+};
+
+static const char qt_meta_stringdata_ListView_Impl[] = {
+    "ListView_Impl\0\0selected,deselected\0"
+    "handleSelectionChanged(QItemSelection,QItemSelection)\0"
+    "index\0handleActivated(QModelIndex)\0"
+    "pos\0handleContextMenu(QPoint)\0"
+    "QStyleOptionViewItem\0initOptionView()\0"
+    "prepareDrag()\0unprepareDrag()\0"
+};
+
+void ListView_Impl::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        Q_ASSERT(staticMetaObject.cast(_o));
+        ListView_Impl *_t = static_cast<ListView_Impl *>(_o);
+        switch (_id) {
+        case 0: _t->handleSelectionChanged((*reinterpret_cast< const QItemSelection(*)>(_a[1])),(*reinterpret_cast< const QItemSelection(*)>(_a[2]))); break;
+        case 1: _t->handleActivated((*reinterpret_cast< const QModelIndex(*)>(_a[1]))); break;
+        case 2: _t->handleContextMenu((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
+        case 3: { QStyleOptionViewItem _r = _t->initOptionView();
+            if (_a[0]) *reinterpret_cast< QStyleOptionViewItem*>(_a[0]) = _r; }  break;
+        case 4: _t->prepareDrag(); break;
+        case 5: _t->unprepareDrag(); break;
+        default: ;
+        }
+    }
+}
+
+const QMetaObjectExtraData ListView_Impl::staticMetaObjectExtraData = {
+    0,  qt_static_metacall 
+};
+
+const QMetaObject ListView_Impl::staticMetaObject = {
+    { &QListView::staticMetaObject, qt_meta_stringdata_ListView_Impl,
+      qt_meta_data_ListView_Impl, &staticMetaObjectExtraData }
+};
+
+#ifdef Q_NO_DATA_RELOCATION
+const QMetaObject &ListView_Impl::getStaticMetaObject() { return staticMetaObject; }
+#endif //Q_NO_DATA_RELOCATION
+
+const QMetaObject *ListView_Impl::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
+}
+
+void *ListView_Impl::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_ListView_Impl))
+        return static_cast<void*>(const_cast< ListView_Impl*>(this));
+    if (!strcmp(_clname, "WidgetInterface"))
+        return static_cast< WidgetInterface*>(const_cast< ListView_Impl*>(this));
+    return QListView::qt_metacast(_clname);
+}
+
+int ListView_Impl::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QListView::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 6)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 6;
+    }
+    return _id;
+}
+QT_END_MOC_NAMESPACE
