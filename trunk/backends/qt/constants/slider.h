@@ -1,6 +1,0 @@
-#define SL_SLIDER_STYLE_INVERSE				 0x00020000
-#define SL_SLIDER_TICKS_NONE					 0
-#define SL_SLIDER_TICKS_TOP					 1
-#define SL_SLIDER_TICKS_BOTTOM				 2
-#define SL_SLIDER_TICKS_LEFT					 3
-#define SL_SLIDER_TICKS_RIGHT					 4
