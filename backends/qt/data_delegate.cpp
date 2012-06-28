@@ -510,7 +510,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 		
 		textRect.adjust(0, 0, -(iconRect.width() + (style->pixelMetric(QStyle::PM_FocusFrameHMargin, &option) + 1) * 2), 0);
 		
-		QIcon::Mode mode = option.state & QStyle::State_Enabled ? QIcon::Normal : QIcon::Disabled;
+		QIcon::Mode mode = option.state & QStyle::State_Enabled ? (option.state & QStyle::State_Active ? QIcon::Active : QIcon::Normal) : QIcon::Disabled;
 		QSize size = fCurrentSpec->fIcon.actualSize(iconRect.size(), mode);
 		pixmap = fCurrentSpec->fIcon.pixmap(size, mode);
 		
