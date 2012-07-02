@@ -260,6 +260,35 @@ class WidgetDef(object):
 
 
 
+class Interface(object):
+	def __init__(self, defs):
+		self.__defs_list = defs
+		self.__defs_dict = {}
+		for d in defs:
+			self.__defs_dict[d.name] = d
+	
+	def __len__(self):
+		return len(self.__defs_list)
+	
+	def __getitem__(self, key):
+		if isinstance(key, basestring):
+			return self.__defs_dict[key]
+		return self.__defs_list[key]
+	
+	def __iter__(self):
+		return self.__defs_list.__iter__()
+	
+	def iteritems(self):
+		return self.__defs_dict.iteritems()
+	
+	def itervalues(self):
+		return self.__defs_dict.itervalues()
+	
+	def iterkeys(self):
+		return self.__defs_dict.iterkeys()
+
+
+
 class DataIndex(object):
 	def __init__(self, row, column=0, parent=None):
 		self.row = row
@@ -654,7 +683,7 @@ def load_interface(resource):
 	if node.tag != 'interface':
 		raise ValueError('invalid interface file')
 	defs = [ WidgetDef(x) for x in node.getchildren() ]
-	return [], defs
+	return Interface(defs)
 
 
 
