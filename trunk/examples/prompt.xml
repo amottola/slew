@@ -1,0 +1,9 @@
+<interface>
+	<dialog name="test" title="Test dialog" style="caption|close">
+		<vbox>
+			<label margins="10">Insert your name:</label>
+			<textfield name="my_name" margins="0 10 0 10" />
+			<button name="ok" margins="10" boxalign="right|vcenter" label="Ok" />
+		</vbox>
+	</dialog>
+</interface>
