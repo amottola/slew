@@ -2948,7 +2948,7 @@ SL_DEFINE_MODULE_METHOD(load_resource, {
 SL_DEFINE_MODULE_METHOD(message_box, {
 	static char *kwlist[] = { "message", "title", "buttons", "icon", "callback", "userdata", NULL };
 	QString message, title;
-	int button, buttons = SL_BUTTON_OK, icon = SL_ICON_INFORMATION;
+	int button = SL_BUTTON_OK, buttons = SL_BUTTON_OK, icon = SL_ICON_INFORMATION;
 	PyObject *callback = NULL, *userdata = NULL;
 	
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&iiOO:message_box", kwlist, convertString, &message, convertString, &title, &buttons, &icon, &callback, &userdata))
@@ -3513,7 +3513,7 @@ SL_DEFINE_MODULE_METHOD(run_color_dialog, {
 })
 
 
-#ifdef Q_WS_WIN32
+#ifdef Q_WS_WIN
 
 SL_DEFINE_MODULE_METHOD(run_font_dialog, {
 	static char *kwlist[] = { "font", "title", NULL };
@@ -4088,7 +4088,7 @@ init_slew()
 	if (module)
 		dict = PyModule_GetDict(module);
 	
-#ifdef Q_WS_WIN32
+#ifdef Q_WS_WIN
 	{
 		QString temp;
 		wchar_t buffer[32767];

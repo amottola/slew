@@ -97,7 +97,7 @@ elif sys.platform == 'win32':
 		ldflags += ' /PROFILE'
 else:
 	moc = '%(qt_dir)s/bin/moc'
-	cflags = '-Wno-write-strings -fvisibility=hidden -I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/include/QtNetwork -I%(qt_dir)s/include/QtWebKit'
+	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/include/QtNetwork -I%(qt_dir)s/include/QtWebKit'
 	ldflags = '-L%(qt_dir)s/lib -lQtCore -lQtGui -lQtOpenGL -lQtNetwork -lQtWebKit -Wl,-rpath=%(qt_dir)s/lib'
 	data_files = []
 
