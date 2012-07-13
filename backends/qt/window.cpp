@@ -480,7 +480,7 @@ SL_DEFINE_METHOD(Window, get_pos, {
 
 
 SL_DEFINE_METHOD(Window, set_pos, {
-	QPoint pos, currentPos = impl->pos();
+	QPoint pos;
 	
 	if (!PyArg_ParseTuple(args, "O&", convertPoint, &pos))
 		return NULL;
