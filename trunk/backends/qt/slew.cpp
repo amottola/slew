@@ -3513,7 +3513,7 @@ SL_DEFINE_MODULE_METHOD(run_color_dialog, {
 })
 
 
-#ifdef Q_WS_WIN
+#ifndef Q_WS_MAC
 
 SL_DEFINE_MODULE_METHOD(run_font_dialog, {
 	static char *kwlist[] = { "font", "title", NULL };
