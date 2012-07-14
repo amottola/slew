@@ -869,7 +869,7 @@ convertFont(PyObject *object, QFont *value)
 		font.setFamily(family);
 	
 	if (size != SL_FONT_SIZE_DEFAULT) {
-#ifdef Q_WS_WIN
+#ifndef Q_WS_MAC
 		font.setPointSizeF(double(size) * 0.75);
 #else
 		font.setPointSize(size);
@@ -1269,7 +1269,7 @@ createFontObject(const QFont& font)
 	
 	int family = SL_FONT_FAMILY_DEFAULT, size, style = 0;
 	QString face = font.family();
-#ifdef Q_WS_WIN
+#ifndef Q_WS_MAC
 	size = int(font.pointSizeF() * 1.33333333333);
 #else
 	size = font.pointSize();

@@ -12,7 +12,7 @@
 #include <QPrintDialog>
 #include <QEventLoop>
 
-#ifdef Q_WS_WIN
+#ifndef Q_WS_MAC
 #define DPI		96.0
 #else
 #define DPI		72.0
@@ -586,7 +586,7 @@ loadSettings(PyObject *settings, QPrinter *printer)
 			break;
 	}
 	if (kPaperSize[i].fSL == SL_PRINTER_PAPER_CUSTOM) {
-#ifdef Q_WS_WIN32
+#ifdef Q_WS_WIN
 		if (((orientation == SL_PRINTER_ORIENTATION_VERTICAL) && (paperSize.height() < paperSize.width())) ||
 			((orientation == SL_PRINTER_ORIENTATION_HORIZONTAL) && (paperSize.height() > paperSize.width()))) {
 			paperSize = QSizeF(paperSize.height(), paperSize.width());
