@@ -120,8 +120,8 @@ SL_DEFINE_METHOD(PopupWindow, popup, {
 
 SL_DEFINE_METHOD(PopupWindow, get_style, {
 	int style = 0;
-	Qt::WindowFlags flags = impl->windowFlags();
 	
+	getWindowStyle(impl, style);
 	return PyInt_FromLong(style);
 })
 
