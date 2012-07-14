@@ -739,7 +739,7 @@ SL_DEFINE_METHOD(Window, set_hicolor, {
 		color = QApplication::palette(impl).color(QPalette::HighlightedText);
 	}
 	
-	palette.setColor(QPalette::Normal, QPalette::HighlightedText, color);
+	palette.setColor(QPalette::HighlightedText, color);
 	impl->setPalette(palette);
 })
 
@@ -763,7 +763,7 @@ SL_DEFINE_METHOD(Window, set_hibgcolor, {
 		color = QApplication::palette(impl).color(QPalette::Highlight);
 	}
 	
-	palette.setColor(QPalette::Normal, QPalette::Highlight, color);
+	palette.setColor(QPalette::Highlight, color);
 	impl->setPalette(palette);
 })
 
