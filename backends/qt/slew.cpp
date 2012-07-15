@@ -3392,16 +3392,16 @@ SL_DEFINE_MODULE_METHOD(get_path, {
 		return NULL;
 	
 	QString path;
-	struct stat exe_stat;
-	char temp[1024], exe_path[1024], *p;
-	const char *home = getenv("HOME"), *exe_name = NULL;
+	struct stat file_stat;
+	char temp[1024], temp2[1024], exe_path[1024], *p;
+	const char *home = getenv("HOME"), *var = NULL, *exe_name = NULL;
 	int len;
 	
 	if (!home)
 		home = "/usr/share";
 	
 	sprintf(temp, "/proc/%d/exe", (int)getpid());
-	if (stat(temp, &exe_stat) >= 0) {
+	if (stat(temp, &file_stat) >= 0) {
 		len = readlink(temp, exe_path, 1023);
 		if (len >= 0) {
 			exe_path[len] = '\0';
@@ -3430,14 +3430,69 @@ SL_DEFINE_MODULE_METHOD(get_path, {
 		path = home;
 		break;
 	case SL_USER_APPLICATION_SUPPORT_PATH:
+	case SL_USER_LOG_PATH:
+		var = getenv("XDG_DATA_HOME");
+		path = QString(var ? var : "");
+		if (path.isEmpty())
+			path = QString("%1/.local/share").arg(home);
+		if (spec == SL_USER_LOG_PATH)
+			path.append("/log");
+		else
+			path.append("/data");
+		break;
+	case SL_USER_PREFERENCES_PATH:
 	case SL_USER_DOCUMENTS_PATH:
 	case SL_USER_IMAGES_PATH:
-	case SL_USER_PREFERENCES_PATH:
-	case SL_USER_LOG_PATH:
-		if (exe_name[0] == '.')
-			path = QString("%1/%2").arg(home).arg(exe_name);
+		var = getenv("XDG_CONFIG_HOME");
+		path = QString(var ? var : "");
+		if (path.isEmpty())
+			path = QString("%1/.config").arg(home);
+		if (spec == SL_USER_PREFERENCES_PATH)
+			break;
+		else if (spec == SL_USER_DOCUMENTS_PATH)
+			var = "XDG_DOCUMENTS_DIR=";
 		else
-			path = QString("%1/.%2").arg(home).arg(exe_name);
+			var = "XDG_PICTURES_DIR=";
+		sprintf(temp, "%s/%s", path.toUtf8().data(), "user-dirs.dirs");
+		path = "";
+		if (stat(temp, &file_stat) >= 0) {
+			FILE *f = fopen(temp, "rb");
+			while (!feof(f)) {
+				p = fgets(temp, 1023, f);
+				if (!p)
+					break;
+				if (strncmp(p, var, strlen(var)) == 0) {
+					p += strlen(var);
+					len = strlen(p);
+					if (len == 0)
+						continue;
+					if (p[len - 1] == '\n') {
+						p[len - 1] = 0;
+						len--;
+					}
+					if ((len >= 2) && (p[0] == '\"') && (p[len-1] == '\"')) {
+						p[len-1] = 0;
+						p++;
+						len -= 2;
+					}
+					if (memcmp(p, "$HOME", 5) == 0) {
+						sprintf(temp2, "%s%s", home, p+5);
+						path = temp2;
+					}
+					else {
+						path = p;
+					}
+					break;
+				}
+			}
+			fclose(f);
+		}
+		if (path.isEmpty()) {
+			if (spec == SL_USER_DOCUMENTS_PATH)
+				path = QString("%1/Documents").arg(home);
+			else
+				path = QString("%1/Pictures").arg(home);
+		}
 		break;
 	case SL_SYSTEM_APPLICATION_SUPPORT_PATH:
 	case SL_SYSTEM_IMAGES_PATH:
