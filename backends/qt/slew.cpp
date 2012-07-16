@@ -3411,14 +3411,8 @@ SL_DEFINE_MODULE_METHOD(get_path, {
 		if (len >= 0) {
 			exe_path[len] = '\0';
 			p = strrchr(exe_path, '/');
-			if (home) {
-				strcpy(temp + 1, p + 1);
-				*p = '\0';
-				temp[0] = '.';
-			}
-			else {
-				strcpy(temp, p + 1);
-			}
+			*p = 0;
+			strcpy(temp, p + 1);
 			exe_name = temp;
 		}
 	}
@@ -3429,8 +3423,7 @@ SL_DEFINE_MODULE_METHOD(get_path, {
 	
 	switch (spec) {
 	case SL_EXECUTABLE_NAME:
-		path = QString("%1/%2").arg(exe_path).arg(exe_name);
-		break;
+		return createStringObject(QString("%1/%2").arg(exe_path).arg(exe_name));
 	case SL_USER_HOME_PATH:
 		path = home;
 		break;
