@@ -1577,7 +1577,12 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 	mb.setText(_title);
 #else
 	mb.setWindowTitle(qApp->applicationName());
+#ifdef Q_WS_X11
+	QString _title = QString("<b>%1</b>").arg(title);
+	mb.setText(_title);
+#else
 	mb.setText(title);
+#endif
 #endif
 	mb.setInformativeText(message);
 	mb.setStandardButtons(qbuttons);
