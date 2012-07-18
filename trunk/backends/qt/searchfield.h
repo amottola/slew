@@ -35,11 +35,14 @@ public:
 	void setEmptyText(const QString& text) { fEmptyText = text; update(); }
 	QString emptyText() { return fEmptyText; }
 	
+	void setCancelIcon(const QIcon& icon);
+	QIcon cancelIcon() { return fCancelIcon; }
+	
 	void setMenu(QMenu *menu);
 	QMenu *menu() { return fMenu; }
 	
 	void setCancellable(bool enabled);
-	bool isCancellable() { return fCancelIcon != NULL; }
+	bool isCancellable() { return fCancelButton != NULL; }
 	
 	void updateGeometries();
 	virtual QSize sizeHint() const;
@@ -56,7 +59,8 @@ public slots:
 	void handleContextMenu();
 	
 protected:
-	QToolButton		*fCancelIcon;
+	QToolButton		*fCancelButton;
+	QIcon			fCancelIcon;
 	QString			fEmptyText;
 	QMenu			*fMenu;
 };
