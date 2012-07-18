@@ -246,6 +246,9 @@ class Color(object):
 			return 0
 		return -1
 	
+	def copy(self):
+		return Color(self.r, self.g, self.b, self.a)
+	
 	@classmethod
 	def ensure(cls, value, allowNone=True):
 		if value is None:
@@ -320,6 +323,9 @@ class Font(object):
 		if isinstance(other, Font) and (other.family == self.family) and (other.face == self.face) and (other.size == self.size) and (other.style == self.style):
 			return 0
 		return -1
+	
+	def copy(self):
+		return Font(self.family, self.face, self.size, self.style)
 	
 	@classmethod
 	def ensure(cls, value, **kwargs):
