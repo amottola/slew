@@ -1246,6 +1246,27 @@ SL_DEFINE_METHOD(SceneView, get_viewport_size, {
 })
 
 
+SL_DEFINE_METHOD(SceneView, set_bgcolor, {
+	QPalette palette(impl->palette());
+	QColor color;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertColor, &color))
+		return NULL;
+	
+	if (!color.isValid()) {
+		impl->setAutoFillBackground(false);
+		color = QApplication::palette(impl).color(QPalette::Base);
+	}
+	else {
+		impl->setAutoFillBackground(true);
+	}
+	
+	palette.setColor(QPalette::Base, color);
+	impl->setPalette(palette);
+	impl->cornerWidget()->setPalette(palette);
+})
+
+
 SL_DEFINE_METHOD(SceneView, get_style, {
 	int style = 0;
 	
@@ -1487,6 +1508,7 @@ SL_METHOD(get_scroll_pos)
 SL_METHOD(set_scroll_pos)
 SL_METHOD(get_scroll_rate)
 SL_METHOD(set_scroll_rate)
+SL_METHOD(set_bgcolor)
 
 SL_PROPERTY(style)
 SL_PROPERTY(anchor)
