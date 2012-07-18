@@ -44,12 +44,12 @@ public:
 
 
 
-class CancelIcon : public QToolButton
+class CancelButton : public QToolButton
 {
 	Q_OBJECT
 	
 public:
-	CancelIcon(FormattedLineEdit *parent)
+	CancelButton(FormattedLineEdit *parent, const QIcon& icon)
 		: QToolButton(parent)
 	{
 		const unsigned char kData[] = {
@@ -82,11 +82,16 @@ public:
 			0x06, 0x00, 0x0b, 0xf8, 0x15, 0x9e, 0xd0, 0x0b, 0x0e, 0x4d, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42,
 			0x60, 0x82
 		};
-		QPixmap pixmap;
-		pixmap.loadFromData(kData, sizeof(kData));
 		
+		if (icon.isNull()) {
+			QPixmap pixmap;
+			pixmap.loadFromData(kData, sizeof(kData));
+			setIcon(QIcon(pixmap));
+		}
+		else {
+			setIcon(icon);
+		}
 		setFocusPolicy(Qt::NoFocus);
-		setIcon(QIcon(pixmap));
 		connect(this, SIGNAL(clicked()), parent, SLOT(handleCancelClicked()));
 	}
 	
@@ -109,7 +114,7 @@ public:
 
 
 SearchField_Impl::SearchField_Impl()
-	: FormattedLineEdit(), WidgetInterface(), fCancelIcon(NULL), fEmptyText("Search..."), fMenu(NULL)
+	: FormattedLineEdit(), WidgetInterface(), fCancelButton(NULL), fEmptyText("Search..."), fMenu(NULL)
 {
 	connect(this, SIGNAL(textModified(const QString&, int)), this, SLOT(handleTextModified(const QString&, int)));
 	connect(this, SIGNAL(returnPressed()), this, SLOT(handleReturnPressed()));
@@ -122,6 +127,18 @@ QAbstractButton *
 SearchField_Impl::createIconButton(const QIcon& icon)
 {
 	return new SearchIcon(this, icon, fMenu);
+}
+
+
+void
+SearchField_Impl::setCancelIcon(const QIcon& icon)
+{
+	fCancelIcon = icon;
+	if (fCancelButton) {
+		delete fCancelButton;
+		fCancelButton = new CancelButton(this, fCancelIcon);
+		updateGeometries();
+	}
 }
 
 
@@ -140,15 +157,15 @@ SearchField_Impl::setMenu(QMenu *menu)
 void
 SearchField_Impl::setCancellable(bool enabled)
 {
-	if (((enabled) && (fCancelIcon)) ||
-		((!enabled) && (!fCancelIcon)))
+	if (((enabled) && (fCancelButton)) ||
+		((!enabled) && (!fCancelButton)))
 		return;
 	
-	delete fCancelIcon;
-	fCancelIcon = NULL;
+	delete fCancelButton;
+	fCancelButton = NULL;
 	
 	if (enabled) {
-		fCancelIcon = new CancelIcon(this);
+		fCancelButton = new CancelButton(this, fCancelIcon);
 		updateGeometries();
 	}
 }
@@ -176,9 +193,9 @@ SearchField_Impl::updateGeometries()
 		fIcon->setGeometry(rect);
 	}
 
-	if (fCancelIcon) {
+	if (fCancelButton) {
 		if (text().isEmpty()) {
-			fCancelIcon->hide();
+			fCancelButton->hide();
 		}
 		else {
 			QStyleOptionFrameV2 panel;
@@ -186,8 +203,8 @@ SearchField_Impl::updateGeometries()
 			QRect rect = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
 			rightMargin = rect.height() + style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, this) + 1;
 			rect.adjust(rect.width() - rect.height(), 0, 0, 0);
-			fCancelIcon->setGeometry(rect);
-			fCancelIcon->show();
+			fCancelButton->setGeometry(rect);
+			fCancelButton->show();
 		}
 	}
 	setTextMargins(leftMargin, 0, rightMargin, 0);
@@ -393,6 +410,21 @@ SL_DEFINE_METHOD(SearchField, set_menu, {
 })
 
 
+SL_DEFINE_METHOD(SearchField, get_cancel_icon, {
+	return createIconObject(impl->cancelIcon());
+})
+
+
+SL_DEFINE_METHOD(SearchField, set_cancel_icon, {
+	QIcon icon;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertIcon, &icon))
+		return NULL;
+	
+	impl->setCancelIcon(icon);
+})
+
+
 SL_DEFINE_METHOD(SearchField, get_style, {
 	int style = 0;
 	
@@ -436,6 +468,8 @@ SL_DEFINE_METHOD(SearchField, set_empty_text, {
 SL_START_PROXY_DERIVED(SearchField, TextField)
 SL_METHOD(get_menu)
 SL_METHOD(set_menu)
+SL_METHOD(get_cancel_icon)
+SL_METHOD(set_cancel_icon)
 
 SL_PROPERTY(style)
 SL_PROPERTY(empty_text)
