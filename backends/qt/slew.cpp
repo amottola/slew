@@ -4174,9 +4174,20 @@ init_slew()
 		QPixmapCache::setCacheLimit(32768);
 		new Application(sArgc, sArgv);
 #ifdef Q_WS_MAC
-		struct CPSProcessSerNum psn;
-		if ((!CPSGetCurrentProcess(&psn)) && (!CPSEnableForegroundOperation(&psn, 0x03, 0x3C, 0x2C, 0x1103)))
-			CPSSetFrontProcess(&psn);
+		bool forceFront = true;
+		QString temp;
+		char *buffer;
+		buffer = getenv("SLEW_FORCE_FRONT");
+		if (buffer) {
+			temp = buffer;
+			if ((temp == "0") || (temp.toLower() == "false"))
+				forceFront = false;
+		}
+		if (forceFront) {
+			struct CPSProcessSerNum psn;
+			if ((!CPSGetCurrentProcess(&psn)) && (!CPSEnableForegroundOperation(&psn, 0x03, 0x3C, 0x2C, 0x1103)))
+				CPSSetFrontProcess(&psn);
+		}
 #endif
 	}
 	else
