@@ -39,9 +39,38 @@ SL_DEFINE_DC_METHOD(clear, {
 })
 
 
+SL_DEFINE_DC_METHOD(set_antialias, {
+	SceneItem_Impl *item = (SceneItem_Impl *)device;
+	QGraphicsScene *scene = item->scene();
+	bool enabled;
+	QPainter::RenderHints hints;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertBool, &enabled))
+		return NULL;
+	
+	if (scene) {
+		SceneView_Impl *view = (SceneView_Impl *)scene->parent();
+		hints = view->renderHints();
+		if (enabled)
+			hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing);
+		else
+			hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		view->setRenderHints(hints);
+	}
+	
+	hints = painter->renderHints();
+	if (enabled)
+		hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing);
+	else
+		hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing);
+	painter->setRenderHints(hints);
+})
+
+
 SL_START_METHODS(SceneItemDC)
 SL_METHOD(get_size)
 SL_METHOD(clear)
+SL_METHOD(set_antialias)
 SL_END_METHODS()
 
 

@@ -445,6 +445,9 @@ class DC(object):
 	def set_clipping(self, tl, br=None):
 		self._impl.set_clipping(Vector.ensure(tl), Vector.ensure(br))
 	
+	def set_antialias(self, enabled):
+		self._impl.set_antialias(enabled)
+	
 	def get_transform(self):
 		return self._impl.get_transform()
 	
