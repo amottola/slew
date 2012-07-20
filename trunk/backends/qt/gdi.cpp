@@ -66,6 +66,7 @@ SL_DEFINE_DC_METHOD(set_font, {
 	if (!PyArg_ParseTuple(args, "O&", convertFont, &font))
 		return NULL;
 	
+	font.setStyleStrategy((QFont::StyleStrategy)((painter->renderHints() & QPainter::TextAntialiasing ? QFont::PreferAntialias : QFont::NoAntialias) | QFont::PreferOutline | QFont::PreferMatch));
 	font.resolve(QApplication::font());
 	if (font != painter->font())
 		painter->setFont(font);
@@ -325,6 +326,23 @@ SL_DEFINE_DC_METHOD(set_clipping, {
 })
 
 
+SL_DEFINE_DC_METHOD(set_antialias, {
+	bool enabled;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertBool, &enabled))
+		return NULL;
+	
+	QPainter::RenderHints hints = painter->renderHints();
+	
+	if (enabled)
+		hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing);
+	else
+		hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing);
+	
+	painter->setRenderHints(hints);
+})
+
+
 SL_DEFINE_DC_METHOD(get_transform, {
 	PyObject *object = PyList_New(3);
 	PyObject *r0 = PyList_New(3);
@@ -463,6 +481,7 @@ SL_METHOD(text)
 SL_METHOD(text_extent)
 SL_METHOD(blit)
 SL_METHOD(set_clipping)
+SL_METHOD(set_antialias)
 SL_METHOD(get_transform)
 SL_METHOD(set_transform)
 SL_END_METHODS()
