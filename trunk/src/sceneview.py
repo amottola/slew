@@ -248,6 +248,7 @@ class SceneView(slew.Window):
 	STYLE_SCROLLBARS			= 0x00020000
 	STYLE_DRAG_SCROLL			= 0x00040000
 	STYLE_DRAG_SELECT			= 0x00080000
+	STYLE_NO_ANTIALIAS			= 0x00100000
 	
 	ANCHOR_NONE					= 0
 	ANCHOR_CENTER				= 1
@@ -260,6 +261,7 @@ class SceneView(slew.Window):
 									'scrollbars':	STYLE_SCROLLBARS,
 									'dragscroll':	STYLE_DRAG_SCROLL,
 									'dragselect':	STYLE_DRAG_SELECT,
+									'noaa':			STYLE_NO_ANTIALIAS,
 								})),
 		'anchor':				IntProperty(),
 		'align':				BitsProperty({	'left':		slew.ALIGN_LEFT,

@@ -39,38 +39,9 @@ SL_DEFINE_DC_METHOD(clear, {
 })
 
 
-SL_DEFINE_DC_METHOD(set_antialias, {
-	SceneItem_Impl *item = (SceneItem_Impl *)device;
-	QGraphicsScene *scene = item->scene();
-	bool enabled;
-	QPainter::RenderHints hints;
-	
-	if (!PyArg_ParseTuple(args, "O&", convertBool, &enabled))
-		return NULL;
-	
-	if (scene) {
-		SceneView_Impl *view = (SceneView_Impl *)scene->parent();
-		hints = view->renderHints();
-		if (enabled)
-			hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing);
-		else
-			hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing);
-		view->setRenderHints(hints);
-	}
-	
-	hints = painter->renderHints();
-	if (enabled)
-		hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing);
-	else
-		hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	painter->setRenderHints(hints);
-})
-
-
 SL_START_METHODS(SceneItemDC)
 SL_METHOD(get_size)
 SL_METHOD(clear)
-SL_METHOD(set_antialias)
 SL_END_METHODS()
 
 
@@ -1309,6 +1280,8 @@ SL_DEFINE_METHOD(SceneView, get_style, {
 		style |= SL_SCENEVIEW_STYLE_DRAG_SCROLL;
 	else if (impl->dragMode() == QGraphicsView::RubberBandDrag)
 		style |= SL_SCENEVIEW_STYLE_DRAG_SELECT;
+	if ((impl->renderHints() & (QPainter::Antialiasing | QPainter::TextAntialiasing)) == 0)
+		style |= SL_SCENEVIEW_STYLE_NO_ANTIALIAS;
 	
 	return PyInt_FromLong(style);
 })
@@ -1344,6 +1317,13 @@ SL_DEFINE_METHOD(SceneView, set_style, {
 		impl->setDragMode(QGraphicsView::RubberBandDrag);
 	else
 		impl->setDragMode(QGraphicsView::NoDrag);
+	
+	QPainter::RenderHints hints = impl->renderHints();
+	if (style & SL_SCENEVIEW_STYLE_NO_ANTIALIAS)
+		hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing);
+	else
+		hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing);
+	impl->setRenderHints(hints);
 })
 
 
