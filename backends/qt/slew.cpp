@@ -2278,7 +2278,9 @@ Application::eventFilter(QObject *obj, QEvent *event)
 				if (area) {
 					if (((event->type() == QEvent::MouseButtonPress) || (event->type() == QEvent::MouseButtonDblClick)) && (!area->viewport()->rect().contains(area->viewport()->mapFromGlobal(QCursor::pos()))))
 						return false;
-					if ((area->verticalScrollBar() && area->verticalScrollBar()->underMouse()) || (area->horizontalScrollBar() && area->horizontalScrollBar()->underMouse()))
+					if (area->verticalScrollBar() && area->verticalScrollBar()->isVisible() && (area->verticalScrollBar()->rect().contains(area->verticalScrollBar()->mapFromGlobal(QCursor::pos()))))
+						return false;
+					if (area->horizontalScrollBar() && area->horizontalScrollBar()->isVisible() && (area->horizontalScrollBar()->rect().contains(area->horizontalScrollBar()->mapFromGlobal(QCursor::pos()))))
 						return false;
 				}
 				
