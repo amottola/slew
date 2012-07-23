@@ -2275,8 +2275,12 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			EventRunner runner(obj);
 			if (runner.isValid()) {
 				QAbstractScrollArea *area = qobject_cast<QAbstractScrollArea *>(runner.widget());
-				if ((area) && ((event->type() == QEvent::MouseButtonPress) || (event->type() == QEvent::MouseButtonDblClick)) && (!area->viewport()->rect().contains(area->viewport()->mapFromGlobal(QCursor::pos()))))
-					return false;
+				if (area) {
+					if (((event->type() == QEvent::MouseButtonPress) || (event->type() == QEvent::MouseButtonDblClick)) && (!area->viewport()->rect().contains(area->viewport()->mapFromGlobal(QCursor::pos()))))
+						return false;
+					if ((area->verticalScrollBar() && area->verticalScrollBar()->underMouse()) || (area->horizontalScrollBar() && area->horizontalScrollBar()->underMouse()))
+						return false;
+				}
 				
 				switch ((int)event->type()) {
 // 				case QEvent::Enter:					runner.setName("onMouseEnter"); break;
