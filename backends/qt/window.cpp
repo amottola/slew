@@ -401,7 +401,10 @@ SL_DEFINE_METHOD(Window, set_shortcut, {
 	QWidget *widget = impl->focusProxy();
 	if (!widget)
 		widget = impl;
-	setShortcut(widget, key, Qt::WidgetWithChildrenShortcut, action);
+	if (widget->isWindow())
+		setShortcut(widget, key, Qt::WindowShortcut, action);
+	else
+		setShortcut(widget, key, Qt::WidgetWithChildrenShortcut, action);
 })
 
 

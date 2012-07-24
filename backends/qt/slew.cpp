@@ -2036,13 +2036,6 @@ Application::eventFilter(QObject *obj, QEvent *event)
 		
 	case QEvent::WindowActivate:
 		{
-			foreach (QObject *child, fShadowWindow->children()) {
-				Shortcut *sc = qobject_cast<Shortcut *>(child);
-				if (sc) {
-					sc->setParent(obj);
-				}
-			}
-			
 			if (qobject_cast<Frame_Impl *>(obj) || qobject_cast<Dialog_Impl *>(obj)) {
 				EventRunner(obj, "onFocusIn").run();
 			}
@@ -2051,13 +2044,6 @@ Application::eventFilter(QObject *obj, QEvent *event)
 		
 	case QEvent::WindowDeactivate:
 		{
-			foreach (QObject *child, obj->children()) {
-				Shortcut *sc = qobject_cast<Shortcut *>(child);
-				if (sc) {
-					sc->setParent(fShadowWindow);
-				}
-			}
-			
 			if (qobject_cast<Frame_Impl *>(obj) || qobject_cast<Dialog_Impl *>(obj)) {
 				EventRunner(obj, "onFocusOut").run();
 			}
@@ -2984,11 +2970,7 @@ SL_DEFINE_MODULE_METHOD(set_shortcut, {
 		return NULL;
 	}
 	
-	QWidget *parent = QApplication::activeWindow();
-	if (!parent)
-		parent = SL_QAPP()->shadowWindow();
-	
-	setShortcut(parent, seq, Qt::ApplicationShortcut, action);
+	setShortcut(SL_QAPP()->shadowWindow(), seq, Qt::ApplicationShortcut, action);
 })
 
 
