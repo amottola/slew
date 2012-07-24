@@ -13,7 +13,7 @@ class TabBar : public QTabBar
 	Q_OBJECT
 	
 public:
-	TabBar(QWidget *parent) : QTabBar(parent) {}
+	TabBar(QWidget *parent) : QTabBar(parent) { setElideMode(Qt::ElideNone); }
 	
 	virtual void wheelEvent(QWheelEvent *event)
 	{
