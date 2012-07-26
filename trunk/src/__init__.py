@@ -669,9 +669,8 @@ def load_resource(resource):
 		return _slew.load_resource(resource)
 	except IOError, e:
 		try:
-			file = open(os.path.join(get_path(RESOURCE_PATH), os.path.normpath(resource)), 'rb')
-			data = file.read()
-			file.close()
+			with open(os.path.join(get_path(RESOURCE_PATH), os.path.normpath(resource)), 'rb') as file:
+				data = file.read()
 		except:
 			raise IOError(u'%s (%s)' % (unicode(e), resource))
 		return data

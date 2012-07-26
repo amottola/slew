@@ -13,8 +13,6 @@ except:
 import distutils.ccompiler
 
 
-NAME = 'slew'
-
 
 debug = '--debug' in sys.argv
 if debug:
@@ -167,13 +165,13 @@ for py in glob.glob(os.path.join('src', '*.py')):
 
 
 setup(
-    name = NAME,
-    version = '0.1',
+    name = 'slew',
+    version = '0.9',
     
-    packages = [ NAME ],
-    package_dir = { NAME: 'src' },
+    packages = [ 'slew' ],
+    package_dir = { 'slew': 'src' },
     
-    ext_modules = [ Extension('%s._%s' % (NAME, NAME),
+    ext_modules = [ Extension('slew._slew',
     	sources,
     	include_dirs = [
     		os.path.join('backends', 'qt'),
@@ -193,8 +191,41 @@ setup(
     # metadata for upload to PyPI
     author = "Angelo Mottola",
     author_email = "a.mottola@gmail.com",
-    description = "%s user interface library" % NAME.capitalize(),
-    license = "PSF",
-    keywords = "%s gui qt web pyjs" % NAME,
+    description = "Slew GUI library",
+    url = "http://code.google.com/p/slew",
+    license = "LGPL",
+    keywords = [ "gui", "xml", "qt", "web" ],
+	
+	classifiers = [
+		"Programming Language :: Python",
+		"Programming Language :: Python :: 2",
+		"Programming Language :: C++",
+		"Development Status :: 4 - Beta",
+		"Environment :: MacOS X",
+		"Environment :: Win32 (MS Windows)",
+		"Environment :: X11 Applications :: Qt",
+		"Environment :: Web Environment",
+		"Intended Audience :: Developers",
+		"License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+		"Operating System :: OS Independent",
+		"Topic :: Software Development :: Libraries :: Python Modules",
+		"Topic :: Software Development :: User Interfaces",
+		"Topic :: Software Development :: Widget Sets",
+	],
+	
+	long_description = """\
+Slew GUI library
+----------------
+
+An easy to use, multiplatform GUI library. Features include (but not limited to):
+
+* Backends-based architecture; currently there's one backend coded in C++ and based on Qt
+* Support for loading interface definitions from XML files
+* Complete widgets set, including (editable) item based views (Grid, TreeView, etc...)
+* Printing support
+* GDI classes to draw on top of bitmaps, on widgets, and while printing
+
+This version has been developed and tested on Python 2.7; support for Python 3.x may come in the future.
+"""
 )
 
