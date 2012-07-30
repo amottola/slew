@@ -17,7 +17,7 @@ class Menu_Impl : public QMenu, public WidgetInterface
 public:
 	SL_DECLARE_OBJECT(Menu, {
 		while (!fActionGroups.isEmpty())
-			delete fActionGroups.takeFirst();
+			fActionGroups.takeFirst()->deleteLater();
 	})
 	
 public slots:
