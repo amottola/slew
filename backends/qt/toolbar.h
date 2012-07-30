@@ -15,7 +15,7 @@ class ToolBar_Impl : public QToolBar, public WidgetInterface
 public:
 	SL_DECLARE_OBJECT(ToolBar, {
 		while (!fActionGroups.isEmpty())
-			delete fActionGroups.takeFirst();
+			fActionGroups.takeFirst()->deleteLater();
 	})
 	
 	void setArea(Qt::ToolBarArea area) { fArea = area; }
