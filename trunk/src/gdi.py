@@ -276,6 +276,7 @@ class Font(object):
 	STYLE_BOLD				= 0x00000001
 	STYLE_ITALIC			= 0x00000002
 	STYLE_UNDERLINED		= 0x00000004
+	STYLE_NO_KERNING		= 0x00000008
 	#}
 	
 
@@ -288,7 +289,7 @@ class Font(object):
 		"teletype"
 	]
 	
-	STYLES = [ "bold", "italic", "underlined" ]
+	STYLES = [ "bold", "italic", "underlined", "nokerning" ]
 	
 	def __init__(self, family=0, face="", size=SIZE_DEFAULT, style=0, string=None):
 		self.family = family

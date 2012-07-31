@@ -879,7 +879,7 @@ convertFont(PyObject *object, QFont *value)
 	font.setBold(style & SL_FONT_STYLE_BOLD ? true : false);
 	font.setItalic(style & SL_FONT_STYLE_ITALIC ? true : false);
 	font.setUnderline(style & SL_FONT_STYLE_UNDERLINED ? true : false);
-	font.setKerning(true);
+	font.setKerning(style & SL_FONT_STYLE_NO_KERNING ? false : true);
 	
 	*value = font;
 	return 1;

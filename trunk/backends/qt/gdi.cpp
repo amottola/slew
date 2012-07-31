@@ -4,6 +4,9 @@
 #include "constants/gdi.h"
 
 
+#include <QFontMetricsF>
+
+
 
 SL_DEFINE_DC_METHOD(get_color, {
 	return createColorObject(painter->pen().color());
@@ -266,7 +269,7 @@ SL_DEFINE_DC_METHOD(text, {
 		return NULL;
 	
 	if (flags == -1) {
-		tl.ry() += painter->fontMetrics().ascent();
+		tl.ry() += QFontMetricsF(painter->fontMetrics()).ascent();
 		painter->drawText(tl, text);
 	}
 	else {
@@ -289,11 +292,13 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_ALIGN_VCENTER:			qflags |= Qt::AlignVCenter; break;
 		case SL_ALIGN_BOTTOM:			qflags |= Qt::AlignBottom; break;
 		}
-		QString elided = painter->fontMetrics().elidedText(text, mode, br.x() - tl.x(), 0);
+		QString elided = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x() - tl.x(), 0);
 		painter->drawText(QRectF(tl, br), qflags, elided);
 	}
 })
 
+
+#ifdef Q_WS_X11
 
 SL_DEFINE_DC_METHOD(text_extent, {
 	QString text;
@@ -301,8 +306,25 @@ SL_DEFINE_DC_METHOD(text_extent, {
 	
 	if (!PyArg_ParseTuple(args, "O&i", convertString, &text, &maxWidth))
 		return NULL;
-	return createVectorObject(painter->fontMetrics().boundingRect(QRect(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap) | Qt::TextLongestVariant, text).size());
+	
+	QSizeF size = QFontMetricsF(painter->fontMetrics()).boundingRect(QRect(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
+	size.rwidth()--;
+	return createVectorObject(size);
 })
+
+#else
+
+SL_DEFINE_DC_METHOD(text_extent, {
+	QString text;
+	int maxWidth;
+	
+	if (!PyArg_ParseTuple(args, "O&i", convertString, &text, &maxWidth))
+		return NULL;
+	
+	return createVectorObject(QFontMetricsF(painter->fontMetrics()).boundingRect(QRect(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size());
+})
+
+#endif
 
 
 SL_DEFINE_DC_METHOD(blit, {
