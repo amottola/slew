@@ -126,6 +126,12 @@ SL_DEFINE_METHOD(Dialog, set_visible, {
 })
 
 
+#ifdef Q_WS_MAC
+#define SHOW		open
+#else
+#define SHOW		show
+#endif
+
 SL_DEFINE_METHOD(Dialog, show_modal, {
 	bool blocking;
 	int modality;
@@ -165,17 +171,15 @@ SL_DEFINE_METHOD(Dialog, show_modal, {
 		Py_END_ALLOW_THREADS
 	}
 	else {
-#ifdef Q_WS_MAC
-		impl->open();
-#else
-		impl->show();
-#endif
+		impl->SHOW();
 	}
 	
 	PyObject *result = impl->returnValue();
 	Py_INCREF(result);
 	return result;
 })
+
+#undef SHOW
 
 
 SL_DEFINE_METHOD(Dialog, end_modal, {
