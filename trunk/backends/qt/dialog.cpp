@@ -165,7 +165,11 @@ SL_DEFINE_METHOD(Dialog, show_modal, {
 		Py_END_ALLOW_THREADS
 	}
 	else {
+#ifdef Q_WS_MAC
+		impl->open();
+#else
 		impl->show();
+#endif
 	}
 	
 	PyObject *result = impl->returnValue();
