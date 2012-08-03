@@ -10,7 +10,7 @@ Menu_Impl::Menu_Impl()
 	QVariant value;
 	value.setValue(&fActionGroups);
 	setProperty("action_groups", value);
-	connect(this, SIGNAL(aboutToHide()), this, SLOT(handleAboutToHide()));
+	connect(this, SIGNAL(aboutToHide()), this, SLOT(handleAboutToHide()), Qt::QueuedConnection);
 	connect(this, SIGNAL(aboutToShow()), this, SLOT(handleAboutToShow()));
 }
 
