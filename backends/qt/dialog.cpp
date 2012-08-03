@@ -165,7 +165,7 @@ SL_DEFINE_METHOD(Dialog, show_modal, {
 		Py_END_ALLOW_THREADS
 	}
 	else {
-		impl->open();
+		impl->show();
 	}
 	
 	PyObject *result = impl->returnValue();
