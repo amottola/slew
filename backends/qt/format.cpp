@@ -46,9 +46,31 @@
 #define DATE_MONTH					1
 #define DATE_YEAR					2
 
+#define CACHE_SIZE					1024
+
+
+typedef struct {
+	QString		fFormat;
+	FormatInfo	fInfo[2];
+	QString		fHumanFormat;
+	QString		fPattern;
+} FORMAT_INFO;
 
 
 static const QChar kLocalMonSymbol = 0x20AC;
+static QHash<QString, FORMAT_INFO *> sFormatCacheMap;
+static QList<FORMAT_INFO *> sFormatCacheList;
+
+
+void
+freeFormatCache()
+{
+	foreach (FORMAT_INFO *info, sFormatCacheList) {
+		delete info;
+	}
+	sFormatCacheMap.clear();
+	sFormatCacheList.clear();
+}
 
 
 static bool
@@ -173,549 +195,553 @@ private:
 void
 parseFormat(const QString& _format, int dataType, FormatInfo *formatInfo, QString *humanFormat, QRegExp *regExp)
 {
-	QLocale locale = getLocale();
-	QString format = locale.dateFormat(QLocale::NarrowFormat);
-	QChar defaultDSep, defaultTSep;
-	int i, datePos[3];
+	FORMAT_INFO *cached_info = sFormatCacheMap.value(_format);
+	if (!cached_info) {
+		cached_info = new FORMAT_INFO;
 	
-	switch (dataType) {
-	case SL_DATATYPE_DATE:
-	case SL_DATATYPE_TIME:
-	case SL_DATATYPE_TIMESTAMP:
-		{
-			for (i = 0; i < format.size(); i++) {
-				if ((!format[i].isLetter()) && (!format[i].isSpace())) {
-					defaultDSep = format[i];
-					break;
-				}
-			}
-			
-			if (format.indexOf('M') < format.indexOf('d')) {
-				datePos[0] = DATE_MONTH;
-				datePos[1] = DATE_DAY;
-			}
-			else {
-				datePos[0] = DATE_DAY;
-				datePos[1] = DATE_MONTH;
-			}
-			datePos[2] = DATE_YEAR;
-			
-			format = locale.timeFormat(QLocale::NarrowFormat);
-			for (i = 0; i < format.size(); i++) {
-				if ((!format[i].isLetter()) && (!format[i].isSpace())) {
-					defaultTSep = format[i];
-					break;
-				}
-			}
-			format = _format;
-			if (format.isEmpty())
-				format = "dm2yHMS:PdmyHMS";
-		}
-		break;
-	default:
-		format = _format;
-		break;
-	}
-	
-	if (humanFormat)
-		humanFormat->clear();
-	
-	if (format.indexOf(":") == -1)
-		format = QString("%1:%2").arg(_format).arg(_format);
-	
-	QStringList formatsList = format.split(":");
-	
-	for (int f = 0; f < 2; f++) {
-		QString pattern;
-		QString buffer = formatsList[f];
-		FormatInfo *info = &formatInfo[f];
-		
-		info->fFlags = 0;
-		info->fAlign = (Qt::Alignment)0;
+		QLocale locale = getLocale();
+		QString format = locale.dateFormat(QLocale::NarrowFormat);
+		QChar defaultDSep, defaultTSep;
+		int i, datePos[3];
 		
 		switch (dataType) {
-		case SL_DATATYPE_INTEGER:
-		case SL_DATATYPE_DECIMAL:
-		case SL_DATATYPE_FLOAT:
-			{
-				info->fLen = info->fDecLen = -1;
-				info->fMonSymbol = kLocalMonSymbol;
-				for (int i = 0; i < buffer.length(); i++) {
-					QChar c = buffer[i];
-					switch (c.unicode()) {
-					case 'b':	info->fFlags |= FORMAT_BLANK_IF_ZERO; break;
-					case 'l':	info->fAlign = Qt::AlignLeft; break;
-					case 'c':	info->fAlign = Qt::AlignHCenter; break;
-					case 'r':	info->fAlign = Qt::AlignRight; break;
-					case 't':	info->fFlags |= FORMAT_THOUSANDS_SEP; break;
-					case 'u':	info->fFlags |= FORMAT_UNSIGNED; break;
-					case 'k':	info->fFlags |= FORMAT_RED_IF_NEGATIVE; break;
-					case 'p':	info->fFlags |= FORMAT_PERCENTAGE; break;
-					case 'm':	if (dataType != SL_DATATYPE_INTEGER) info->fFlags |= FORMAT_MONETARY; break;
-					case 'e':
-						{
-							info->fFlags |= FORMAT_MONETARY_SYMBOL;
-							if ((i + 1 < buffer.length()) && (buffer[i + 1] == '{')) {
-								if (i + 2 < buffer.length()) {
-									if (buffer[i + 2] != '}')
-										info->fMonSymbol = buffer[i + 2];
-									else
-										info->fMonSymbol = 0;
-								}
-								int pos = buffer.indexOf('}', i);
-								if (pos < 0)
-									i = buffer.length();
-								else
-									i = pos;
-							}
-						}
-						break;
-					default:
-						{
-							bool hasDec = false;
-							
-							if (c.isDigit()) {
-								if (c == '0')
-									info->fFlags |= FORMAT_ZERO_FILL;
-								
-								int count = buffer.indexOf('.', i);
-								if (count != -1) {
-									hasDec = true;
-									count -= i;
-								}
-								else {
-									count = 1;
-									while ((i + count < buffer.length()) && (buffer[i + count].isDigit()))
-										count++;
-								}
-								info->fLen = buffer.mid(i, count).toUInt();
-								i += count - 1;
-								if (hasDec)
-									i++;
-							}
-							if ((hasDec) || (c == '.')) {
-								int count = 1;
-								while ((i + count < buffer.length()) && (buffer[i + count].isDigit()))
-									count++;
-								info->fDecLen = buffer.mid(i + 1, count - 1).toUInt();
-								i += count - 1;
-							}
-						}
-						break;
-					}
-				}
-				if (f == 0) {
-					pattern = QString("(\\d{0,%1})?");
-					if (info->fLen >= 0)
-						pattern = pattern.arg(info->fLen);
-					else
-						pattern = pattern.arg("");
-					if (!(info->fFlags & FORMAT_UNSIGNED))
-						pattern.prepend("([+\x002D])?");
-					else
-						pattern.prepend("([+])?");
-					if (dataType != SL_DATATYPE_INTEGER) {
-						pattern.append(QString("(([.,])(\\d{0,%1})?)?"));
-						if (info->fDecLen >= 0)
-							pattern = pattern.arg(info->fDecLen);
-						else
-							pattern = pattern.arg("");
-					}
-					if (humanFormat) {
-						for (int i = (info->fLen < 0 ? 10 : info->fLen); i >= 0; i--)
-							humanFormat->append('N');
-						if (dataType != SL_DATATYPE_INTEGER) {
-							humanFormat->append("[.");
-							for (int i = (info->fDecLen < 0 ? 10 : info->fDecLen); i >= 0; i--)
-								humanFormat->append('N');
-							humanFormat->append("]");
-						}
-					}
-				}
-			}
-			break;
-		
 		case SL_DATATYPE_DATE:
 		case SL_DATATYPE_TIME:
 		case SL_DATATYPE_TIMESTAMP:
 			{
-				QChar dSep = defaultDSep;
-				QChar tSep = defaultTSep;
-				QString format;
-				
-				for (int i = 0; i < buffer.length(); i++) {
-					switch (buffer[i].unicode()) {
-					case 'l':	info->fAlign = Qt::AlignLeft; break;
-					case 'c':	info->fAlign = Qt::AlignHCenter; break;
-					case 'r':	info->fAlign = Qt::AlignRight; break;
-					case 'P':
-						{
-							info->fFlags |= FORMAT_HAS_SEPARATOR;
-							if ((i + 1 < buffer.length()) && (buffer[i+1] == '{')) {
-								if (i + 2 < buffer.length()) {
-									if ((dataType == SL_DATATYPE_DATE) || (dataType == SL_DATATYPE_TIMESTAMP))
-										dSep = buffer[i + 2];
-									else
-										tSep = buffer[i + 2];
-									if (i + 3 < buffer.length())
-										tSep = buffer[i + 3];
-								}
-								int pos = buffer.indexOf('}', i);
-								if (pos < 0)
-									i = buffer.length();
-								else
-									i = pos;
-							}
-						}
+				for (i = 0; i < format.size(); i++) {
+					if ((!format[i].isLetter()) && (!format[i].isSpace())) {
+						defaultDSep = format[i];
 						break;
 					}
-					if ((dataType == SL_DATATYPE_DATE) || (dataType == SL_DATATYPE_TIMESTAMP)) {
-						switch (buffer[i].unicode()) {
-						case 'w':
-							{
-								info->fFlags |= FORMAT_HAS_WEEKDAY;
-								if ((i + 1 < buffer.length()) && (buffer[i+1] == 'a')) {
-									i++;
-									info->fFlags |= FORMAT_WEEKDAY_IS_SHORT;
-								}
-							}
-						case 'd':
-							{
-								info->fFlags |= FORMAT_HAS_DAY;
-								if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
-									i++;
-									info->fFlags |= FORMAT_REMOVE_ZERO_DAY;
-								}
-							}
-							break;
-						case 'm':
-							{
-								info->fFlags |= FORMAT_HAS_MONTH;
-								while (i + 1 < buffer.length()) {
-									if (buffer[i+1] == 's')
-										info->fFlags |= FORMAT_REMOVE_ZERO_MONTH;
-									else if (buffer[i+1] == 'n')
-										info->fFlags |= FORMAT_MONTH_NAME;
-									else if (buffer[i+1] == 'a')
-										info->fFlags |= FORMAT_MONTH_NAME_IS_SHORT;
-									else
-										break;
-									i++;
-								}
-							}
-							break;
-						case '2':
-							{
-								if ((i + 1 < buffer.length()) && (buffer[i+1] == 'y')) {
-									info->fFlags |= FORMAT_HAS_YEAR | FORMAT_YEAR_IS_SHORT;
-									i++;
-								}
-							}
-							break;
-						case 'y':	info->fFlags |= FORMAT_HAS_YEAR; break;
-						default:	break;
-						}
-					}
-					if ((dataType == SL_DATATYPE_TIME) || (dataType == SL_DATATYPE_TIMESTAMP)) {
-						switch (buffer[i].unicode()) {
-						case 'H':
-							{
-								info->fFlags |= FORMAT_HAS_HOURS;
-								if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
-									info->fFlags |= FORMAT_REMOVE_ZERO_HOURS;
-									i++;
-								}
-							}
-							break;
-						case 'M':
-							{
-								info->fFlags |= FORMAT_HAS_MINUTES;
-								if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
-									info->fFlags |= FORMAT_REMOVE_ZERO_MINUTES;
-									i++;
-								}
-							}
-							break;
-						case 'S':
-							{
-								info->fFlags |= FORMAT_HAS_SECONDS;
-								if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
-									info->fFlags |= FORMAT_REMOVE_ZERO_SECONDS;
-									i++;
-								}
-							}
-							break;
-						default:	break;
-						}
-					}
-				}
-				if (f == 0)
-					info->fFlags &= ~(FORMAT_HAS_WEEKDAY | FORMAT_MONTH_NAME);
-				if (info->fFlags & FORMAT_HAS_WEEKDAY)
-					info->fFlags |= FORMAT_HAS_SEPARATOR;
-				if ((info->fFlags & (FORMAT_REMOVE_ZERO_DAY | FORMAT_REMOVE_ZERO_MONTH)) && (!(info->fFlags & (FORMAT_HAS_WEEKDAY | FORMAT_MONTH_NAME))))
-					info->fFlags |= FORMAT_HAS_SEPARATOR;
-				if (info->fFlags & (FORMAT_REMOVE_ZERO_HOURS | FORMAT_REMOVE_ZERO_MINUTES | FORMAT_REMOVE_ZERO_SECONDS))
-					info->fFlags |= FORMAT_HAS_SEPARATOR;
-				if (!(info->fFlags & (FORMAT_HAS_WEEKDAY | FORMAT_HAS_DAY | FORMAT_HAS_MONTH | FORMAT_HAS_YEAR | FORMAT_HAS_HOURS | FORMAT_HAS_MINUTES | FORMAT_HAS_SECONDS))) {
-// 					info->fFlags = FORMAT_HAS_DAY | FORMAT_HAS_MONTH | FORMAT_HAS_YEAR | FORMAT_HAS_HOURS | FORMAT_HAS_MINUTES | FORMAT_HAS_SECONDS;
-					if (f == 0)
-						info->fFlags |= FORMAT_YEAR_IS_SHORT;
-					else
-						info->fFlags |= FORMAT_HAS_SEPARATOR;
-				}
-				if (info->fFlags & FORMAT_MONTH_NAME)
-					dSep = ' ';
-				
-				if ((dataType == SL_DATATYPE_DATE) || (dataType == SL_DATATYPE_TIMESTAMP)) {
-					for (int i = 0; i < 3; i++) {
-						switch (datePos[i]) {
-						case DATE_DAY:
-							{
-								if (!(info->fFlags & FORMAT_HAS_DAY))
-									continue;
-								if (!format.isEmpty()) {
-									if (info->fFlags & FORMAT_HAS_SEPARATOR) {
-										format.append(QString("'%1'").arg(dSep));
-										if (f == 0) {
-											pattern = pattern.append(QString("\\x%1").arg(dSep.unicode(), 4, 16, QChar('0')));
-											if (humanFormat)
-												humanFormat->append(dSep);
-										}
-									}
-									else if ((i > 0) && (datePos[i - 1] == DATE_MONTH) && (info->fFlags & FORMAT_MONTH_NAME))
-										format.append(" ");
-								}
-								if ((f != 0) && (info->fFlags & FORMAT_HAS_WEEKDAY)) {
-									if (info->fFlags & FORMAT_WEEKDAY_IS_SHORT)
-										format.append("ddd ");
-									else
-										format.append("dddd ");
-								}
-								format.append("d");
-								if (!(info->fFlags & FORMAT_REMOVE_ZERO_DAY)) {
-									format.append("d");
-								}
-								if (f == 0) {
-									pattern.append("(\\d{1%1})?");
-									if (humanFormat)
-										humanFormat->append("D");
-									if (info->fFlags & FORMAT_REMOVE_ZERO_DAY)
-										pattern = pattern.arg("");
-									else {
-										pattern = pattern.arg(",2");
-										if (humanFormat)
-											humanFormat->append("D");
-									}
-								}
-							}
-							break;
-						case DATE_MONTH:
-							{
-								if (!(info->fFlags & FORMAT_HAS_MONTH))
-									continue;
-								if (!format.isEmpty()) {
-									if (info->fFlags & FORMAT_HAS_SEPARATOR) {
-										format.append(QString("'%1'").arg(dSep));
-										if (f == 0) {
-											pattern = pattern.append(QString("\\x%1").arg(dSep.unicode(), 4, 16, QChar('0')));
-											if (humanFormat)
-												humanFormat->append(dSep);
-										}
-									}
-									else if ((i > 0) && (datePos[i - 1] == DATE_DAY) && (info->fFlags & FORMAT_MONTH_NAME))
-										format.append(" ");
-								}
-								if ((f != 0) && (info->fFlags & FORMAT_MONTH_NAME)) {
-									if (info->fFlags & FORMAT_MONTH_NAME_IS_SHORT)
-										format.append("MMM");
-									else
-										format.append("MMMM");
-								}
-								else {
-									format.append("M");
-									if (!(info->fFlags & FORMAT_REMOVE_ZERO_MONTH)) {
-										format.append("M");
-									}
-								}
-								if (f == 0) {
-									pattern.append("(\\d{1%1})?");
-									if (humanFormat)
-										humanFormat->append("M");
-									if (info->fFlags & FORMAT_REMOVE_ZERO_MONTH)
-										pattern = pattern.arg("");
-									else {
-										pattern = pattern.arg(",2");
-										if (humanFormat)
-											humanFormat->append("M");
-									}
-								}
-							}
-							break;
-						case DATE_YEAR:
-							{
-								if (!(info->fFlags & FORMAT_HAS_YEAR))
-									continue;
-								if (!format.isEmpty()) {
-									if (info->fFlags & FORMAT_HAS_SEPARATOR) {
-										format.append(QString("'%1'").arg(dSep));
-										if (f == 0) {
-											pattern = pattern.append(QString("\\x%1").arg(dSep.unicode(), 4, 16, QChar('0')));
-											if (humanFormat)
-												humanFormat->append(dSep);
-										}
-									}
-									else if ((i > 0) && (info->fFlags & (FORMAT_MONTH_NAME | FORMAT_HAS_WEEKDAY))) {
-										if (datePos[i - 1] == DATE_DAY)
-											format.append(", ");
-										else
-											format.append(" ");
-									}
-								}
-								format.append("yy");
-								if (!(info->fFlags & FORMAT_YEAR_IS_SHORT)) {
-									format.append("yy");
-								}
-								if (f == 0) {
-									pattern.append("(\\d{1,%1})?");
-									if (humanFormat)
-										humanFormat->append(QString("YY").repeated(info->fFlags & FORMAT_YEAR_IS_SHORT ? 1 : 2));
-									pattern = pattern.arg(info->fFlags & FORMAT_YEAR_IS_SHORT ? 2 : 4);
-								}
-							}
-							break;
-						}
-					}
-					
-					if ((info->fFlags & (FORMAT_HAS_HOURS | FORMAT_HAS_MINUTES | FORMAT_HAS_SECONDS)) && (!format.isEmpty()) && (info->fFlags & FORMAT_HAS_SEPARATOR)) {
-						if (f == 0)
-							format.append(" ");
-						else {
-							format.append(", ");
-							pattern.append("\\s?");
-							if (humanFormat)
-								humanFormat->append(" ");
-						}
-					}
 				}
 				
-				if ((dataType == SL_DATATYPE_TIME) || (dataType == SL_DATATYPE_TIMESTAMP)) {
-					if (info->fFlags & FORMAT_HAS_HOURS) {
-						format.append("h");
-						if (!(info->fFlags & FORMAT_REMOVE_ZERO_HOURS)) {
-							format.append("h");
-						}
-						if (f == 0) {
-							pattern.append("(\\d{1%1})?");
-							if (humanFormat)
-								humanFormat->append("h");
-							if (info->fFlags & FORMAT_REMOVE_ZERO_HOURS)
-								pattern = pattern.arg("");
-							else {
-								pattern = pattern.arg(",2");
-								if (humanFormat)
-									humanFormat->append("h");
-							}
-						}
-					}
-					if (info->fFlags & FORMAT_HAS_MINUTES) {
-						if ((info->fFlags & FORMAT_HAS_SEPARATOR) && (!format.isEmpty())) {
-							format.append(QString("'%1'").arg(tSep));
-							if (f == 0) {
-								pattern = pattern.append(QString("\\x%1").arg(tSep.unicode(), 4, 16, QChar('0')));
-								if (humanFormat)
-									humanFormat->append(tSep);
-							}
-						}
-						format.append("m");
-						if (!(info->fFlags & FORMAT_REMOVE_ZERO_MINUTES)) {
-							format.append("m");
-						}
-						if (f == 0) {
-							pattern.append("(\\d{1%1})?");
-							if (humanFormat)
-								humanFormat->append("m");
-							if (info->fFlags & FORMAT_REMOVE_ZERO_MINUTES)
-								pattern = pattern.arg("");
-							else {
-								pattern = pattern.arg(",2");
-								if (humanFormat)
-									humanFormat->append("m");
-							}
-						}
-					}
-					if (info->fFlags & FORMAT_HAS_SECONDS) {
-						if ((info->fFlags & FORMAT_HAS_SEPARATOR) && (!format.isEmpty())) {
-							format.append(QString("'%1'").arg(tSep));
-							if (f == 0) {
-								pattern = pattern.append(QString("\\x%1").arg(tSep.unicode(), 4, 16, QChar('0')));
-								if (humanFormat)
-									humanFormat->append(tSep);
-							}
-						}
-						format.append("s");
-						if (!(info->fFlags & FORMAT_REMOVE_ZERO_SECONDS)) {
-							format.append("s");
-						}
-						if (f == 0) {
-							pattern.append("(\\d{1%1})?");
-							if (humanFormat)
-								humanFormat->append("s");
-							if (info->fFlags & FORMAT_REMOVE_ZERO_SECONDS)
-								pattern = pattern.arg("");
-							else {
-								pattern = pattern.arg(",2");
-								if (humanFormat)
-									humanFormat->append("s");
-							}
-						}
+				if (format.indexOf('M') < format.indexOf('d')) {
+					datePos[0] = DATE_MONTH;
+					datePos[1] = DATE_DAY;
+				}
+				else {
+					datePos[0] = DATE_DAY;
+					datePos[1] = DATE_MONTH;
+				}
+				datePos[2] = DATE_YEAR;
+				
+				format = locale.timeFormat(QLocale::NarrowFormat);
+				for (i = 0; i < format.size(); i++) {
+					if ((!format[i].isLetter()) && (!format[i].isSpace())) {
+						defaultTSep = format[i];
+						break;
 					}
 				}
-				
-// 				qDebug() << "DT Format is:" << format;
-				info->fDTFormat = format;
+				format = _format;
+				if (format.isEmpty())
+					format = "dm2yHMS:PdmyHMS";
 			}
 			break;
-		
-		case SL_DATATYPE_YEAR:
-			{
-				info->fFlags |= FORMAT_HAS_YEAR;
-				for (int i = 0; i < buffer.length(); i++) {
-					switch (buffer[i].unicode()) {
-					case 'l':	info->fAlign = Qt::AlignLeft; break;
-					case 'c':	info->fAlign = Qt::AlignHCenter; break;
-					case 'r':	info->fAlign = Qt::AlignRight; break;
-					case 's':	info->fFlags |= FORMAT_YEAR_IS_SHORT; break;
-					default:	break;
-					}
-				}
-				pattern = QString("(\\d{1,%1})").arg(info->fFlags & FORMAT_YEAR_IS_SHORT ? 2 : 4);
-			}
-			break;
-		
-		case SL_DATATYPE_STRING:
-			{
-				for (int i = 0; i < buffer.length(); i++) {
-					switch (buffer[i].unicode()) {
-					case 'l':	info->fAlign = Qt::AlignLeft; break;
-					case 'c':	info->fAlign = Qt::AlignHCenter; break;
-					case 'r':	info->fAlign = Qt::AlignRight; break;
-					default:	break;
-					}
-				}
-			}
-			/* fallthrough */
-		
 		default:
-			{
-				pattern = ".*";
-			}
+			format = _format;
 			break;
 		}
 		
-		if ((f == 0) && (regExp)) {
-			regExp->setPattern(pattern);
-// 			fprintf(stderr, "pattern: %s\n", (const char *)pattern.toUtf8());
+		if (format.indexOf(":") == -1)
+			format = QString("%1:%2").arg(_format).arg(_format);
+		
+		QStringList formatsList = format.split(":");
+		
+		for (int f = 0; f < 2; f++) {
+			QString pattern;
+			QString buffer = formatsList[f];
+			FormatInfo *info = &formatInfo[f];
+			
+			info->fFlags = 0;
+			info->fAlign = (Qt::Alignment)0;
+			
+			switch (dataType) {
+			case SL_DATATYPE_INTEGER:
+			case SL_DATATYPE_DECIMAL:
+			case SL_DATATYPE_FLOAT:
+				{
+					info->fLen = info->fDecLen = -1;
+					info->fMonSymbol = kLocalMonSymbol;
+					for (int i = 0; i < buffer.length(); i++) {
+						QChar c = buffer[i];
+						switch (c.unicode()) {
+						case 'b':	info->fFlags |= FORMAT_BLANK_IF_ZERO; break;
+						case 'l':	info->fAlign = Qt::AlignLeft; break;
+						case 'c':	info->fAlign = Qt::AlignHCenter; break;
+						case 'r':	info->fAlign = Qt::AlignRight; break;
+						case 't':	info->fFlags |= FORMAT_THOUSANDS_SEP; break;
+						case 'u':	info->fFlags |= FORMAT_UNSIGNED; break;
+						case 'k':	info->fFlags |= FORMAT_RED_IF_NEGATIVE; break;
+						case 'p':	info->fFlags |= FORMAT_PERCENTAGE; break;
+						case 'm':	if (dataType != SL_DATATYPE_INTEGER) info->fFlags |= FORMAT_MONETARY; break;
+						case 'e':
+							{
+								info->fFlags |= FORMAT_MONETARY_SYMBOL;
+								if ((i + 1 < buffer.length()) && (buffer[i + 1] == '{')) {
+									if (i + 2 < buffer.length()) {
+										if (buffer[i + 2] != '}')
+											info->fMonSymbol = buffer[i + 2];
+										else
+											info->fMonSymbol = 0;
+									}
+									int pos = buffer.indexOf('}', i);
+									if (pos < 0)
+										i = buffer.length();
+									else
+										i = pos;
+								}
+							}
+							break;
+						default:
+							{
+								bool hasDec = false;
+								
+								if (c.isDigit()) {
+									if (c == '0')
+										info->fFlags |= FORMAT_ZERO_FILL;
+									
+									int count = buffer.indexOf('.', i);
+									if (count != -1) {
+										hasDec = true;
+										count -= i;
+									}
+									else {
+										count = 1;
+										while ((i + count < buffer.length()) && (buffer[i + count].isDigit()))
+											count++;
+									}
+									info->fLen = buffer.mid(i, count).toUInt();
+									i += count - 1;
+									if (hasDec)
+										i++;
+								}
+								if ((hasDec) || (c == '.')) {
+									int count = 1;
+									while ((i + count < buffer.length()) && (buffer[i + count].isDigit()))
+										count++;
+									info->fDecLen = buffer.mid(i + 1, count - 1).toUInt();
+									i += count - 1;
+								}
+							}
+							break;
+						}
+					}
+					if (f == 0) {
+						pattern = QString("(\\d{0,%1})?");
+						if (info->fLen >= 0)
+							pattern = pattern.arg(info->fLen);
+						else
+							pattern = pattern.arg("");
+						if (!(info->fFlags & FORMAT_UNSIGNED))
+							pattern.prepend("([+\x002D])?");
+						else
+							pattern.prepend("([+])?");
+						if (dataType != SL_DATATYPE_INTEGER) {
+							pattern.append(QString("(([.,])(\\d{0,%1})?)?"));
+							if (info->fDecLen >= 0)
+								pattern = pattern.arg(info->fDecLen);
+							else
+								pattern = pattern.arg("");
+						}
+						for (int i = (info->fLen < 0 ? 10 : info->fLen); i >= 0; i--)
+							cached_info->fHumanFormat.append('N');
+						if (dataType != SL_DATATYPE_INTEGER) {
+							cached_info->fHumanFormat.append("[.");
+							for (int i = (info->fDecLen < 0 ? 10 : info->fDecLen); i >= 0; i--)
+								cached_info->fHumanFormat.append('N');
+							cached_info->fHumanFormat.append("]");
+						}
+					}
+				}
+				break;
+			
+			case SL_DATATYPE_DATE:
+			case SL_DATATYPE_TIME:
+			case SL_DATATYPE_TIMESTAMP:
+				{
+					QChar dSep = defaultDSep;
+					QChar tSep = defaultTSep;
+					QString format;
+					
+					for (int i = 0; i < buffer.length(); i++) {
+						switch (buffer[i].unicode()) {
+						case 'l':	info->fAlign = Qt::AlignLeft; break;
+						case 'c':	info->fAlign = Qt::AlignHCenter; break;
+						case 'r':	info->fAlign = Qt::AlignRight; break;
+						case 'P':
+							{
+								info->fFlags |= FORMAT_HAS_SEPARATOR;
+								if ((i + 1 < buffer.length()) && (buffer[i+1] == '{')) {
+									if (i + 2 < buffer.length()) {
+										if ((dataType == SL_DATATYPE_DATE) || (dataType == SL_DATATYPE_TIMESTAMP))
+											dSep = buffer[i + 2];
+										else
+											tSep = buffer[i + 2];
+										if (i + 3 < buffer.length())
+											tSep = buffer[i + 3];
+									}
+									int pos = buffer.indexOf('}', i);
+									if (pos < 0)
+										i = buffer.length();
+									else
+										i = pos;
+								}
+							}
+							break;
+						}
+						if ((dataType == SL_DATATYPE_DATE) || (dataType == SL_DATATYPE_TIMESTAMP)) {
+							switch (buffer[i].unicode()) {
+							case 'w':
+								{
+									info->fFlags |= FORMAT_HAS_WEEKDAY;
+									if ((i + 1 < buffer.length()) && (buffer[i+1] == 'a')) {
+										i++;
+										info->fFlags |= FORMAT_WEEKDAY_IS_SHORT;
+									}
+								}
+							case 'd':
+								{
+									info->fFlags |= FORMAT_HAS_DAY;
+									if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
+										i++;
+										info->fFlags |= FORMAT_REMOVE_ZERO_DAY;
+									}
+								}
+								break;
+							case 'm':
+								{
+									info->fFlags |= FORMAT_HAS_MONTH;
+									while (i + 1 < buffer.length()) {
+										if (buffer[i+1] == 's')
+											info->fFlags |= FORMAT_REMOVE_ZERO_MONTH;
+										else if (buffer[i+1] == 'n')
+											info->fFlags |= FORMAT_MONTH_NAME;
+										else if (buffer[i+1] == 'a')
+											info->fFlags |= FORMAT_MONTH_NAME_IS_SHORT;
+										else
+											break;
+										i++;
+									}
+								}
+								break;
+							case '2':
+								{
+									if ((i + 1 < buffer.length()) && (buffer[i+1] == 'y')) {
+										info->fFlags |= FORMAT_HAS_YEAR | FORMAT_YEAR_IS_SHORT;
+										i++;
+									}
+								}
+								break;
+							case 'y':	info->fFlags |= FORMAT_HAS_YEAR; break;
+							default:	break;
+							}
+						}
+						if ((dataType == SL_DATATYPE_TIME) || (dataType == SL_DATATYPE_TIMESTAMP)) {
+							switch (buffer[i].unicode()) {
+							case 'H':
+								{
+									info->fFlags |= FORMAT_HAS_HOURS;
+									if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
+										info->fFlags |= FORMAT_REMOVE_ZERO_HOURS;
+										i++;
+									}
+								}
+								break;
+							case 'M':
+								{
+									info->fFlags |= FORMAT_HAS_MINUTES;
+									if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
+										info->fFlags |= FORMAT_REMOVE_ZERO_MINUTES;
+										i++;
+									}
+								}
+								break;
+							case 'S':
+								{
+									info->fFlags |= FORMAT_HAS_SECONDS;
+									if ((i + 1 < buffer.length()) && (buffer[i+1] == 's')) {
+										info->fFlags |= FORMAT_REMOVE_ZERO_SECONDS;
+										i++;
+									}
+								}
+								break;
+							default:	break;
+							}
+						}
+					}
+					if (f == 0)
+						info->fFlags &= ~(FORMAT_HAS_WEEKDAY | FORMAT_MONTH_NAME);
+					if (info->fFlags & FORMAT_HAS_WEEKDAY)
+						info->fFlags |= FORMAT_HAS_SEPARATOR;
+					if ((info->fFlags & (FORMAT_REMOVE_ZERO_DAY | FORMAT_REMOVE_ZERO_MONTH)) && (!(info->fFlags & (FORMAT_HAS_WEEKDAY | FORMAT_MONTH_NAME))))
+						info->fFlags |= FORMAT_HAS_SEPARATOR;
+					if (info->fFlags & (FORMAT_REMOVE_ZERO_HOURS | FORMAT_REMOVE_ZERO_MINUTES | FORMAT_REMOVE_ZERO_SECONDS))
+						info->fFlags |= FORMAT_HAS_SEPARATOR;
+					if (!(info->fFlags & (FORMAT_HAS_WEEKDAY | FORMAT_HAS_DAY | FORMAT_HAS_MONTH | FORMAT_HAS_YEAR | FORMAT_HAS_HOURS | FORMAT_HAS_MINUTES | FORMAT_HAS_SECONDS))) {
+	// 					info->fFlags = FORMAT_HAS_DAY | FORMAT_HAS_MONTH | FORMAT_HAS_YEAR | FORMAT_HAS_HOURS | FORMAT_HAS_MINUTES | FORMAT_HAS_SECONDS;
+						if (f == 0)
+							info->fFlags |= FORMAT_YEAR_IS_SHORT;
+						else
+							info->fFlags |= FORMAT_HAS_SEPARATOR;
+					}
+					if (info->fFlags & FORMAT_MONTH_NAME)
+						dSep = ' ';
+					
+					if ((dataType == SL_DATATYPE_DATE) || (dataType == SL_DATATYPE_TIMESTAMP)) {
+						for (int i = 0; i < 3; i++) {
+							switch (datePos[i]) {
+							case DATE_DAY:
+								{
+									if (!(info->fFlags & FORMAT_HAS_DAY))
+										continue;
+									if (!format.isEmpty()) {
+										if (info->fFlags & FORMAT_HAS_SEPARATOR) {
+											format.append(QString("'%1'").arg(dSep));
+											if (f == 0) {
+												pattern = pattern.append(QString("\\x%1").arg(dSep.unicode(), 4, 16, QChar('0')));
+												cached_info->fHumanFormat.append(dSep);
+											}
+										}
+										else if ((i > 0) && (datePos[i - 1] == DATE_MONTH) && (info->fFlags & FORMAT_MONTH_NAME))
+											format.append(" ");
+									}
+									if ((f != 0) && (info->fFlags & FORMAT_HAS_WEEKDAY)) {
+										if (info->fFlags & FORMAT_WEEKDAY_IS_SHORT)
+											format.append("ddd ");
+										else
+											format.append("dddd ");
+									}
+									format.append("d");
+									if (!(info->fFlags & FORMAT_REMOVE_ZERO_DAY)) {
+										format.append("d");
+									}
+									if (f == 0) {
+										pattern.append("(\\d{1%1})?");
+										cached_info->fHumanFormat.append("D");
+										if (info->fFlags & FORMAT_REMOVE_ZERO_DAY)
+											pattern = pattern.arg("");
+										else {
+											pattern = pattern.arg(",2");
+											cached_info->fHumanFormat.append("D");
+										}
+									}
+								}
+								break;
+							case DATE_MONTH:
+								{
+									if (!(info->fFlags & FORMAT_HAS_MONTH))
+										continue;
+									if (!format.isEmpty()) {
+										if (info->fFlags & FORMAT_HAS_SEPARATOR) {
+											format.append(QString("'%1'").arg(dSep));
+											if (f == 0) {
+												pattern = pattern.append(QString("\\x%1").arg(dSep.unicode(), 4, 16, QChar('0')));
+												cached_info->fHumanFormat.append(dSep);
+											}
+										}
+										else if ((i > 0) && (datePos[i - 1] == DATE_DAY) && (info->fFlags & FORMAT_MONTH_NAME))
+											format.append(" ");
+									}
+									if ((f != 0) && (info->fFlags & FORMAT_MONTH_NAME)) {
+										if (info->fFlags & FORMAT_MONTH_NAME_IS_SHORT)
+											format.append("MMM");
+										else
+											format.append("MMMM");
+									}
+									else {
+										format.append("M");
+										if (!(info->fFlags & FORMAT_REMOVE_ZERO_MONTH)) {
+											format.append("M");
+										}
+									}
+									if (f == 0) {
+										pattern.append("(\\d{1%1})?");
+										cached_info->fHumanFormat.append("M");
+										if (info->fFlags & FORMAT_REMOVE_ZERO_MONTH)
+											pattern = pattern.arg("");
+										else {
+											pattern = pattern.arg(",2");
+											cached_info->fHumanFormat.append("M");
+										}
+									}
+								}
+								break;
+							case DATE_YEAR:
+								{
+									if (!(info->fFlags & FORMAT_HAS_YEAR))
+										continue;
+									if (!format.isEmpty()) {
+										if (info->fFlags & FORMAT_HAS_SEPARATOR) {
+											format.append(QString("'%1'").arg(dSep));
+											if (f == 0) {
+												pattern = pattern.append(QString("\\x%1").arg(dSep.unicode(), 4, 16, QChar('0')));
+												cached_info->fHumanFormat.append(dSep);
+											}
+										}
+										else if ((i > 0) && (info->fFlags & (FORMAT_MONTH_NAME | FORMAT_HAS_WEEKDAY))) {
+											if (datePos[i - 1] == DATE_DAY)
+												format.append(", ");
+											else
+												format.append(" ");
+										}
+									}
+									format.append("yy");
+									if (!(info->fFlags & FORMAT_YEAR_IS_SHORT)) {
+										format.append("yy");
+									}
+									if (f == 0) {
+										pattern.append("(\\d{1,%1})?");
+										cached_info->fHumanFormat.append(QString("YY").repeated(info->fFlags & FORMAT_YEAR_IS_SHORT ? 1 : 2));
+										pattern = pattern.arg(info->fFlags & FORMAT_YEAR_IS_SHORT ? 2 : 4);
+									}
+								}
+								break;
+							}
+						}
+						
+						if ((info->fFlags & (FORMAT_HAS_HOURS | FORMAT_HAS_MINUTES | FORMAT_HAS_SECONDS)) && (!format.isEmpty()) && (info->fFlags & FORMAT_HAS_SEPARATOR)) {
+							if (f == 0)
+								format.append(" ");
+							else {
+								format.append(", ");
+								pattern.append("\\s?");
+								cached_info->fHumanFormat.append(" ");
+							}
+						}
+					}
+					
+					if ((dataType == SL_DATATYPE_TIME) || (dataType == SL_DATATYPE_TIMESTAMP)) {
+						if (info->fFlags & FORMAT_HAS_HOURS) {
+							format.append("h");
+							if (!(info->fFlags & FORMAT_REMOVE_ZERO_HOURS)) {
+								format.append("h");
+							}
+							if (f == 0) {
+								pattern.append("(\\d{1%1})?");
+								cached_info->fHumanFormat.append("h");
+								if (info->fFlags & FORMAT_REMOVE_ZERO_HOURS)
+									pattern = pattern.arg("");
+								else {
+									pattern = pattern.arg(",2");
+									cached_info->fHumanFormat.append("h");
+								}
+							}
+						}
+						if (info->fFlags & FORMAT_HAS_MINUTES) {
+							if ((info->fFlags & FORMAT_HAS_SEPARATOR) && (!format.isEmpty())) {
+								format.append(QString("'%1'").arg(tSep));
+								if (f == 0) {
+									pattern = pattern.append(QString("\\x%1").arg(tSep.unicode(), 4, 16, QChar('0')));
+									cached_info->fHumanFormat.append(tSep);
+								}
+							}
+							format.append("m");
+							if (!(info->fFlags & FORMAT_REMOVE_ZERO_MINUTES)) {
+								format.append("m");
+							}
+							if (f == 0) {
+								pattern.append("(\\d{1%1})?");
+								cached_info->fHumanFormat.append("m");
+								if (info->fFlags & FORMAT_REMOVE_ZERO_MINUTES)
+									pattern = pattern.arg("");
+								else {
+									pattern = pattern.arg(",2");
+									cached_info->fHumanFormat.append("m");
+								}
+							}
+						}
+						if (info->fFlags & FORMAT_HAS_SECONDS) {
+							if ((info->fFlags & FORMAT_HAS_SEPARATOR) && (!format.isEmpty())) {
+								format.append(QString("'%1'").arg(tSep));
+								if (f == 0) {
+									pattern = pattern.append(QString("\\x%1").arg(tSep.unicode(), 4, 16, QChar('0')));
+									cached_info->fHumanFormat.append(tSep);
+								}
+							}
+							format.append("s");
+							if (!(info->fFlags & FORMAT_REMOVE_ZERO_SECONDS)) {
+								format.append("s");
+							}
+							if (f == 0) {
+								pattern.append("(\\d{1%1})?");
+								cached_info->fHumanFormat.append("s");
+								if (info->fFlags & FORMAT_REMOVE_ZERO_SECONDS)
+									pattern = pattern.arg("");
+								else {
+									pattern = pattern.arg(",2");
+									cached_info->fHumanFormat.append("s");
+								}
+							}
+						}
+					}
+					
+	// 				qDebug() << "DT Format is:" << format;
+					info->fDTFormat = format;
+				}
+				break;
+			
+			case SL_DATATYPE_YEAR:
+				{
+					info->fFlags |= FORMAT_HAS_YEAR;
+					for (int i = 0; i < buffer.length(); i++) {
+						switch (buffer[i].unicode()) {
+						case 'l':	info->fAlign = Qt::AlignLeft; break;
+						case 'c':	info->fAlign = Qt::AlignHCenter; break;
+						case 'r':	info->fAlign = Qt::AlignRight; break;
+						case 's':	info->fFlags |= FORMAT_YEAR_IS_SHORT; break;
+						default:	break;
+						}
+					}
+					pattern = QString("(\\d{1,%1})").arg(info->fFlags & FORMAT_YEAR_IS_SHORT ? 2 : 4);
+				}
+				break;
+			
+			case SL_DATATYPE_STRING:
+				{
+					for (int i = 0; i < buffer.length(); i++) {
+						switch (buffer[i].unicode()) {
+						case 'l':	info->fAlign = Qt::AlignLeft; break;
+						case 'c':	info->fAlign = Qt::AlignHCenter; break;
+						case 'r':	info->fAlign = Qt::AlignRight; break;
+						default:	break;
+						}
+					}
+				}
+				/* fallthrough */
+			
+			default:
+				{
+					pattern = ".*";
+				}
+				break;
+			}
+			
+			if (f == 0) {
+				cached_info->fPattern = pattern;
+	// 			fprintf(stderr, "pattern: %s\n", (const char *)pattern.toUtf8());
+			}
+		}
+		cached_info->fFormat = _format;
+		cached_info->fInfo[0] = formatInfo[0];
+		cached_info->fInfo[1] = formatInfo[1];
+	}
+	
+	formatInfo[0] = cached_info->fInfo[0];
+	formatInfo[1] = cached_info->fInfo[1];
+	if (regExp)
+		regExp->setPattern(cached_info->fPattern);
+	if (humanFormat)
+		*humanFormat = cached_info->fHumanFormat;
+	
+	if (!sFormatCacheMap.contains(_format)) {
+		sFormatCacheMap.insert(_format, cached_info);
+		sFormatCacheList.append(cached_info);
+		
+		if (sFormatCacheList.size() > CACHE_SIZE) {
+			cached_info = sFormatCacheList.takeFirst();
+			sFormatCacheMap.remove(cached_info->fFormat);
+			delete cached_info;
 		}
 	}
 }
