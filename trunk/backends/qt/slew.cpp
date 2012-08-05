@@ -4022,6 +4022,7 @@ SL_END_METHODS()
 static void
 cleanup()
 {
+	freeFormatCache();
 	delete sResourceReader;
 	delete qApp;
 	for (int i = 0; i < sArgc; i++)
