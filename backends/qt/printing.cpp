@@ -4,6 +4,7 @@
 
 #include <QPrinter>
 #include <QTransform>
+#include <QStaticText>
 #include <QDesktopWidget>
 #include <QPageSetupDialog>
 #include <QPrintPreviewDialog>
@@ -11,12 +12,16 @@
 #include <QFile>
 #include <QPrintDialog>
 #include <QEventLoop>
+#include <QCache>
 
 #ifndef Q_WS_MAC
 #define DPI		96.0
 #else
 #define DPI		72.0
 #endif
+
+
+static QCache<QString, QStaticText> sTextCache(10000);
 
 
 static const struct {
@@ -164,23 +169,24 @@ SL_DEFINE_DC_METHOD(clear, {
 
 
 SL_DEFINE_DC_METHOD(text, {
+	QStaticText *staticText;
 	QPrinter *printer = (QPrinter *)device;
 	const QFontMetrics& fm = painter->fontMetrics();
-	QString text;
+	QString key, text;
 	QPointF tl, br;
 	int flags;
 	
 	if (!PyArg_ParseTuple(args, "O&O&O&i", convertString, &text, convertPointF, &tl, convertPointF, &br, &flags))
 		return NULL;
 	
-	QTransform transform = painter->worldTransform();
+	QTransform transform, orig_transform = painter->worldTransform();
+	transform = orig_transform;
 	transform.translate((qreal)tl.x() + 0.5, (qreal)tl.y() + 0.5);
 	transform.scale(DPI / printer->logicalDpiX(), DPI / printer->logicalDpiY());
-	painter->save();
 	painter->setWorldTransform(transform);
 	
 	if (flags == -1) {
-		painter->drawText(0, fm.ascent(), text);
+		tl = QPointF(0,0);
 	}
 	else {
 		int qflags = 0;
@@ -202,11 +208,19 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_ALIGN_VCENTER:			qflags |= Qt::AlignVCenter; break;
 		case SL_ALIGN_BOTTOM:			qflags |= Qt::AlignBottom; break;
 		}
-		QRectF rect(0, 0, (br.x() - tl.x()) * printer->logicalDpiX() / DPI, (br.y() - tl.y()) * printer->logicalDpiY() / DPI);
-		QString elided = fm.elidedText(text, mode, rect.width(), 0);
-		painter->drawText(rect, qflags, elided);
+		QRect rect(0, 0, (br.x() - tl.x()) * printer->logicalDpiX() / DPI, (br.y() - tl.y()) * printer->logicalDpiY() / DPI);
+		text = fm.elidedText(text, mode, rect.width(), 0);
+		tl = QStyle::alignedRect(Qt::LayoutDirectionAuto, (Qt::Alignment)qflags, fm.size(0, text), rect).topLeft();
 	}
-	painter->restore();
+	key = QString("%1__%2").arg(painter->font().key()).arg(text);
+	
+	staticText = sTextCache[key];
+	if (!staticText) {
+		staticText = new QStaticText(text);
+		sTextCache.insert(key, staticText);
+	}
+	painter->drawStaticText(tl, *staticText);
+	painter->setWorldTransform(orig_transform);
 })
 
 
