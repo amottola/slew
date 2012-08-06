@@ -863,31 +863,21 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 	case SL_PRINT_PDF:
 		{
 			QString fileName;
-			{
-				QTemporaryFile tempFile;
-				if (tempFile.open())
-					fileName = tempFile.fileName();
-				else {
-					PyErr_SetString(PyExc_RuntimeError, "cannot create temporary file for PDF output");
-					return NULL;
-				}
+			QTemporaryFile tempFile;
+			tempFile.setAutoRemove(false);
+			if (tempFile.open())
+				fileName = tempFile.fileName();
+			else {
+				PyErr_SetString(PyExc_RuntimeError, "cannot create temporary file for PDF output");
+				return NULL;
 			}
+			tempFile.close();
 			
 			printer.setOutputFileName(fileName);
 			
 			QMetaObject::invokeMethod(handler, "print", Qt::DirectConnection, Q_ARG(QPrinter *, &printer));
 			
-			QFile file(fileName);
-			if (!file.open(QIODevice::ReadOnly)) {
-				PyErr_SetString(PyExc_RuntimeError, "cannot open temporary file holding PDF output");
-				return NULL;
-			}
-			
-			QByteArray output(file.readAll());
-			file.close();
-			QFile::remove(fileName);
-			
-			return createBufferObject(output);
+			return createStringObject(fileName);
 		}
 		break;
 	
