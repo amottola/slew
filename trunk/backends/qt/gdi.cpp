@@ -136,7 +136,8 @@ SL_DEFINE_DC_METHOD(set_penstyle, {
 	case SL_DC_PEN_STYLE_DASH_DOT_DOT:	pen.setStyle(Qt::DashDotDotLine); break;
 	default:							pen.setStyle(Qt::SolidLine); break;
 	}
-	painter->setPen(pen);
+	if (pen != painter->pen())
+		painter->setPen(pen);
 })
 
 

@@ -12,6 +12,7 @@
 #include <QClipboard>
 #include <QLatin1Char>
 #include <QChar>
+#include <QCache>
 
 
 #define FORMAT_BLANK_IF_ZERO		0x00000001
@@ -59,19 +60,7 @@ typedef struct {
 
 
 static const QChar kLocalMonSymbol = 0x20AC;
-static QHash<QString, FORMAT_INFO *> sFormatCacheMap;
-static QList<FORMAT_INFO *> sFormatCacheList;
-
-
-void
-freeFormatCache()
-{
-	foreach (FORMAT_INFO *info, sFormatCacheList) {
-		delete info;
-	}
-	sFormatCacheMap.clear();
-	sFormatCacheList.clear();
-}
+static QCache<QString, FORMAT_INFO> sFormatCache(1000);
 
 
 static bool
@@ -197,7 +186,7 @@ void
 parseFormat(const QString& _format, int dataType, FormatInfo *formatInfo, QString *humanFormat, QRegExp *regExp)
 {
 	QString key = QString("%1__%2").arg(dataType).arg(_format);
-	FORMAT_INFO *cached_info = sFormatCacheMap.value(key);
+	FORMAT_INFO *cached_info = sFormatCache[key];
 	if (!cached_info) {
 		cached_info = new FORMAT_INFO;
 	
@@ -724,10 +713,11 @@ parseFormat(const QString& _format, int dataType, FormatInfo *formatInfo, QStrin
 	// 			fprintf(stderr, "pattern: %s\n", (const char *)pattern.toUtf8());
 			}
 		}
-		cached_info->fKey = key;
 		cached_info->fFormat = _format;
 		cached_info->fInfo[0] = formatInfo[0];
 		cached_info->fInfo[1] = formatInfo[1];
+		
+		sFormatCache.insert(key, cached_info);
 	}
 	
 	formatInfo[0] = cached_info->fInfo[0];
@@ -736,17 +726,6 @@ parseFormat(const QString& _format, int dataType, FormatInfo *formatInfo, QStrin
 		regExp->setPattern(cached_info->fPattern);
 	if (humanFormat)
 		*humanFormat = cached_info->fHumanFormat;
-	
-	if (!sFormatCacheMap.contains(key)) {
-		sFormatCacheMap.insert(key, cached_info);
-		sFormatCacheList.append(cached_info);
-		
-		if (sFormatCacheList.size() > CACHE_SIZE) {
-			cached_info = sFormatCacheList.takeFirst();
-			sFormatCacheMap.remove(cached_info->fKey);
-			delete cached_info;
-		}
-	}
 }
 
 

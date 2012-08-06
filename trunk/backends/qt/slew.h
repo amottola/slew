@@ -168,7 +168,6 @@ int getKeyCode(int code);
 QLocale getLocale();
 void parseFormat(const QString& format, int dataType, FormatInfo *formatInfo, QString *humanFormat = NULL, QRegExp *regExp = NULL);
 QString getFormattedValue(const QString& value, QColor *color, Qt::Alignment *align, int dataType, FormatInfo *formatInfo, bool editMode = false);
-void freeFormatCache();
 
 Qt::Alignment fromAlign(int align);
 int toAlign(Qt::Alignment align);
