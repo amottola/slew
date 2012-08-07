@@ -116,6 +116,7 @@ class InfoBalloon;
 
 
 static bool sIsRunning = false;
+static QEvent::Type sExceptionEvent;
 static int sArgc;
 static char **sArgv;
 static QLocale sLocale;
@@ -295,7 +296,7 @@ private:
 class ExceptionEvent : public QEvent
 {
 public:
-	ExceptionEvent(const QString& message) : QEvent(QEvent::User), fMessage(message) {}
+	ExceptionEvent(const QString& message) : QEvent(sExceptionEvent), fMessage(message) {}
 	
 	void report()
 	{
@@ -1874,7 +1875,9 @@ Application::Application(int& argc, char **argv)
 	qRegisterMetaType<QObject *>();
 	qRegisterMetaType<QEvent *>();
 	qRegisterMetaType<QList<QActionGroup *> *>();
-
+	
+	sExceptionEvent = (QEvent::Type)QEvent::registerEventType();
+	
 	installEventFilter(this);
 	QNetworkProxyFactory::setUseSystemConfiguration(true);
 }
@@ -2000,15 +2003,13 @@ Application::eventFilter(QObject *obj, QEvent *event)
 // 	if (event->type() != QEvent::Timer)
 // 		qDebug() << obj << obj->objectName() << event;
 	
-	switch ((int)event->type()) {
+	if (event->type() == sExceptionEvent) {
+		ExceptionEvent *e = (ExceptionEvent *)event;
+		e->report();
+		return true;
+	}
 	
-	case QEvent::User:
-		{
-			ExceptionEvent *e = (ExceptionEvent *)event;
-			e->report();
-			return true;
-		}
-		break;
+	switch ((int)event->type()) {
 	
 	case QEvent::Paint:
 		{
