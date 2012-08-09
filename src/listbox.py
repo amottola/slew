@@ -27,6 +27,8 @@ class ListBox(DataContainer, ListView):
 	def initialize(self):
 		DataContainer.initialize(self)
 		self.__style = self.get_style()
+		self.__style &= ~ListView.STYLE_WRAP
+		self.set_style(self.__style)
 	
 	def index_to_selection(self, index):
 		return None if index is None else index.row
