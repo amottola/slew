@@ -139,7 +139,7 @@ class DataContainer(slew.Window):
 		self.__model.notify(ListDataModel.NOTIFY_REMOVED_ROWS, index, 1)
 	
 	def count(self):
-		return len(self.__model.row_count())
+		return self.__model.row_count()
 	
 	def refresh(self):
 		self.__model.notify(ListDataModel.NOTIFY_RESET)
