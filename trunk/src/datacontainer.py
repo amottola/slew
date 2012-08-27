@@ -111,7 +111,10 @@ class DataContainer(slew.Window):
 	def index_of(self, item):
 		if not isinstance(self.__model, ListDataModel):
 			raise RuntimeError("method is unavailable when using a custom model")
-		return self.__model.get_items().index(ListDataItem.ensure(item))
+		if isinstance(item, basestring):
+			return [ x.text for x in self.__model.get_items() ].index(item)
+		else:
+			return self.__model.get_items().index(ListDataItem.ensure(item))
 	
 	def append(self, item):
 		if not isinstance(self.__model, ListDataModel):
