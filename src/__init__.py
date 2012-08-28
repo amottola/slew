@@ -906,7 +906,7 @@ def install_exception_handler():
 
 from widget import Widget, Event, EventHandler, chain_debug_handler
 from window import Window
-from datacontainer import DataItem, ListDataItem
+from datacontainer import DataItem, ListDataItem, ListDataModel
 
 from frame import Frame
 from dialog import Dialog
