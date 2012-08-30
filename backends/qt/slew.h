@@ -188,6 +188,7 @@ PyObject *printDocument(int type, const QString& title, PyObject *callback, bool
 
 void helper_set_resizeable(QWidget *widget, bool enabled);
 void helper_init_notification(QWidget *widget);
+void helper_clear_menu_previous_action(QMenu *menu);
 
 #endif
 
