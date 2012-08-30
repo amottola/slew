@@ -6,6 +6,8 @@
 #include <Carbon/Carbon.h>
 #endif
 
+#include <QMenu>
+
 
 void
 helper_set_resizeable(QWidget *widget, bool enabled)
@@ -71,3 +73,17 @@ helper_init_notification(QWidget *widget)
 
 #endif
 }
+
+
+void
+helper_clear_menu_previous_action(QMenu *menu)
+{
+#ifdef QT_MAC_USE_COCOA
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSMenu *nsmenu = static_cast<NSMenu *>(menu->macMenu());
+	
+	[[nsmenu delegate] willHighlightItem: nil];
+	[pool release];
+#endif
+}
+
