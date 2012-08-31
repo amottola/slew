@@ -78,11 +78,12 @@ helper_init_notification(QWidget *widget)
 void
 helper_clear_menu_previous_action(QMenu *menu)
 {
+	return;
 #ifdef QT_MAC_USE_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSMenu *nsmenu = static_cast<NSMenu *>(menu->macMenu());
 	
-	[[nsmenu delegate] willHighlightItem: nil];
+	[[nsmenu delegate] menu: nsmenu willHighlightItem: nil];
 	[pool release];
 #endif
 }
