@@ -51,6 +51,7 @@ Dialog_Impl::moveEvent(QMoveEvent *event)
 	QDialog::moveEvent(event);
 	
 	hidePopupMessage();
+	Completer::hide();
 }
 
 
@@ -60,6 +61,7 @@ Dialog_Impl::resizeEvent(QResizeEvent *event)
 	QDialog::resizeEvent(event);
 	
 	hidePopupMessage();
+	Completer::hide();
 	
 	if (event->size() != event->oldSize()) {
 		EventRunner runner(this, "onResize");
