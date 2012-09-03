@@ -85,6 +85,11 @@ TextField_Impl::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 		QApplication::beep();
 		return false;
 	}
+	if (Completer::isRunningOn(this)) {
+		Completer::complete();
+		SL_QAPP()->sendTabEvent(this);
+		return false;
+	}
 	return EventRunner(oldFocus, "onFocusOut").run() || (oldFocus->focusPolicy() == Qt::NoFocus);
 }
 
