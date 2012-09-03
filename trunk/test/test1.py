@@ -91,7 +91,7 @@ xml = """
 						<option>Sei</option>
 						<option>Sette</option>
 					</combobox>
-					<textfield name="textfield" />
+					<textfield name="textfield" style="entertabs" />
 				</hbox>
 				<textfield datatype="decimal" format="" />
 				<hbox margins="30 0 0 0">
@@ -489,9 +489,13 @@ class Application(slew.Application):
 		tf = self.f.find('textfield')
 		tf.set_completer(slew.Completer(CompleterModel()))
 		def complete(e):
+			print 'textfield onChange', e
 			if (e.completion < 0) and len(e.value):
 				tf.complete()
+		def focus_out(e):
+			print 'textfield onFocusOut', e
 		tf.onChange = complete
+		tf.onFocusOut = focus_out
 		
 		print self.f.find('combo').items
 		
