@@ -14,16 +14,18 @@ class MenuItem_Impl : public QAction, public WidgetInterface
 	Q_OBJECT
 	
 public:
-	SL_DECLARE_OBJECT(MenuItem, {
 #ifdef Q_WS_MAC
+	SL_DECLARE_OBJECT(MenuItem, {
 		QList<QWidget *> list = associatedWidgets();
 		if (!list.isEmpty()) {
 			QMenu *menu = qobject_cast<QMenu *>(list.first());
 			if (menu)
 				helper_clear_menu_previous_action(menu);
 		}
-#endif
 	})
+#else
+	SL_DECLARE_OBJECT(MenuItem)
+#endif
 	
 public slots:
 	void handleActionTriggered();
