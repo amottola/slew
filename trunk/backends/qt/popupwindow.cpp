@@ -16,6 +16,7 @@ void
 PopupWindow_Impl::moveEvent(QMoveEvent *event)
 {
 	hidePopupMessage();
+	Completer::hide();
 }
 
 
@@ -23,6 +24,7 @@ void
 PopupWindow_Impl::resizeEvent(QResizeEvent *event)
 {
 	hidePopupMessage();
+	Completer::hide();
 	
 	if (event->size() != event->oldSize()) {
 		EventRunner runner(this, "onResize");
