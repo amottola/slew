@@ -1435,7 +1435,7 @@ FormattedLineEdit::canPaste()
 void
 FormattedLineEdit::keyPressEvent(QKeyEvent *event)
 {
-	QString text, oldText = QLineEdit::text(), oldValue = fIntValue;
+	QString text, oldText = QLineEdit::text();
 	
 	bool valid = isValidInput(event, &text);
 	
@@ -1448,12 +1448,13 @@ FormattedLineEdit::keyPressEvent(QKeyEvent *event)
 	}
 	
 	QLineEdit::keyPressEvent(event);
-	setInternalValueFromEditValue(QLineEdit::text());
+	text = QLineEdit::text();
+	setInternalValueFromEditValue(text);
 	
-	if (fIntValue != oldValue) {
-		hidePopupMessage();
+	hidePopupMessage();
+	
+	if (text != oldText)
 		emit textModified(fIntValue);
-	}
 }
 
 

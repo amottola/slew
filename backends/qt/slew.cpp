@@ -1936,14 +1936,17 @@ Application::notify(QObject *receiver, QEvent *event)
 					switch (event->type()) {
 					case QEvent::KeyPress:
 						{
-// 							QKeyEvent *e = (QKeyEvent *)event;
+							QKeyEvent *e = (QKeyEvent *)event;
 // 							if (((e->key() == Qt::Key_Tab) || (e->key() == Qt::Key_Backtab)) &&
 // 									((target->focusPolicy() & oldFocus->focusPolicy() & Qt::TabFocus) == Qt::TabFocus)) {
-							if ((target->focusPolicy() & Qt::TabFocus) == Qt::TabFocus) {
-								if (!impl->canFocusOut(oldFocus, target))
-									return true;
-								widget = NULL;
-							}
+// 							if ((target->focusPolicy() & Qt::TabFocus) == Qt::TabFocus) {
+							if (e->key() == Qt::Key_Tab)
+								target = oldFocus->nextInFocusChain();
+							else if (e->key() == Qt::Key_Backtab)
+								target = oldFocus->previousInFocusChain();
+							if (!impl->canFocusOut(oldFocus, target))
+								return true;
+							widget = NULL;
 						}
 						break;
 						
@@ -1958,9 +1961,11 @@ Application::notify(QObject *receiver, QEvent *event)
 								widget = NULL;
 								break;
 							}
-							if (!impl->canFocusOut(oldFocus, target))
-								return true;
-							widget = NULL;
+ 							if ((target->focusPolicy() & Qt::ClickFocus) == Qt::ClickFocus) {
+								if (!impl->canFocusOut(oldFocus, target))
+									return true;
+								widget = NULL;
+							}
 						}
 						break;
 						
