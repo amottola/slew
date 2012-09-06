@@ -93,7 +93,7 @@ xml = """
 					</combobox>
 					<textfield name="textfield" style="entertabs" />
 				</hbox>
-				<textfield datatype="decimal" format="" />
+				<textfield datatype="decimal" format="5.2m" value="12.34567" />
 				<hbox margins="30 0 0 0">
 					<textview prop="1" length="5" />
 					<listbox prop="1">

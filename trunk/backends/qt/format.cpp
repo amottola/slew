@@ -788,8 +788,35 @@ getFormattedValue(const QString& input, QColor *color, Qt::Alignment *align, int
 			}
 			
 			if (info->fDecLen > 0) {
-				if (fPart.length() > info->fDecLen)
-					fPart.truncate(info->fDecLen);
+				if (fPart.length() > info->fDecLen) {
+					if (info->fFlags & FORMAT_MONETARY) {
+						double remaining = QString("0.%1").arg(fPart.mid(info->fDecLen)).toDouble();
+						fPart.truncate(info->fDecLen);
+						if (remaining > 0.5) {
+							if (fPart == QString("9").repeated(info->fDecLen)) {
+								if (!overflow) {
+									fPart = "";
+									iPart = QString::number(iPart.toULongLong() + 1);
+								}
+							}
+							else {
+								int length = fPart.length();
+								fPart = QString::number(fPart.toULongLong() + 1);
+								if (fPart.length() > length) {
+									fPart = "";
+									iPart = QString::number(iPart.toULongLong() + 1);
+								}
+							}
+							if ((!overflow) && (info->fLen >= 0) && (iPart.length() > info->fLen)) {
+								iPart = QString("9").repeated(info->fLen);
+								fPart = info->fDecLen < 0 ? "" : QString("9").repeated(info->fDecLen);
+								overflow = true;
+							}
+						}
+					}
+					else
+						fPart.truncate(info->fDecLen);
+				}
 				else if ((fPart.length() < info->fDecLen) && ((!editMode) || (info->fFlags & FORMAT_MONETARY)))
 					fPart.append(QString("0").repeated(info->fDecLen - fPart.length()));
 			}
@@ -1449,12 +1476,13 @@ FormattedLineEdit::keyPressEvent(QKeyEvent *event)
 	
 	QLineEdit::keyPressEvent(event);
 	text = QLineEdit::text();
-	setInternalValueFromEditValue(text);
 	
 	hidePopupMessage();
 	
-	if (text != oldText)
+	if (text != oldText) {
+		setInternalValueFromEditValue(text);
 		emit textModified(fIntValue);
+	}
 }
 
 
