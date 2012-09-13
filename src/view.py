@@ -68,8 +68,8 @@ class View(slew.Window):
 			indexes = ( indexes, )
 		self._impl.set_highlighted_indexes(indexes)
 	
-	def popup_message(self, text, align=slew.BOTTOM, index=None):
-		self._impl.popup_message(text, align, slew.DataIndex.ensure(index))
+	def popup_message(self, text, align=slew.BOTTOM, buttons=0, index=None):
+		return self._impl.popup_message(text, align, buttons, slew.DataIndex.ensure(index))
 
 	model = DeprecatedDescriptor('model')
 	selection = DeprecatedDescriptor('selection')

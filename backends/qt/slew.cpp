@@ -70,6 +70,7 @@
 #include <QPointer>
 #include <QMutexLocker>
 #include <QAbstractItemView>
+#include <QAbstractButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -108,6 +109,8 @@
 #include <QBitmap>
 #include <QFontDatabase>
 #include <QPrintDialog>
+#include <QDialogButtonBox>
+#include <QEventLoop>
 #include <QNetworkProxyFactory>
 
 
@@ -125,6 +128,7 @@ static QWidget *sMouseGrabber = NULL;
 static int sPyObjectMetaType;
 static QHash<QString, bool> sSkipException;
 static InfoBalloon *sInfoBalloon = NULL;
+static bool sModalBalloon = false;
 static ResourceReader *sResourceReader = NULL;
 static PyObject *sVectorType;
 static PyObject *sColorType;
@@ -138,6 +142,9 @@ PyObject *PyDataIndex_Type;
 PyObject *PyDataSpecifier_Type;
 PyObject *PyDataModel_Type;
 PyObject *PyEvent_Type;
+
+static int encodeButtons(int buttons);
+static int decodeButton(int button);
 
 
 
@@ -388,8 +395,8 @@ class InfoBalloon : public QWidget
 public:
 	static void fade() { if (sInfoBalloon) sInfoBalloon->fadeOut(); }
 	
-	InfoBalloon(QWidget *parent, const QString& text, const QPoint& hotspot, int where = SL_TOP)
-		: QWidget(parent->window(), Qt::ToolTip)
+	InfoBalloon(QWidget *parent, QWidget *editor, const QString& text, const QPoint& hotspot, int where = SL_TOP, int buttons = 0)
+		: QWidget(parent->window(), Qt::ToolTip), fEditor(editor ? editor : parent), fButtonBox(NULL)
 	{
 		delete sInfoBalloon;
 		sInfoBalloon = this;
@@ -403,6 +410,20 @@ public:
 		font.setPointSize(10);
 		
 		rect = QFontMetrics(font).boundingRect(text);
+		
+		if (buttons) {
+			fButtonBox = new QDialogButtonBox((QDialogButtonBox::StandardButtons)encodeButtons(buttons), Qt::Horizontal, this);
+			foreach (QAbstractButton *button, fButtonBox->buttons()) {
+				button->setAttribute(Qt::WA_MacSmallSize);
+				connect(button, SIGNAL(clicked()), this, SLOT(handleClicked()));
+			}
+			QSize size = fButtonBox->minimumSizeHint();
+			
+			rect.setHeight(rect.height() + BALLOON_TEXT_MARGIN + size.height());
+			rect.setWidth(qMax(rect.width(), size.width()));
+			fButtonBox->resize(rect.width(), size.height());
+		}
+		
 		rect.moveTo(0, 0);
 		rect.adjust(0, 0, BALLOON_TEXT_MARGIN * 2, BALLOON_TEXT_MARGIN * 2);
 		
@@ -414,6 +435,9 @@ public:
 		switch (where) {
 		case SL_TOP:
 			{
+				if (fButtonBox)
+					fButtonBox->move(BALLOON_TEXT_MARGIN, rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
+				
 				fPixmap = QPixmap(rect.size() + QSize(0, BALLOON_DISTANCE));
 				
 				path.moveTo(0, 0);
@@ -426,6 +450,9 @@ public:
 		
 		case SL_RIGHT:
 			{
+				if (fButtonBox)
+					fButtonBox->move(BALLOON_TEXT_MARGIN + BALLOON_DISTANCE, rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
+				
 				rect.moveTo(BALLOON_DISTANCE, 0);
 				fPixmap = QPixmap(rect.size() + QSize(BALLOON_DISTANCE, 0));
 				
@@ -437,8 +464,27 @@ public:
 			}
 			break;
 		
+		case SL_LEFT:
+			{
+				if (fButtonBox)
+					fButtonBox->move(BALLOON_TEXT_MARGIN, rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
+				
+				fPixmap = QPixmap(rect.size() + QSize(BALLOON_DISTANCE, 0));
+				
+				path.moveTo(0, 0);
+				path.lineTo(BALLOON_DISTANCE, BALLOON_DISTANCE);
+				path.lineTo(0, BALLOON_DISTANCE * 2);
+				path.translate(rect.width() - 1, (rect.height() - path.boundingRect().height()) / 2.0);
+				pos += hotspot - QPoint(fPixmap.width(), fPixmap.height() / 2);
+			}
+			break;
+		
+		default:
 		case SL_BOTTOM:
 			{
+				if (fButtonBox)
+					fButtonBox->move(BALLOON_TEXT_MARGIN, BALLOON_DISTANCE + rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
+				
 				rect.moveTo(0.5, BALLOON_DISTANCE);
 				fPixmap = QPixmap(rect.size() + QSize(0, BALLOON_DISTANCE));
 				
@@ -447,18 +493,6 @@ public:
 				path.lineTo(BALLOON_DISTANCE * 2, BALLOON_DISTANCE);
 				path.translate((rect.width() - path.boundingRect().width()) / 2.0, 1);
 				pos += hotspot - QPoint(fPixmap.width() / 2, 0);
-			}
-			break;
-		
-		case SL_LEFT:
-			{
-				fPixmap = QPixmap(rect.size() + QSize(BALLOON_DISTANCE, 0));
-				
-				path.moveTo(0, 0);
-				path.lineTo(BALLOON_DISTANCE, BALLOON_DISTANCE);
-				path.lineTo(0, BALLOON_DISTANCE * 2);
-				path.translate(rect.width() - 1, (rect.height() - path.boundingRect().height()) / 2.0);
-				pos += hotspot - QPoint(fPixmap.width(), fPixmap.height() / 2);
 			}
 			break;
 		}
@@ -472,7 +506,7 @@ public:
 		painter.setBrush(QBrush(BALLOON_BRUSH));
 		
 		painter.drawRoundedRect(rect, BALLOON_RADIUS, BALLOON_RADIUS);
-		painter.drawText(rect, Qt::AlignCenter, text);
+		painter.drawText(rect.adjusted(0, 0, 0, fButtonBox ? -(fButtonBox->height() + BALLOON_TEXT_MARGIN) : 0), Qt::AlignCenter, text);
 		painter.drawPath(path);
 		
 		painter.end();
@@ -482,14 +516,38 @@ public:
 		setMask(fPixmap.createMaskFromColor(BALLOON_BACKGROUND));
 		setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this) / 255.0);
 		move(pos);
-		show();
+	}
+	
+	int exec()
+	{
+		int result;
+		
+		if (fButtonBox) {
+			setWindowModality(Qt::ApplicationModal);
+			setAttribute(Qt::WA_ShowModal, true);
+			
+			fEditor->installEventFilter(this);
+			sModalBalloon = true;
+			
+			show();
+			fEventLoop = new QEventLoop;
+			result = fEventLoop->exec(QEventLoop::DialogExec);
+			delete fEventLoop;
+			
+			sModalBalloon = false;
+			fEditor->removeEventFilter(this);
+		}
+		else {
+			show();
+			result = 0;
+		}
 		
 		fFader.setDuration(300);
 		connect(&fFader, SIGNAL(valueChanged(qreal)), this, SLOT(doFade(qreal)));
 		connect(&fFader, SIGNAL(finished()), this, SLOT(deleteLater()));
 		
 		QTimer::singleShot(10000, this, SLOT(fadeOut()));
-	
+		return result;
 	}
 	
 	virtual ~InfoBalloon() { sInfoBalloon = NULL; }
@@ -511,7 +569,18 @@ public slots:
 		setWindowOpacity((1.0 - value) * opaque);
 	}
 	
+	void handleClicked()
+	{
+		int button = decodeButton((int)fButtonBox->standardButton((QAbstractButton *)sender()));
+		fEventLoop->exit(button);
+	}
+	
 protected:
+	bool eventFilter(QObject *obj, QEvent *event)
+	{
+		return ((event->type() == QEvent::KeyPress) || (event->type() == QEvent::KeyRelease));
+	}
+	
 	virtual void paintEvent(QPaintEvent *event)
 	{
 		QPainter painter(this);
@@ -527,6 +596,9 @@ protected:
 private:
 	QPixmap					fPixmap;
 	QTimeLine				fFader;
+	QWidget					*fEditor;
+	QDialogButtonBox		*fButtonBox;
+	QEventLoop				*fEventLoop;
 };
 
 
@@ -1519,13 +1591,10 @@ grabMouse(QWidget *window, bool grab)
 }
 
 
-bool
-messageBox(QWidget *window, const QString& title, const QString& message, int buttons, int icon, PyObject *callback, PyObject *userdata, int *button)
+static int
+encodeButtons(int buttons)
 {
-	QMessageBox::StandardButtons qbuttons = QMessageBox::NoButton;
-	QMessageBox::Icon qicon = QMessageBox::NoIcon;
-	QMessageBox mb(window);
-	int result;
+	int qbuttons = QMessageBox::NoButton;
 	
 	if (buttons & SL_BUTTON_OK)
 		qbuttons |= QMessageBox::Ok;
@@ -1559,6 +1628,45 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 		qbuttons |= QMessageBox::Retry;
 	if (buttons & SL_BUTTON_IGNORE)
 		qbuttons |= QMessageBox::Ignore;
+	
+	return qbuttons;
+}
+
+
+static int
+decodeButton(int qbutton)
+{
+	int button;
+	switch (qbutton) {
+	case QMessageBox::Yes:		button = SL_BUTTON_YES; break;
+	case QMessageBox::YesToAll:	button = SL_BUTTON_YES_ALL; break;
+	case QMessageBox::No:		button = SL_BUTTON_NO; break;
+	case QMessageBox::NoToAll:	button = SL_BUTTON_NO_ALL; break;
+	case QMessageBox::Cancel:	button = SL_BUTTON_CANCEL; break;
+	case QMessageBox::Open:		button = SL_BUTTON_OPEN; break;
+	case QMessageBox::Save:		button = SL_BUTTON_SAVE; break;
+	case QMessageBox::SaveAll:	button = SL_BUTTON_SAVE_ALL; break;
+	case QMessageBox::Close:	button = SL_BUTTON_CLOSE; break;
+	case QMessageBox::Discard:	button = SL_BUTTON_DISCARD; break;
+	case QMessageBox::Apply:	button = SL_BUTTON_APPLY; break;
+	case QMessageBox::Reset:	button = SL_BUTTON_RESET; break;
+	case QMessageBox::Abort:	button = SL_BUTTON_ABORT; break;
+	case QMessageBox::Retry:	button = SL_BUTTON_RETRY; break;
+	case QMessageBox::Ignore:	button = SL_BUTTON_IGNORE; break;
+	case QMessageBox::Ok:
+	default:					button = SL_BUTTON_OK; break;
+	}
+	return button;
+}
+
+
+bool
+messageBox(QWidget *window, const QString& title, const QString& message, int buttons, int icon, PyObject *callback, PyObject *userdata, int *button)
+{
+	QMessageBox::StandardButtons qbuttons = (QMessageBox::StandardButtons)encodeButtons(buttons);
+	QMessageBox::Icon qicon = QMessageBox::NoIcon;
+	QMessageBox mb(window);
+	int result;
 	
 	switch (icon) {
 	case SL_ICON_ERROR:		qicon = QMessageBox::Critical; break;
@@ -1595,24 +1703,7 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 	
 	Py_END_ALLOW_THREADS
 	
-	switch (result) {
-	case QMessageBox::Ok:		*button = SL_BUTTON_OK; break;
-	case QMessageBox::Yes:		*button = SL_BUTTON_YES; break;
-	case QMessageBox::YesToAll:	*button = SL_BUTTON_YES_ALL; break;
-	case QMessageBox::No:		*button = SL_BUTTON_NO; break;
-	case QMessageBox::NoToAll:	*button = SL_BUTTON_NO_ALL; break;
-	case QMessageBox::Cancel:	*button = SL_BUTTON_CANCEL; break;
-	case QMessageBox::Open:		*button = SL_BUTTON_OPEN; break;
-	case QMessageBox::Save:		*button = SL_BUTTON_SAVE; break;
-	case QMessageBox::SaveAll:	*button = SL_BUTTON_SAVE_ALL; break;
-	case QMessageBox::Close:	*button = SL_BUTTON_CLOSE; break;
-	case QMessageBox::Discard:	*button = SL_BUTTON_DISCARD; break;
-	case QMessageBox::Apply:	*button = SL_BUTTON_APPLY; break;
-	case QMessageBox::Reset:	*button = SL_BUTTON_RESET; break;
-	case QMessageBox::Abort:	*button = SL_BUTTON_ABORT; break;
-	case QMessageBox::Retry:	*button = SL_BUTTON_RETRY; break;
-	case QMessageBox::Ignore:	*button = SL_BUTTON_IGNORE; break;
-	}
+	*button = decodeButton(result);
 	
 	if ((callback) && (PyCallable_Check(callback))) {
 		PyObject *id = PyInt_FromLong(*button);
@@ -1634,10 +1725,11 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 }
 
 
-void
-showPopupMessage(QWidget *parent, const QString& text, const QPoint& hotspot, int where)
+int
+showPopupMessage(QWidget *parent, QWidget *editor, const QString& text, const QPoint& hotspot, int where, int buttons)
 {
-	new InfoBalloon(parent, text, hotspot, where);
+	InfoBalloon *b = new InfoBalloon(parent, editor, text, hotspot, where, buttons);
+	return b->exec();
 }
 
 
@@ -1897,6 +1989,9 @@ Application::notify(QObject *receiver, QEvent *event)
 	
 	QWidget *target = qobject_cast<QWidget *>(receiver);
 	if (target) {
+		if ((sInfoBalloon) && (sInfoBalloon->isAncestorOf(target)))
+			return QApplication::notify(original, event);
+	
 		while (target->focusProxy())
 			target = target->focusProxy();
 		QWidget *current = target;
@@ -1944,7 +2039,7 @@ Application::notify(QObject *receiver, QEvent *event)
 								target = oldFocus->nextInFocusChain();
 							else if (e->key() == Qt::Key_Backtab)
 								target = oldFocus->previousInFocusChain();
-							if (!impl->canFocusOut(oldFocus, target))
+							if ((!sModalBalloon) && (!impl->canFocusOut(oldFocus, target)))
 								return true;
 							widget = NULL;
 						}
@@ -1961,7 +2056,7 @@ Application::notify(QObject *receiver, QEvent *event)
 								widget = NULL;
 								break;
 							}
- 							if ((target->focusPolicy() & Qt::ClickFocus) == Qt::ClickFocus) {
+ 							if (target->focusPolicy() != Qt::NoFocus) {
 								if (!impl->canFocusOut(oldFocus, target))
 									return true;
 								widget = NULL;

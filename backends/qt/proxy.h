@@ -489,11 +489,12 @@ SL_DEFINE_METHOD(type, repaint, {												\
 })																				\
 SL_DEFINE_METHOD(type, popup_message, {											\
 	QString text;																\
-	int align;																	\
+	int align, buttons, result;													\
 	QPoint pos;																	\
 	PyObject *object;															\
 																				\
-	if (!PyArg_ParseTuple(args, "O&iO", convertString, &text, &align, &object))	\
+	if (!PyArg_ParseTuple(args, "O&iiO", convertString, &text, &align,			\
+			&buttons, &object))													\
 		return NULL;															\
 																				\
 	DataModel_Impl *model = (DataModel_Impl *)impl->model();					\
@@ -514,8 +515,9 @@ SL_DEFINE_METHOD(type, popup_message, {											\
 		case SL_TOP:	pos = QPoint(rect.width()/2, 0); break;					\
 		default:		pos = QPoint(rect.width()/2, rect.height()-1); break;	\
 		}																		\
-		showPopupMessage(impl, text,											\
-			impl->viewport()->mapToGlobal(rect.topLeft() + pos), align);		\
+		result = showPopupMessage(impl, editor, text,							\
+			impl->viewport()->mapToGlobal(rect.topLeft() + pos),				\
+			align, buttons);													\
 	}																			\
 	else {																		\
 		switch (align) {														\
@@ -524,8 +526,10 @@ SL_DEFINE_METHOD(type, popup_message, {											\
 		case SL_TOP:	pos = QPoint(impl->width()/2, 0); break;				\
 		default:		pos = QPoint(impl->width()/2, impl->height()-1); break;	\
 		}																		\
-		showPopupMessage(impl, text, impl->mapToGlobal(pos), align);			\
+		result = showPopupMessage(impl, NULL, text, impl->mapToGlobal(pos),		\
+			align, buttons);													\
 	}																			\
+	return PyInt_FromLong(result);												\
 })																				\
 SL_DEFINE_METHOD(type, show_index, {											\
 	PyObject *object;															\
