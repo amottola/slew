@@ -206,8 +206,8 @@ class Window(Layoutable):
 	def set_opacity(self, opacity):
 		self._impl.set_opacity(float(opacity))
 	
-	def popup_message(self, text, align=slew.BOTTOM):
-		self._impl.popup_message(text, align)
+	def popup_message(self, text, align=slew.BOTTOM, buttons=0):
+		return self._impl.popup_message(text, align, buttons)
 	
 	def find_focus(self):
 		return self._impl.find_focus()

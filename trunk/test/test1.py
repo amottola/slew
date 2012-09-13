@@ -474,14 +474,14 @@ class Application(slew.Application):
 		self.f.find('icons').handler = IconsHandler()
 		
 		self.f.find('grid').model = MyModel()#GridModel()
-		self.f.find('grid').handler = GridHandler()
+# 		self.f.find('grid').handler = GridHandler()
 		
 		self.f.find('popup').handler = popup_h(self.f)
 
 
 # 		slew.chain_debug_handler(self.f, True, 'onModify onFocus* onSelect onDblClick onContextMenu onChange onClick onCancel onEnter onCell*')
 # 		slew.chain_debug_handler(self.f, True, 'onModify onFocus* onCell* onDrag*')
-		slew.chain_debug_handler(self.f, True, 'onCell*')# onFocus* onChange*')
+# 		slew.chain_debug_handler(self.f, True, 'onCell*')# onFocus* onChange*')
 		
 		self.f.center()
 		self.f.show()
@@ -493,9 +493,14 @@ class Application(slew.Application):
 			if (e.completion < 0) and len(e.value):
 				tf.complete()
 		def focus_out(e):
-			print 'textfield onFocusOut', e
+			print "focus out!", e.widget
+			if isinstance(e.widget, slew.Grid):
+				return e.widget.popup_message("Hello world!", buttons=slew.BUTTON_OK|slew.BUTTON_CANCEL, index=e.index) == slew.BUTTON_OK
+			else:
+				return e.widget.popup_message("Hello world!", buttons=slew.BUTTON_OK|slew.BUTTON_CANCEL) == slew.BUTTON_OK
 		tf.onChange = complete
 		tf.onFocusOut = focus_out
+		self.f.find('grid').onCellEditEnd = focus_out
 		
 		print self.f.find('combo').items
 		

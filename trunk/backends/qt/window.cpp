@@ -362,10 +362,10 @@ SL_DEFINE_METHOD(Window, set_opacity, {
 
 SL_DEFINE_METHOD(Window, popup_message, {
 	QString text;
-	int align;
+	int align, buttons;
 	QPoint pos;
 	
-	if (!PyArg_ParseTuple(args, "O&i", convertString, &text, &align))
+	if (!PyArg_ParseTuple(args, "O&ii", convertString, &text, &align, &buttons))
 		return NULL;
 	
 	if ((Completer::isRunningOn(impl)) && (align == SL_BOTTOM))
@@ -378,7 +378,7 @@ SL_DEFINE_METHOD(Window, popup_message, {
 	default:		pos = QPoint(impl->width() / 2, impl->height() - 1); break;
 	}
 	
-	showPopupMessage(impl, text, impl->mapToGlobal(pos), align);
+	return PyInt_FromLong(showPopupMessage(impl, NULL, text, impl->mapToGlobal(pos), align, buttons));
 })
 
 

@@ -154,7 +154,7 @@ bool openURI(const QString& uri);
 
 void grabMouse(QWidget *window, bool grab);
 bool messageBox(QWidget *window, const QString& title, const QString& message, int buttons, int icon, PyObject *callback, PyObject *userdata, int *button);
-void showPopupMessage(QWidget *parent, const QString& text, const QPoint& hotspot, int where = SL_TOP);
+int showPopupMessage(QWidget *parent, QWidget *editor, const QString& text, const QPoint& hotspot, int where = SL_TOP, int buttons = 0);
 void hidePopupMessage();
 
 PyObject *mimeDataToObject(const QMimeData *mimeData, const QString& mimeType="");
