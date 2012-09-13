@@ -607,7 +607,7 @@ SL_DEFINE_METHOD(FoldPanel, set_hicolor, {
 		color = QApplication::palette(impl).color(QPalette::HighlightedText);
 	}
 	
-	palette.setColor(QPalette::Normal, QPalette::HighlightedText, color);
+	palette.setColor(QPalette::HighlightedText, color);
 	impl->setPalette(palette);
 	impl->updatePalette();
 })
