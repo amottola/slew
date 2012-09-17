@@ -9,12 +9,15 @@
 #include <QMenu>
 
 
+extern OSWindowRef qt_mac_window_for(const QWidget *w);
+
+
 void
 helper_set_resizeable(QWidget *widget, bool enabled)
 {
 #ifdef QT_MAC_USE_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSWindow *window = [(NSView *)widget->winId() window];
+	NSWindow *window = (NSWindow *)qt_mac_window_for(widget);
 	
 	if ([window respondsToSelector: @selector(setStyleMask:)]) {
 		NSUInteger style = [window styleMask];
@@ -28,7 +31,7 @@ helper_set_resizeable(QWidget *widget, bool enabled)
 	
 	[pool release];
 #else
-	WindowRef window = HIViewGetWindow((HIViewRef)widget->winId());
+	WindowRef window = (WindowRef)qt_mac_window_for(widget);
 	
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 	int attribs[] = { kWindowResizableAttribute, 0 };
@@ -52,7 +55,7 @@ helper_init_notification(QWidget *widget)
 {
 #ifdef QT_MAC_USE_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSWindow *window = [(NSView *)widget->winId() window];
+	NSWindow *window = (NSWindow *)qt_mac_window_for(widget);
 	
 	[window setCanHide: FALSE];
 	[window setHasShadow: FALSE];
@@ -62,7 +65,7 @@ helper_init_notification(QWidget *widget)
 	
 	[pool release];
 #else
-	WindowRef window = HIViewGetWindow((HIViewRef)widget->winId());
+	WindowRef window = (WindowRef)qt_mac_window_for(widget);
 	
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 	int attribs[] = { kHIWindowBitDoesNotHide, kHIWindowBitDoesNotCycle, kHIWindowBitNoShadow, 0 };
@@ -78,7 +81,6 @@ helper_init_notification(QWidget *widget)
 void
 helper_clear_menu_previous_action(QMenu *menu)
 {
-	return;
 #ifdef QT_MAC_USE_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSMenu *nsmenu = static_cast<NSMenu *>(menu->macMenu());

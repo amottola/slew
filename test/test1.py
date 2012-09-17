@@ -495,9 +495,9 @@ class Application(slew.Application):
 		def focus_out(e):
 			print "focus out!", e.widget
 			if isinstance(e.widget, slew.Grid):
-				return e.widget.popup_message("Hello world!", buttons=slew.BUTTON_OK|slew.BUTTON_CANCEL, index=e.index) == slew.BUTTON_OK
+				return e.widget.popup_message("Hello world!", align=slew.RIGHT, buttons=slew.BUTTON_OK|slew.BUTTON_CANCEL, index=e.index) == slew.BUTTON_OK
 			else:
-				return e.widget.popup_message("Hello world!", buttons=slew.BUTTON_OK|slew.BUTTON_CANCEL) == slew.BUTTON_OK
+				return e.widget.popup_message("Hello world!", align=slew.RIGHT, buttons=slew.BUTTON_OK|slew.BUTTON_CANCEL) == slew.BUTTON_OK
 		tf.onChange = complete
 		tf.onFocusOut = focus_out
 		self.f.find('grid').onCellEditEnd = focus_out

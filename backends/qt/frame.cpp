@@ -74,7 +74,7 @@ Frame_Impl::event(QEvent *event)
 void
 Frame_Impl::moveEvent(QMoveEvent *event)
 {
-	hidePopupMessage();
+	hidePopupMessage(event);
 	Completer::hide();
 }
 
