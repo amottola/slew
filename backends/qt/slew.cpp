@@ -400,6 +400,10 @@ public:
 		font.setPointSize(10);
 		label->setFont(font);
 		label->setWordWrap(true);
+		label->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+		QSizePolicy policy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+		policy.setHeightForWidth(true);
+		label->setSizePolicy(policy);
 		layout->addWidget(label);
 		layout->setContentsMargins(0, 0, 0, 0);
 		
@@ -435,20 +439,28 @@ public:
 		QRect drect = QApplication::desktop()->availableGeometry();
 		int diff, where = fWhere;
 		
-		size = fContent->size() + QSize(20, 20);
+		size = fContent->sizeHint() + QSize(20, 20);
 		
 		if (where == SL_LEFT) {
+			QSize oldSize = size;
+			size.rheight() = qMax(50, size.height());
 			hotspot = QPoint(size.width() + 15, size.height() / 2);
 			pos = QPoint(-(size.width() + 15), -(size.height() / 2) + (editorSize.height() / 2));
-			if (editorPos.x() + pos.x() < drect.left() + 10)
+			if (editorPos.x() + pos.x() < drect.left() + 10) {
 				where = SL_BOTTOM;
+				size = oldSize;
+			}
 		}
 		
 		if (where == SL_RIGHT) {
+			QSize oldSize = size;
+			size.rheight() = qMax(50, size.height());
 			hotspot = QPoint(0, size.height() / 2);
 			pos = QPoint(editorSize.width(), -(size.height() / 2) + (editorSize.height() / 2));
-			if (editorPos.x() + pos.x() + size.width() + 15 > drect.right() - 10)
+			if (editorPos.x() + pos.x() + size.width() + 15 > drect.right() - 10) {
 				where = SL_BOTTOM;
+				size = oldSize;
+			}
 		}
 		
 		if ((where == SL_LEFT) || (where == SL_RIGHT)) {
@@ -499,6 +511,7 @@ public:
 				hotspot.rx() = qMax(hotspot.x(), 25);
 			}
 			
+			fContent->resize(size - QSize(20, 20));
 			size += QSize(0, 15);
 			if (where == SL_TOP)
 				fContent->move(10, 10);
@@ -506,6 +519,7 @@ public:
 				fContent->move(10, 25);
 		}
 		else {
+			fContent->resize(size - QSize(20, 20));
 			size += QSize(15, 0);
 			if (where == SL_LEFT)
 				fContent->move(10, 10);
