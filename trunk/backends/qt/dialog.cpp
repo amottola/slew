@@ -50,7 +50,7 @@ Dialog_Impl::moveEvent(QMoveEvent *event)
 {
 	QDialog::moveEvent(event);
 	
-	hidePopupMessage();
+	hidePopupMessage(event);
 	Completer::hide();
 }
 

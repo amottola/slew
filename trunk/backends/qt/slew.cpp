@@ -380,14 +380,6 @@ private:
 
 
 
-#define BALLOON_TEXT_MARGIN				12
-#define BALLOON_RADIUS					10
-#define BALLOON_DISTANCE				15
-#define BALLOON_PEN						QColor(0, 0, 0)
-#define BALLOON_BRUSH					QColor(255, 255, 144)
-#define BALLOON_BACKGROUND				QColor(0, 0, 0, 0)
-
-
 class InfoBalloon : public QWidget
 {
 	Q_OBJECT
@@ -396,20 +388,20 @@ public:
 	static void fade() { if (sInfoBalloon) sInfoBalloon->fadeOut(); }
 	
 	InfoBalloon(QWidget *parent, QWidget *editor, const QString& text, const QPoint& hotspot, int where = SL_TOP, int buttons = 0)
-		: QWidget(parent->window(), Qt::ToolTip), fEditor(editor ? editor : parent), fButtonBox(NULL)
+		: QWidget(parent->window(), Qt::ToolTip), fEditor(editor ? editor : parent), fButtonBox(NULL), fWhere(where)
 	{
 		delete sInfoBalloon;
 		sInfoBalloon = this;
 		
-		QPoint pos(0, 0);
-		QPainter painter;
-		QPainterPath path;
-		QRect rect;
-		QFont font = this->font();
-		
+		fContent = new QWidget(this);
+		QVBoxLayout *layout = new QVBoxLayout(fContent);
+		QLabel *label = new QLabel(text, fContent);
+		QFont font = label->font();
 		font.setPointSize(10);
-		
-		rect = QFontMetrics(font).boundingRect(text);
+		label->setFont(font);
+		label->setWordWrap(true);
+		layout->addWidget(label);
+		layout->setContentsMargins(0, 0, 0, 0);
 		
 		if (buttons) {
 			fButtonBox = new QDialogButtonBox((QDialogButtonBox::StandardButtons)encodeButtons(buttons), Qt::Horizontal, this);
@@ -417,105 +409,185 @@ public:
 				button->setAttribute(Qt::WA_MacSmallSize);
 				connect(button, SIGNAL(clicked()), this, SLOT(handleClicked()));
 			}
-			QSize size = fButtonBox->minimumSizeHint();
+			layout->addWidget(fButtonBox);
+			fContent->setMinimumWidth(150);
+		}
+		fContent->setMaximumWidth(350);
+		fContent->setMinimumHeight(15);
+		fContent->setLayout(layout);
+		fContent->resize(fContent->minimumSizeHint());
+		
+		setAttribute(Qt::WA_NoSystemBackground);
+		setAttribute(Qt::WA_TranslucentBackground);
+		
+		doLayout();
+	}
+	
+	void doLayout()
+	{
+		if (!fEditor) {
+			deleteLater();
+			return;
+		}
+		QPoint hotspot;
+		QPoint pos, editorPos = fEditor->mapToGlobal(QPoint(0, 0));
+		QSize size, editorSize = fEditor->size();
+		QRect drect = QApplication::desktop()->availableGeometry();
+		int diff, where = fWhere;
+		
+		size = fContent->size() + QSize(20, 20);
+		
+		if (where == SL_LEFT) {
+			hotspot = QPoint(size.width() + 15, size.height() / 2);
+			pos = QPoint(-(size.width() + 15), -(size.height() / 2) + (editorSize.height() / 2));
+			if (editorPos.x() + pos.x() < drect.left() + 10)
+				where = SL_BOTTOM;
+		}
+		
+		if (where == SL_RIGHT) {
+			hotspot = QPoint(0, size.height() / 2);
+			pos = QPoint(editorSize.width(), -(size.height() / 2) + (editorSize.height() / 2));
+			if (editorPos.x() + pos.x() + size.width() + 15 > drect.right() - 10)
+				where = SL_BOTTOM;
+		}
+		
+		if ((where == SL_LEFT) || (where == SL_RIGHT)) {
+			if (editorPos.y() + pos.y() + size.height() > drect.bottom() - 10)
+				where = SL_TOP;
+			else if (editorPos.y() + pos.y() < drect.top() + 10)
+				where = SL_BOTTOM;
+		}
+		
+		if (where == SL_TOP) {
+			hotspot = QPoint(size.width() / 2, size.height() + 15);
+			pos = QPoint((editorSize.width() / 2) - (size.width() / 2), -(size.height() + 15));
+			if (hotspot.y() + editorPos.y() - size.height() - 15 < drect.top() + 10)
+				where = SL_BOTTOM;
+		}
+		
+		if (where == SL_BOTTOM) {
+			hotspot = QPoint(size.width() / 2, 0);
+			pos = QPoint((editorSize.width() / 2) - (size.width() / 2), editorSize.height());
+			if (editorPos.y() + pos.y() + size.height() + 15 > drect.bottom() - 10) {
+				where = SL_TOP;
+				hotspot = QPoint(size.width() / 2, size.height() + 15);
+				pos = QPoint((editorSize.width() / 2) - (size.width() / 2), -(size.height() + 15));
+			}
+		}
+		
+		pos += editorPos;
+		if ((where == SL_TOP) || (where == SL_BOTTOM)) {
+			diff = pos.x() + size.width() - (drect.right() - 10);
+			if (diff > 0) {
+				pos.rx() -= diff;
+				hotspot.rx() += diff;
+				if (pos.x() + size.width() > drect.right() - 10)
+					pos.setX(drect.right() - 10 - size.width());
+				if (pos.x() + size.width() < editorPos.x() + 35)
+					pos.setX(editorPos.x() + 35 - size.width());
+				hotspot.rx() = qMin(hotspot.x(), size.width() - 25);
+			}
 			
-			rect.setHeight(rect.height() + BALLOON_TEXT_MARGIN + size.height());
-			rect.setWidth(qMax(rect.width(), size.width()));
-			fButtonBox->resize(rect.width(), size.height());
+			diff = drect.left() + 10 - pos.x();
+			if (diff > 0) {
+				pos.rx() -= diff;
+				hotspot.rx() -= diff;
+				if (pos.x() < drect.left() + 10)
+					pos.setX(drect.left() + 10);
+				if (pos.x() > editorPos.x() + editorSize.width() - 35)
+					pos.setX(editorPos.x() + editorSize.width() - 35);
+				hotspot.rx() = qMax(hotspot.x(), 25);
+			}
+			
+			size += QSize(0, 15);
+			if (where == SL_TOP)
+				fContent->move(10, 10);
+			else
+				fContent->move(10, 25);
+		}
+		else {
+			size += QSize(15, 0);
+			if (where == SL_LEFT)
+				fContent->move(10, 10);
+			else
+				fContent->move(25, 10);
 		}
 		
-		rect.moveTo(0, 0);
-		rect.adjust(0, 0, BALLOON_TEXT_MARGIN * 2, BALLOON_TEXT_MARGIN * 2);
-		
-// 		if ((SL_QCustomCompleter::isRunningOn(parent)) && (where == OnBottom)) {
-// 			where = OnTop;
-// 			pos -= QPoint(0, parent->height());
-// 		}
-		
+		fPath = QPainterPath();
+		fPath.moveTo(hotspot);
 		switch (where) {
-		case SL_TOP:
-			{
-				if (fButtonBox)
-					fButtonBox->move(BALLOON_TEXT_MARGIN, rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
-				
-				fPixmap = QPixmap(rect.size() + QSize(0, BALLOON_DISTANCE));
-				
-				path.moveTo(0, 0);
-				path.lineTo(BALLOON_DISTANCE, BALLOON_DISTANCE);
-				path.lineTo(BALLOON_DISTANCE * 2, 0);
-				path.translate((rect.width() - path.boundingRect().width()) / 2.0, rect.height() - 1);
-				pos += hotspot - QPoint(fPixmap.width() / 2, fPixmap.height());
-			}
-			break;
-		
-		case SL_RIGHT:
-			{
-				if (fButtonBox)
-					fButtonBox->move(BALLOON_TEXT_MARGIN + BALLOON_DISTANCE, rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
-				
-				rect.moveTo(BALLOON_DISTANCE, 0);
-				fPixmap = QPixmap(rect.size() + QSize(BALLOON_DISTANCE, 0));
-				
-				path.moveTo(BALLOON_DISTANCE, 0);
-				path.lineTo(0, BALLOON_DISTANCE);
-				path.lineTo(BALLOON_DISTANCE, BALLOON_DISTANCE * 2);
-				path.translate(1, (rect.height() - path.boundingRect().height()) / 2.0);
-				pos += hotspot - QPoint(0, fPixmap.height() / 2);
-			}
-			break;
-		
 		case SL_LEFT:
-			{
-				if (fButtonBox)
-					fButtonBox->move(BALLOON_TEXT_MARGIN, rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
-				
-				fPixmap = QPixmap(rect.size() + QSize(BALLOON_DISTANCE, 0));
-				
-				path.moveTo(0, 0);
-				path.lineTo(BALLOON_DISTANCE, BALLOON_DISTANCE);
-				path.lineTo(0, BALLOON_DISTANCE * 2);
-				path.translate(rect.width() - 1, (rect.height() - path.boundingRect().height()) / 2.0);
-				pos += hotspot - QPoint(fPixmap.width(), fPixmap.height() / 2);
-			}
+			fPath.lineTo(size.width() - 15, hotspot.y() - 15);
+			fPath.lineTo(size.width() - 15, 10);
+			fPath.arcTo(size.width() - 35, 0, 20, 20, 0, 90);
+			fPath.lineTo(10, 0);
+			fPath.arcTo(0, 0, 20, 20, 90, 90);
+			fPath.lineTo(0, size.height() - 10);
+			fPath.arcTo(0, size.height() - 20, 20, 20, 180, 90);
+			fPath.lineTo(size.width() - 25, size.height());
+			fPath.arcTo(size.width() - 35, size.height() - 20, 20, 20, 270, 90);
+			fPath.lineTo(size.width() - 15, hotspot.y() + 15);
 			break;
-		
-		default:
+		case SL_RIGHT:
+			fPath.lineTo(15, hotspot.y() + 15);
+			fPath.lineTo(15, size.height() - 10);
+			fPath.arcTo(15, size.height() - 20, 20, 20, 180, 90);
+			fPath.lineTo(size.width() - 10, size.height());
+			fPath.arcTo(size.width() - 20, size.height() - 20, 20, 20, 270, 90);
+			fPath.lineTo(size.width(), 10);
+			fPath.arcTo(size.width() - 20, 0, 20, 20, 0, 90);
+			fPath.lineTo(25, 0);
+			fPath.arcTo(15, 0, 20, 20, 90, 90);
+			fPath.lineTo(15, hotspot.y() - 15);
+			break;
+		case SL_TOP:
+			fPath.lineTo(hotspot.x() + 15, hotspot.y() - 15);
+			fPath.lineTo(size.width() - 10, size.height() - 15);
+			fPath.arcTo(size.width() - 20, size.height() - 35, 20, 20, 270, 90);
+			fPath.lineTo(size.width(), 10);
+			fPath.arcTo(size.width() - 20, 0, 20, 20, 0, 90);
+			fPath.lineTo(10, 0);
+			fPath.arcTo(0, 0, 20, 20, 90, 90);
+			fPath.lineTo(0, size.height() - 25);
+			fPath.arcTo(0, size.height() - 35, 20, 20, 180, 90);
+			fPath.lineTo(hotspot.x() - 15, size.height() - 15);
+			break;
 		case SL_BOTTOM:
-			{
-				if (fButtonBox)
-					fButtonBox->move(BALLOON_TEXT_MARGIN, BALLOON_DISTANCE + rect.height() - (fButtonBox->height() + BALLOON_TEXT_MARGIN));
-				
-				rect.moveTo(0.5, BALLOON_DISTANCE);
-				fPixmap = QPixmap(rect.size() + QSize(0, BALLOON_DISTANCE));
-				
-				path.moveTo(0, BALLOON_DISTANCE);
-				path.lineTo(BALLOON_DISTANCE, 0);
-				path.lineTo(BALLOON_DISTANCE * 2, BALLOON_DISTANCE);
-				path.translate((rect.width() - path.boundingRect().width()) / 2.0, 1);
-				pos += hotspot - QPoint(fPixmap.width() / 2, 0);
-			}
+			fPath.lineTo(hotspot.x() - 15, 15);
+			fPath.lineTo(10, 15);
+			fPath.arcTo(0, 15, 20, 20, 90, 90);
+			fPath.lineTo(0, size.height() - 10);
+			fPath.arcTo(0, size.height() - 20, 20, 20, 180, 90);
+			fPath.lineTo(size.width() - 10, size.height());
+			fPath.arcTo(size.width() - 20, size.height() - 20, 20, 20, 270, 90);
+			fPath.lineTo(size.width(), 25);
+			fPath.arcTo(size.width() - 20, 15, 20, 20, 0, 90);
+			fPath.lineTo(hotspot.x() + 15, 15);
 			break;
 		}
-		fPixmap.fill(BALLOON_BACKGROUND);
-		painter.begin(&fPixmap);
+		fPath.lineTo(hotspot);
+		fPath.closeSubpath();
 		
-		painter.setFont(font);
-		painter.setRenderHints(QPainter::RenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing));
-		
-		painter.setPen(QPen(QBrush(BALLOON_PEN), 1, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-		painter.setBrush(QBrush(BALLOON_BRUSH));
-		
-		painter.drawRoundedRect(rect, BALLOON_RADIUS, BALLOON_RADIUS);
-		painter.drawText(rect.adjusted(0, 0, 0, fButtonBox ? -(fButtonBox->height() + BALLOON_TEXT_MARGIN) : 0), Qt::AlignCenter, text);
-		painter.drawPath(path);
-		
-		painter.end();
-		
-		resize(fPixmap.size());
-		this->setAttribute(Qt::WA_TranslucentBackground, true);
-		setMask(fPixmap.createMaskFromColor(BALLOON_BACKGROUND));
-		setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this) / 255.0);
 		move(pos);
+		resize(size);
+		
+		update();
+	}
+	
+	virtual void paintEvent(QPaintEvent *event)
+	{
+		QPainter painter(this);
+		QPalette palette(style()->standardPalette());
+		QBrush brush = palette.brush(QPalette::ToolTipBase);
+		QColor color = brush.color();
+		
+		color.setAlpha(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this));
+		brush.setColor(color);
+		
+		painter.setRenderHints(QPainter::Antialiasing);
+		painter.fillPath(fPath, brush);
+		painter.setPen(QPen(palette.brush(QPalette::ToolTipText), 1, Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin));
+		painter.drawPath(fPath);
 	}
 	
 	int exec()
@@ -531,34 +603,35 @@ public:
 			
 			show();
 			fEventLoop = new QEventLoop;
+			QPointer<QObject> guard = this;
 			result = fEventLoop->exec(QEventLoop::DialogExec);
-			delete fEventLoop;
-			
+			if (guard) {
+				delete fEventLoop;
+				fEditor->removeEventFilter(this);
+				deleteLater();
+			}
 			sModalBalloon = false;
-			fEditor->removeEventFilter(this);
 		}
 		else {
 			show();
 			result = 0;
+			
+			fFader.setDuration(300);
+			connect(&fFader, SIGNAL(valueChanged(qreal)), this, SLOT(doFade(qreal)));
+			connect(&fFader, SIGNAL(finished()), this, SLOT(deleteLater()));
+			
+			QTimer::singleShot(10000, this, SLOT(fadeOut()));
 		}
 		
-		fFader.setDuration(300);
-		connect(&fFader, SIGNAL(valueChanged(qreal)), this, SLOT(doFade(qreal)));
-		connect(&fFader, SIGNAL(finished()), this, SLOT(deleteLater()));
-		
-		QTimer::singleShot(10000, this, SLOT(fadeOut()));
 		return result;
 	}
 	
 	virtual ~InfoBalloon() { sInfoBalloon = NULL; }
 	
-	virtual QSize sizeHint() const { return fPixmap.size(); }
-	virtual QSize minimumSizeHint() const { return sizeHint(); }
-
 public slots:
 	void fadeOut()
 	{
-		if (fFader.state() != QTimeLine::NotRunning)
+		if ((fButtonBox) || (fFader.state() != QTimeLine::NotRunning))
 			return;
 		fFader.start();
 	}
@@ -581,12 +654,6 @@ protected:
 		return ((event->type() == QEvent::KeyPress) || (event->type() == QEvent::KeyRelease));
 	}
 	
-	virtual void paintEvent(QPaintEvent *event)
-	{
-		QPainter painter(this);
-		painter.drawPixmap(0, 0, fPixmap);
-	}
-	
 	virtual void mouseReleaseEvent(QMouseEvent *event)
 	{
 		fadeOut();
@@ -594,11 +661,13 @@ protected:
 	}
 
 private:
-	QPixmap					fPixmap;
+	QPainterPath			fPath;
 	QTimeLine				fFader;
-	QWidget					*fEditor;
+	QPointer<QWidget>		fEditor;
 	QDialogButtonBox		*fButtonBox;
+	QWidget					*fContent;
 	QEventLoop				*fEventLoop;
+	int						fWhere;
 };
 
 
@@ -1733,9 +1802,14 @@ showPopupMessage(QWidget *parent, QWidget *editor, const QString& text, const QP
 }
 
 
-void hidePopupMessage()
+void hidePopupMessage(QEvent *event)
 {
-	InfoBalloon::fade();
+	if ((sModalBalloon) && (event) && (event->type() == QEvent::Move)) {
+		sInfoBalloon->doLayout();
+	}
+	else {
+		InfoBalloon::fade();
+	}
 }
 
 
