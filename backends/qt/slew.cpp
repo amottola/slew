@@ -421,7 +421,7 @@ public:
 		fContent->setLayout(layout);
 		fContent->resize(fContent->minimumSizeHint());
 		
-		setAttribute(Qt::WA_NoSystemBackground);
+		setAutoFillBackground(false);
 		setAttribute(Qt::WA_TranslucentBackground);
 		
 		doLayout();
