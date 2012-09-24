@@ -600,7 +600,7 @@ public:
 		
 		painter.setRenderHints(QPainter::Antialiasing);
 		painter.fillPath(fPath, brush);
-		painter.setPen(QPen(palette.brush(QPalette::ToolTipText), 1, Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin));
+		painter.setPen(QPen(palette.color(QPalette::WindowText), 1, Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin));
 		painter.drawPath(fPath);
 	}
 	
