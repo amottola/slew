@@ -706,6 +706,11 @@ def print_document(type, name, callback, prompt=True, settings=None, parent=None
 
 
 
+def set_locale(lang):
+	_slew.set_locale(lang)
+
+
+
 def get_locale_info(lang='it'):
 	return _slew.get_locale_info(lang)
 
