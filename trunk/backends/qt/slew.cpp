@@ -617,11 +617,13 @@ public:
 			
 			show();
 			fEventLoop = new QEventLoop;
-			QPointer<QObject> guard = this;
+			QPointer<QObject> thisGuard = this;
+			QPointer<QObject> editorGuard = fEditor;
 			result = fEventLoop->exec(QEventLoop::DialogExec);
-			if (guard) {
+			if (thisGuard) {
 				delete fEventLoop;
-				fEditor->removeEventFilter(this);
+				if (editorGuard)
+					editorGuard->removeEventFilter(this);
 				deleteLater();
 			}
 			sModalBalloon = false;
