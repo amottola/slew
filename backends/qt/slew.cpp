@@ -582,6 +582,19 @@ public:
 		fPath.lineTo(hotspot);
 		fPath.closeSubpath();
 		
+#ifdef Q_WS_WIN
+		QBitmap mask(size);
+		{
+			QPainter painter(&mask);
+			painter.setRenderHints(0);
+			painter.fillRect(QRect(QPoint(0,0), size), Qt::color0);
+			painter.setPen(QPen(Qt::color1, 1.5, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+			painter.drawPath(fPath);
+			painter.fillPath(fPath, QBrush(Qt::color1));
+		}
+		setMask(mask);
+#endif
+		
 		move(pos);
 		resize(size);
 		
