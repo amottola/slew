@@ -48,9 +48,16 @@ public:
 		else
 			opt.textElideMode = Qt::ElideNone;
 		
+		QRect rect = opt.rect;
+		int margin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, &option);
+		QTableView *popup = qobject_cast<QTableView *>(parent());
+		
+		if ((popup) && (popup->lineWidth()) && (index.column() == 0)) {
+			opt.rect.setWidth(rect.width() - (margin * 2));
+		}
+		
 		QItemDelegate::paint(painter, opt, index);
 		
-		QTableView *popup = qobject_cast<QTableView *>(parent());
 		if ((popup) && (popup->lineWidth()) && (index.column() > 0)) {
 			painter->save();
 			
@@ -60,8 +67,7 @@ public:
 			pen.setDashPattern(dashes);
 			painter->setPen(pen);
 			painter->setClipping(false);
-			int margin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, &option);
-			painter->drawLine(opt.rect.x() - margin, opt.rect.y(), opt.rect.x() - margin, opt.rect.y() + opt.rect.height());
+			painter->drawLine(rect.x() - margin, rect.y(), rect.x() - margin, rect.y() + rect.height());
 			
 			painter->restore();
 		}
