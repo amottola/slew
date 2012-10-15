@@ -214,7 +214,7 @@ def backtrace():
 def factory(cls):
 	sWidgetFactory[cls.NAME] = cls
 	setattr(slew, cls.__name__, cls)
-	cls.__slew_base__ = True
+	cls.__slew_class_name__ = cls.__name__
 	return cls
 	
 
