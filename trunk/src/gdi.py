@@ -232,6 +232,9 @@ class Color(object):
 		hue = (((self.r * 11) + (self.g * 16) + (self.b * 5)) * intensity) / 8160
 		return Color(hue, hue, hue, self.a)
 	
+	def bright(self, factor=1.0):
+		return Color(min(max(0, int(self.r * factor)), 255), min(max(0, int(self.g * factor)), 255), min(max(0, int(self.b * factor)), 255), self.a)
+	
 	def __str__(self):
 		return "#%02X%02X%02X" % (self.r, self.g, self.b)
 	
