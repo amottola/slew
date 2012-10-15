@@ -1,3 +1,4 @@
+import inspect
 import slew
 
 
@@ -165,13 +166,7 @@ class Widget(EventHandler):
 	
 	def __new__(cls, *args, **kwargs):
 		self = EventHandler.__new__(cls)
-		for base in cls.__bases__:
-			if getattr(base, '__slew_base__', False):
-				classname = base.__name__
-				break
-		else:
-			classname = cls.__name__
-		self._impl = self.create_impl(classname)
+		self._impl = self.create_impl(cls.__slew_class_name__)
 		self.id = Widget.ID
 		Widget.ID += 1
 		self.initialize()
