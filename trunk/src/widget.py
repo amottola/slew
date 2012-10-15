@@ -165,7 +165,13 @@ class Widget(EventHandler):
 	
 	def __new__(cls, *args, **kwargs):
 		self = EventHandler.__new__(cls)
-		self._impl = self.create_impl(cls.__name__)
+		for base in cls.__bases__:
+			if getattr(base, '__slew_base__', False):
+				classname = base.__name__
+				break
+		else:
+			classname = cls.__name__
+		self._impl = self.create_impl(classname)
 		self.id = Widget.ID
 		Widget.ID += 1
 		self.initialize()
