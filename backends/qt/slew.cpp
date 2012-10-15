@@ -3211,6 +3211,7 @@ SL_DEFINE_MODULE_METHOD(set_locale, {
 		return NULL;
 	
 	sLocale = QLocale(lang);
+	QLocale::setDefault(sLocale);
 })
 
 
