@@ -17,6 +17,7 @@ class SearchField(TextField):
 		'style':				BitsProperty(merge(slew.Window.STYLE_BITS, {
 									'cancel':		STYLE_CANCEL,
 								})),
+		'empty':				TranslatedStringProperty(),
 	})
 	
 	
