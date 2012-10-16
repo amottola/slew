@@ -1462,7 +1462,7 @@ SL_DEFINE_METHOD(SceneView, clear_selection, {
 SL_DEFINE_METHOD(SceneView, get_scroll_pos, {
 	QScrollBar *hbar = impl->horizontalScrollBar();
 	QScrollBar *vbar = impl->verticalScrollBar();
-	QPoint pos(hbar ? hbar->value() : 0, vbar ? vbar->value() : 0);
+	QPoint pos(hbar ? hbar->value() - hbar->minimum(): 0, vbar ? vbar->value() - vbar->minimum(): 0);
 	
 	return createVectorObject(pos);
 })
@@ -1476,8 +1476,8 @@ SL_DEFINE_METHOD(SceneView, set_scroll_pos, {
 	if (!PyArg_ParseTuple(args, "O&", convertPoint, &pos))
 		return NULL;
 	
-	if (hbar) hbar->setValue(pos.x());
-	if (vbar) vbar->setValue(pos.y());
+	if (hbar) hbar->setValue(hbar->minimum() + pos.x());
+	if (vbar) vbar->setValue(vbar->minimum() + pos.y());
 })
 
 
