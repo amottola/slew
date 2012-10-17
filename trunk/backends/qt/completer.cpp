@@ -152,11 +152,11 @@ public:
 		
 		const QRect screen = QApplication::desktop()->availableGeometry(widget);
 		QPoint pos = widget->mapToGlobal(QPoint(margin, widget->height() - 2 + margin));
-		if (pos.y() + size.height() >= screen.bottom()) {
+		if (pos.y() + size.height() >= screen.bottom())
 			pos.setY(pos.y() - widget->height() - size.height() + 2);
-		}
+		if (pos.x() + size.width() >= screen.right())
+			pos.setX(pos.x() + widget->width() - size.width());
 		move(pos);
-// 		setGeometry(QRect(pos, size));
 		
 		fLastCompleter = completer;
 		installEventFilter(completer);
