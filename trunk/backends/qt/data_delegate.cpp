@@ -122,6 +122,7 @@ public slots:
 	{
 		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
 		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		DataSpecifier *spec = model->getDataSpecifier(fIndex);
 		
 		if (event) {
 			if ((event->type() == QEvent::MouseButtonPress) || (event->type() == QEvent::MouseButtonRelease)) {
@@ -137,10 +138,12 @@ public slots:
 			}
 		}
 		
-		EventRunner runner(view, "onClick");
-		if (runner.isValid()) {
-			runner.set("index", model->getDataIndex(fIndex), false);
-			runner.run();
+		if ((event->type() == QEvent::MouseButtonRelease) && (spec) && (spec->isClickableIcon())) {
+			EventRunner runner(view, "onClick");
+			if (runner.isValid()) {
+				runner.set("index", model->getDataIndex(fIndex), false);
+				runner.run();
+			}
 		}
 	}
 	
