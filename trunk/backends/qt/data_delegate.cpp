@@ -957,17 +957,22 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 		{
 			QKeyEvent *e = (QKeyEvent *)event;
 			switch (e->key()) {
-			case Qt::Key_Down:
-			case Qt::Key_Up:
 			case Qt::Key_PageUp:
 			case Qt::Key_PageDown:
 				if (Completer::isRunningOn(editor))
 					return false;
-			case Qt::Key_Home:
-			case Qt::Key_End:
 				if (qobject_cast<ComboBox_Editor *>(editor))
 					return false;
 				return true;
+			case Qt::Key_Home:
+			case Qt::Key_End:
+#ifdef Q_WS_MAC
+				if (qobject_cast<ComboBox_Editor *>(editor))
+					return false;
+				return true;
+#else
+				return false;
+#endif
 			case Qt::Key_Enter:
 			case Qt::Key_Return:
 				if (Completer::isRunningOn(editor))
