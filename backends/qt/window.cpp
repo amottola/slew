@@ -41,6 +41,7 @@ setWindowStyle(QWidget *window, int style)
 	if (window->focusPolicy() != Qt::NoFocus)
 		window->setAttribute(Qt::WA_MacShowFocusRect, style & SL_WINDOW_STYLE_NOFOCUS ? false : true);
 	window->setAttribute(Qt::WA_TranslucentBackground, style & SL_WINDOW_STYLE_TRANSLUCENT ? true : false);
+	window->setAttribute(Qt::WA_TransparentForMouseEvents, style & SL_WINDOW_STYLE_NOMOUSE ? true : false);
 }
 
 
@@ -66,6 +67,8 @@ getWindowStyle(QWidget *window, int& style)
 		style |= SL_WINDOW_STYLE_NOFOCUS;
 	if (window->testAttribute(Qt::WA_TranslucentBackground))
 		style |= SL_WINDOW_STYLE_TRANSLUCENT;
+	if (window->testAttribute(Qt::WA_TransparentForMouseEvents))
+		style |= SL_WINDOW_STYLE_NOMOUSE;
 }
 
 

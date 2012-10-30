@@ -106,6 +106,7 @@ class Window(Layoutable):
 	STYLE_SMALL					= 0x00000080
 	STYLE_NOFOCUS				= 0x00000100
 	STYLE_TRANSLUCENT			= 0x00000200
+	STYLE_NOMOUSE				= 0x00000400
 	STYLE_DATA					= 0x00008000
 	
 	BOXALIGN_EXPAND				= 0xFFFFFFFF
@@ -133,6 +134,7 @@ class Window(Layoutable):
 		"small":				STYLE_SMALL,
 		"nofocus":				STYLE_NOFOCUS,
 		"translucent":			STYLE_TRANSLUCENT,
+		"nomouse":				STYLE_NOMOUSE,
 		"data":					STYLE_DATA,
 	}
 	
