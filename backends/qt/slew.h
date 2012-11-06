@@ -286,6 +286,7 @@ public:
 	void set(const char *param, PyObject *value, bool decref=true) { PyDict_SetItemString(fParams, param, value); if (decref) Py_DECREF(value); }
 	void set(const char *param, bool value) { set(param, createBoolObject(value)); }
 	void set(const char *param, int value) { set(param, PyInt_FromLong(value)); }
+	void set(const char *param, double value) { set(param, PyFloat_FromDouble(value)); }
 	void set(const char *param, const QString& value) { set(param, createStringObject(value)); }
 	void set(const char *param, const QPoint& value) { set(param, createVectorObject(value)); }
 	void set(const char *param, const QPointF& value) { set(param, createVectorObject(value)); }

@@ -9,6 +9,7 @@
 #include <QMainWindow>
 #include <QFrame>
 #include <QAbstractScrollArea>
+#include <QGraphicsOpacityEffect>
 
 
 
@@ -359,7 +360,21 @@ SL_DEFINE_METHOD(Window, set_opacity, {
 	if (!PyArg_ParseTuple(args, "d", &opacity))
 		return NULL;
 	
-	impl->setWindowOpacity(opacity);
+	if (impl->isWindow()) {
+		impl->setWindowOpacity(opacity);
+	}
+	else {
+/*
+		QGraphicsOpacityEffect *effect = (QGraphicsOpacityEffect *)impl->graphicsEffect();
+		if ((!effect) && (opacity < 1.0))
+			effect = new QGraphicsOpacityEffect;
+		else if (opacity >= 1.0)
+			effect = NULL;
+		if (effect)
+			effect->setOpacity(opacity);
+		impl->setGraphicsEffect(effect);
+*/
+	}
 })
 
 

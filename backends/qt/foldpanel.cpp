@@ -249,6 +249,11 @@ FoldPanel_Impl::collapse(bool animate)
 void
 FoldPanel_Impl::handleFrameChanged(int frame)
 {
+	if (fTimeLine) {
+		EventRunner runner(this, "onFolding");
+		runner.set("value", fTimeLine->currentValue());
+		runner.run();
+	}
 	setupLayout();
 }
 

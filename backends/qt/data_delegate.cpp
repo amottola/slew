@@ -138,7 +138,7 @@ public slots:
 			}
 		}
 		
-		if ((event->type() == QEvent::MouseButtonRelease) && (spec) && (spec->isClickableIcon())) {
+		if (((!event) || (event->type() == QEvent::MouseButtonRelease)) && (spec) && (spec->isClickableIcon())) {
 			EventRunner runner(view, "onClick");
 			if (runner.isValid()) {
 				runner.set("index", model->getDataIndex(fIndex), false);
