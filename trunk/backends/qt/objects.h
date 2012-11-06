@@ -113,7 +113,7 @@ public:
 	virtual bool removeColumns(int column, int count, const QModelIndex& parent = QModelIndex());
 	bool changeColumns(int column, int count, const QModelIndex& parent = QModelIndex());
 	
-	void changeCell(int row, int column, const QModelIndex& parent, bool delayed);
+	void changeCell(int row, int column, const QModelIndex& parent);
 	
 	void resetAll();
 	

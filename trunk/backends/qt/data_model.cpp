@@ -742,7 +742,6 @@ DataModel_Impl::index(int row, int column, const QModelIndex& parent) const
 	}
 	if (!parentNode->hasChild(row, column))
 		return QModelIndex();
-// 	qDebug() << "index" << row << column << parent << this << rowCount(parent) << columnCount(parent);
 	return createIndex(row, column, parentNode->child(row, column));
 }
 
@@ -1091,7 +1090,7 @@ DataModel_Impl::setData(const QModelIndex &index, const QVariant& value, int rol
 		PyErr_Clear();
 	}
 	else {
-		changeCell(index.row(), index.column(), index.parent(), false);
+		changeCell(index.row(), index.column(), index.parent());
 	}
 	return true;
 }
@@ -1188,7 +1187,6 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	changePersistentIndexList(from_list, to_list);
 	emit layoutChanged();
 	emit dataChanged(index(row, 0, parent), index(row + count - 1, columnCount(parent) - 1, parent));
-// 	QMetaObject::invokeMethod(this, "dataChanged", Qt::QueuedConnection, Q_ARG(QModelIndex, index(row, 0, parent)), Q_ARG(QModelIndex, index(row + count - 1, columnCount(parent) - 1, parent)));
 	
 	return true;
 }
@@ -1286,14 +1284,13 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 	changePersistentIndexList(from_list, to_list);
 	emit layoutChanged();
 	emit dataChanged(index(0, column, parent), index(rowCount(parent) - 1, column + count - 1, parent));
-// 	QMetaObject::invokeMethod(this, "dataChanged", Qt::QueuedConnection, Q_ARG(QModelIndex, index(0, column, parent)), Q_ARG(QModelIndex, index(rowCount(parent) - 1, column + count - 1, parent)));
-	
+
 	return true;
 }
 
 
 void
-DataModel_Impl::changeCell(int row, int column, const QModelIndex& parent, bool delayed)
+DataModel_Impl::changeCell(int row, int column, const QModelIndex& parent)
 {
 	PyAutoLocker locker;
 	Node *node;
@@ -1341,14 +1338,8 @@ DataModel_Impl::changeCell(int row, int column, const QModelIndex& parent, bool 
 	
 		changePersistentIndexList(from_list, to_list);
 		
-		if (delayed) {
-			QMetaObject::invokeMethod(this, "dataChanged", Qt::QueuedConnection, Q_ARG(QModelIndex, thisIndex), Q_ARG(QModelIndex, thisIndex));
-			emit layoutChanged();
-		}
-		else {
-			emit layoutChanged();
-			emit dataChanged(thisIndex, thisIndex);
-		}
+		emit layoutChanged();
+		emit dataChanged(thisIndex, thisIndex);
 	}
 }
 
@@ -1466,7 +1457,7 @@ SL_DEFINE_METHOD(DataModel, notify, {
 		
 	case SL_DATA_MODEL_NOTIFY_CHANGED_CELL:
 		{
-			impl->changeCell(index, count, impl->index(parent), true);
+			impl->changeCell(index, count, impl->index(parent));
 		}
 		break;
 	}
