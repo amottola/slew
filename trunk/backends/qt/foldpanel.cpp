@@ -6,6 +6,7 @@
 
 #include <QAbstractButton>
 #include <QStyleOptionGroupBox>
+#include <QLayout>
 
 
 class FoldPanel_Expander : public QAbstractButton
@@ -64,7 +65,7 @@ protected:
 		case QEvent::ChildAdded:
 		case QEvent::ChildRemoved:
 // 		case QEvent::ChildPolished:
-		case QEvent::LayoutRequest:
+// 		case QEvent::LayoutRequest:
 		case QEvent::HideToParent:
 		case QEvent::ShowToParent:
 			emit layoutChanged();
@@ -342,12 +343,17 @@ FoldPanel_Impl::sizeFromContents(const QSize& size) const
 
 
 QSize
-FoldPanel_Impl::animateSize(const QSize& _size) const
+FoldPanel_Impl::animateSize(const QSize& tsize) const
 {
-	QSize size(_size);
+	QSize size = qvariant_cast<QSize>(property("explicitSize"));
 	QFont font(this->font());
 	font.setBold(true);
 	int base;
+	
+	if ((size.width() <= 0) || (size.width() < tsize.width()))
+		size.rwidth() = tsize.width();
+	if ((size.height() <= 0) || (size.height() < tsize.height()))
+		size.rheight() = tsize.height();
 	
 	if (fFlat) {
 		base = 0;
@@ -373,30 +379,14 @@ FoldPanel_Impl::animateSize(const QSize& _size) const
 QSize
 FoldPanel_Impl::minimumSizeHint() const
 {
-	QSize size = qvariant_cast<QSize>(property("explicitSize"));
-	QSize tsize = sizeFromContents(fContent->minimumSizeHint());
-	
-	if ((size.width() <= 0) || (size.width() < tsize.width()))
-		size.rwidth() = tsize.width();
-	if ((size.height() <= 0) || (size.height() < tsize.height()))
-		size.rheight() = tsize.height();
-	
-	return animateSize(size);
+	return animateSize(sizeFromContents(fContent->minimumSizeHint()));
 }
 
 
 QSize
 FoldPanel_Impl::sizeHint() const
 {
-	QSize size = qvariant_cast<QSize>(property("explicitSize"));
-	QSize tsize = sizeFromContents(fContent->sizeHint());
-	
-	if ((size.width() <= 0) || (size.width() < tsize.width()))
-		size.rwidth() = tsize.width();
-	if ((size.height() <= 0) || (size.height() < tsize.height()))
-		size.rheight() = tsize.height();
-	
-	return animateSize(size);
+	return animateSize(sizeFromContents(fContent->sizeHint()));
 }
 
 
