@@ -303,6 +303,7 @@ public:
 	bool get(const char *param, PyObject **value) { if (!fEvent) return false; PyObject *o = PyObject_GetAttrString(fEvent, param); if (o) { Py_DECREF(o); *value = o; return true; } PyErr_Clear(); return false; }
 	bool get(const char *param, bool *value) { return fEvent ? getObjectAttr(fEvent, param, value) : false; }
 	bool get(const char *param, int *value) { return fEvent ? getObjectAttr(fEvent, param, value) : false; }
+	bool get(const char *param, double *value) { return fEvent ? getObjectAttr(fEvent, param, value) : false; }
 	bool get(const char *param, QString *value) { return fEvent ? getObjectAttr(fEvent, param, value) : false; }
 	bool get(const char *param, QPoint *value) { return fEvent ? getObjectAttr(fEvent, param, value) : false; }
 	bool get(const char *param, QSize *value) { return fEvent ? getObjectAttr(fEvent, param, value) : false; }
