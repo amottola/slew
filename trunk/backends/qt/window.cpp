@@ -354,6 +354,8 @@ SL_DEFINE_METHOD(Window, grab_mouse, {
 })
 
 
+#ifdef Q_WS_MAC
+
 SL_DEFINE_METHOD(Window, set_opacity, {
 	double opacity;
 	
@@ -364,7 +366,25 @@ SL_DEFINE_METHOD(Window, set_opacity, {
 		impl->setWindowOpacity(opacity);
 	}
 	else {
-/*
+		// QGraphicsEffect does not work on Mac with Qt 4.8.3; same problem as reported here:
+		// https://bugreports.qt-project.org/browse/QTBUG-23205
+		
+		impl->setVisible(opacity >= 0.5);
+	}
+})
+
+#else
+
+SL_DEFINE_METHOD(Window, set_opacity, {
+	double opacity;
+	
+	if (!PyArg_ParseTuple(args, "d", &opacity))
+		return NULL;
+	
+	if (impl->isWindow()) {
+		impl->setWindowOpacity(opacity);
+	}
+	else {
 		QGraphicsOpacityEffect *effect = (QGraphicsOpacityEffect *)impl->graphicsEffect();
 		if ((!effect) && (opacity < 1.0))
 			effect = new QGraphicsOpacityEffect;
@@ -373,9 +393,10 @@ SL_DEFINE_METHOD(Window, set_opacity, {
 		if (effect)
 			effect->setOpacity(opacity);
 		impl->setGraphicsEffect(effect);
-*/
 	}
 })
+
+#endif
 
 
 SL_DEFINE_METHOD(Window, popup_message, {
