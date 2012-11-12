@@ -1015,10 +1015,13 @@ FormattedLineEdit::setState(State state)
 void
 FormattedLineEdit::setFormat(const QString& format)
 {
-	parseFormat(format, fDataType, fFormatInfo, &fHumanFormat, &fRegExp);
-	if (qobject_cast<SearchField_Impl *>(this))
-		fFormatInfo[1].fFlags |= FORMAT_BLANK_IF_ZERO;
-	updateDisplay(hasFocus());
+	if (format != fFormat) {
+		parseFormat(format, fDataType, fFormatInfo, &fHumanFormat, &fRegExp);
+		if (qobject_cast<SearchField_Impl *>(this))
+			fFormatInfo[1].fFlags |= FORMAT_BLANK_IF_ZERO;
+		updateDisplay(hasFocus());
+		fFormat = format;
+	}
 }
 
 
@@ -1293,7 +1296,8 @@ FormattedLineEdit::updateDisplay(bool editMode)
 			QLineEdit::setText(result);
 		if (alignment == (Qt::Alignment)0)
 			alignment = fAlign;
-		QLineEdit::setAlignment(alignment | Qt::AlignVCenter);
+		if (alignment != (QLineEdit::alignment() & Qt::AlignHorizontal_Mask))
+			QLineEdit::setAlignment(alignment | Qt::AlignVCenter);
 		if (!color.isValid())
 			color = fColor;
  	}
