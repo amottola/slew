@@ -1015,13 +1015,11 @@ FormattedLineEdit::setState(State state)
 void
 FormattedLineEdit::setFormat(const QString& format)
 {
-	if (format != fFormat) {
-		parseFormat(format, fDataType, fFormatInfo, &fHumanFormat, &fRegExp);
-		if (qobject_cast<SearchField_Impl *>(this))
-			fFormatInfo[1].fFlags |= FORMAT_BLANK_IF_ZERO;
-		updateDisplay(hasFocus());
-		fFormat = format;
-	}
+	parseFormat(format, fDataType, fFormatInfo, &fHumanFormat, &fRegExp);
+	if (qobject_cast<SearchField_Impl *>(this))
+		fFormatInfo[1].fFlags |= FORMAT_BLANK_IF_ZERO;
+	updateDisplay(hasFocus());
+	fFormat = format;
 }
 
 
