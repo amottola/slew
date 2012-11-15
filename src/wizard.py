@@ -95,4 +95,19 @@ class Wizard(slew.Dialog):
 	def set_background(self, bitmap):
 		self.__background = Bitmap.ensure(bitmap)
 		self._impl.set_background(self.__background)
+	
+	def set_back_text(self, text):
+		self._impl.set_back_text(text)
+	
+	def set_next_text(self, text):
+		self._impl.set_next_text(text)
+	
+	def set_cancel_text(self, text):
+		self._impl.set_cancel_text(text)
+	
+	def set_commit_text(self, text):
+		self._impl.set_commit_text(text)
+	
+	def set_finish_text(self, text):
+		self._impl.set_finish_text(text)
 
