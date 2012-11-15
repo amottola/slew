@@ -256,6 +256,57 @@ SL_DEFINE_METHOD(Wizard, set_background, {
 })
 
 
+SL_DEFINE_METHOD(Wizard, set_back_text, {
+	QString text;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
+		return NULL;
+	
+	impl->setButtonText(QWizard::BackButton, text);
+})
+
+
+SL_DEFINE_METHOD(Wizard, set_next_text, {
+	QString text;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
+		return NULL;
+	
+	impl->setButtonText(QWizard::NextButton, text);
+})
+
+
+SL_DEFINE_METHOD(Wizard, set_cancel_text, {
+	QString text;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
+		return NULL;
+	
+	impl->setButtonText(QWizard::CancelButton, text);
+})
+
+
+SL_DEFINE_METHOD(Wizard, set_commit_text, {
+	QString text;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
+		return NULL;
+	
+	impl->setButtonText(QWizard::CommitButton, text);
+})
+
+
+SL_DEFINE_METHOD(Wizard, set_finish_text, {
+	QString text;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
+		return NULL;
+	
+	impl->setButtonText(QWizard::FinishButton, text);
+})
+
+
+
 SL_START_PROXY_DERIVED(Wizard, Dialog)
 SL_METHOD(insert)
 SL_METHOD(remove)
@@ -270,6 +321,11 @@ SL_METHOD(set_watermark)
 SL_METHOD(set_logo)
 SL_METHOD(set_banner)
 SL_METHOD(set_background)
+SL_METHOD(set_back_text)
+SL_METHOD(set_next_text)
+SL_METHOD(set_cancel_text)
+SL_METHOD(set_commit_text)
+SL_METHOD(set_finish_text)
 
 SL_PROPERTY(style)
 SL_PROPERTY(start_page)
