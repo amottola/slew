@@ -125,6 +125,8 @@ TreeView_Impl::TreeView_Impl()
 	connect(this, SIGNAL(activated(const QModelIndex&)), this, SLOT(handleActivated(const QModelIndex&)));
 	connect(this, SIGNAL(expanded(const QModelIndex&)), this, SLOT(handleExpanded(const QModelIndex&)));
 	connect(this, SIGNAL(collapsed(const QModelIndex&)), this, SLOT(handleCollapsed(const QModelIndex&)));
+	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(updateEditorGeometries()));
+	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(updateEditorGeometries()));
 	
 	header()->viewport()->installEventFilter(this);
 	viewport()->installEventFilter(this);

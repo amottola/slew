@@ -433,7 +433,7 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 			Qt::CheckState state;
 			if (spec->fSelection == 0)
 				state = Qt::Unchecked;
-			else if (spec->fSelection == 1)
+			else if (spec->fSelection > 0)
 				state = Qt::Checked;
 			else
 				state = Qt::PartiallyChecked;
@@ -592,33 +592,24 @@ ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem& option, 
 	DataModel_Impl *model = (DataModel_Impl *)index.model();
 	DataSpecifier *spec = model->getDataSpecifier(index);
 	QPointer<QWidget> editor;
-	PyObject *value;
 	
 	if ((!spec) || (spec->isNone()))
 		return QItemDelegate::createEditor(parent, option, index);
 	
 	if (spec->isCustom()) {
 		editor = new Custom_Editor(parent, index, spec->fWidget);
-		value = Py_None;
-		Py_INCREF(value);
 	}
 	else if (spec->isCheckBox()) {
 		editor = new CheckBox_Editor(parent, index);
-		value = spec->fSelection != 0 ? Py_True : Py_False;
-		Py_INCREF(value);
 	}
 	else if (spec->isComboBox()) {
 		editor = new ComboBox_Editor(parent, index);
-		value = PyInt_FromLong(spec->fSelection);
 	}
 	else if (spec->isBrowser()) {
 		editor = new Browser_Editor(parent, index);
-		value = Py_None;
-		Py_INCREF(value);
 	}
 	else {
 		editor = new LineEdit_Editor(parent, index);
-		value = createStringObject(spec->fText);
 	}
 	
 	return editor;
@@ -741,8 +732,8 @@ ItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *abstractModel, cons
 		QWidget *editor = view->indexWidget(index);
 		if ((editor) && (editingEvent))
 			QMetaObject::invokeMethod(editor, "handleStartEditingEvent", Qt::DirectConnection, Q_ARG(QEvent *, editingEvent));
-		delete editingEvent;
 	}
+	delete editingEvent;
 	return !result;
 }
 
@@ -875,7 +866,12 @@ ItemDelegate::startEditing(const QModelIndex& index)
 			value = createStringObject(spec->fText);
 		}
 		else if (spec->isCheckBox()) {
-			value = createBoolObject(spec->fSelection != 0);
+			if (spec->fSelection >= 0)
+				value = createBoolObject(spec->fSelection != 0);
+			else {
+				value = Py_None;
+				Py_INCREF(value);
+			}
 		}
 		else if (spec->isComboBox()) {
 			value = PyInt_FromLong(spec->fSelection);
