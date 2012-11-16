@@ -500,7 +500,7 @@ class Application(slew.Application):
 				return e.widget.popup_message("Hello world! ", align=slew.RIGHT, buttons=slew.BUTTON_OK|slew.BUTTON_CANCEL) == slew.BUTTON_OK
 		tf.onChange = complete
 		tf.onFocusOut = focus_out
-		self.f.find('grid').onCellEditEnd = focus_out
+# 		self.f.find('grid').onCellEditEnd = focus_out
 		
 		print self.f.find('combo').items
 		
