@@ -843,12 +843,12 @@ def open_file(message=None, specs='*.*', path='', multi=False):
 
 
 
-def save_file(message=None, name='', spec=None, path=''):
+def save_file(message=None, spec=None, path=''):
 	if message is None:
 		message = translate('Save file')
 	if spec is None:
 		spec = ('*', translate('All files'))
-	return _slew.save_file(message, name, spec, path)
+	return _slew.save_file(message, spec, path)
 
 
 
