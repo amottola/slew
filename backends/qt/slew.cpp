@@ -3040,11 +3040,11 @@ SL_DEFINE_MODULE_METHOD(open_file, {
 
 
 SL_DEFINE_MODULE_METHOD(save_file, {
-	static char *kwlist[] = { "message", "name", "spec", "path", NULL };
+	static char *kwlist[] = { "message", "spec", "path", NULL };
 	PyObject *spec;
-	QString message, name, ext, desc, wildcard, path;
+	QString message, ext, desc, wildcard, path;
 	
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&O|O&:save_file", kwlist, convertString, &message, convertString, &name, &spec, convertString, &path))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O|O&:save_file", kwlist, convertString, &message, &spec, convertString, &path))
 		return NULL;
 	
 	spec = PySequence_Fast(spec, "Expected tuple object");
@@ -3066,11 +3066,10 @@ SL_DEFINE_MODULE_METHOD(save_file, {
 		ext = ext.mid(1);
 	
 	QString fileName;
-	QString dirName = path + QDir::separator() + name;
 	
 	Py_BEGIN_ALLOW_THREADS
 	
-	fileName = QFileDialog::getSaveFileName(NULL, message, dirName, wildcard);
+	fileName = QFileDialog::getSaveFileName(NULL, message, path, wildcard);
 	
 	Py_END_ALLOW_THREADS
 	
@@ -3093,7 +3092,7 @@ SL_DEFINE_MODULE_METHOD(save_file, {
 // 			Py_RETURN_NONE;
 // 	}
 	
-	return PyFile_FromString((char *)(const char *)fileName.toUtf8(), "wb");
+	return createStringObject(fileName);
 })
 
 
@@ -3115,7 +3114,7 @@ SL_DEFINE_MODULE_METHOD(choose_directory, {
 	if (dir.isEmpty())
 		Py_RETURN_NONE;
 	
-	return PyString_FromString(dir.toUtf8());
+	return createStringObject(dir);
 })
 
 
