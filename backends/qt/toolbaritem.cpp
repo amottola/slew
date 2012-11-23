@@ -229,6 +229,26 @@ ToolBarItem_Impl::setMenu(QMenu *menu, QToolButton::ToolButtonPopupMode mode)
 }
 
 
+SL_DEFINE_METHOD(ToolBarItem, set_autorepeat, {
+	int delay, interval;
+	
+	if (!PyArg_ParseTuple(args, "ii", &delay, &interval))
+		return NULL;
+	
+	QList<QWidget *> list = impl->associatedWidgets();
+	if (!list.isEmpty()) {
+		ToolBar_Impl *widget = qobject_cast<ToolBar_Impl *>(list.first());
+		if (widget) {
+			QToolButton *button = qobject_cast<QToolButton *>(widget->widgetForAction(impl));
+			if (button) {
+				button->setAutoRepeatDelay(delay);
+				button->setAutoRepeatInterval(interval);
+			}
+		}
+	}
+})
+
+
 SL_DEFINE_METHOD(ToolBarItem, get_type, {
 	return PyInt_FromLong(qvariant_cast<int>(impl->property("type")));
 })
@@ -397,6 +417,7 @@ SL_DEFINE_METHOD(ToolBarItem, set_menu, {
 
 
 SL_START_PROXY_DERIVED(ToolBarItem, Widget)
+SL_METHOD(set_autorepeat)
 SL_PROPERTY(type)
 SL_PROPERTY(text)
 SL_PROPERTY(description)

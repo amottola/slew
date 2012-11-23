@@ -43,6 +43,11 @@ class ToolBarItem(slew.Widget):
 		if (self.get_type() == ToolBarItem.TYPE_URL) and self.__url:
 			slew.system_open(self.__url)
 	
+# methods
+	
+	def set_autorepeat(self, delay, interval):
+		self._impl.set_autorepeat(delay, interval)
+	
 # properties
 	
 	def get_type(self):
