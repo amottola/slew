@@ -3009,17 +3009,7 @@ SL_DEFINE_MODULE_METHOD(open_file, {
 		QStringList list = fileNames;
 		QStringList::Iterator it;
 		for (i = 0, it = list.begin(); it != list.end(); it++, i++) {
-			QString fileName = *it;
-			PyObject *f = PyFile_FromString((char *)(const char *)fileName.toUtf8(), "rb");
-			if (!f) {
-				for (; i < size; i++) {
-					PyTuple_SET_ITEM(tuple, i, Py_None);
-					Py_INCREF(Py_None);
-				}
-				Py_DECREF(tuple);
-				return NULL;
-			}
-			PyTuple_SET_ITEM(tuple, i, f);
+			PyTuple_SET_ITEM(tuple, i, createStringObject(*it));
 		}
 		return tuple;
 	}
@@ -3034,7 +3024,7 @@ SL_DEFINE_MODULE_METHOD(open_file, {
 		
 		if (fileName.isEmpty())
 			Py_RETURN_NONE;
-		return PyFile_FromString((char *)(const char *)fileName.toUtf8(), "rb");
+		return createStringObject(fileName);
 	}
 })
 
