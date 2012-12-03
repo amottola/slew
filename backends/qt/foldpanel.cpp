@@ -17,7 +17,7 @@ public:
 	FoldPanel_Expander(FoldPanel_Impl *parent)
 		: QAbstractButton(parent)
 	{
-		setCursor(Qt::ArrowCursor);
+		setCursor(Qt::PointingHandCursor);
 		setFocusPolicy(Qt::NoFocus);
 	}
 	
