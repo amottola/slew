@@ -16,7 +16,7 @@ class ListBox(DataContainer, ListView):
 	PROPERTIES = merge(DataContainer.PROPERTIES, {
 		'style':				BitsProperty(merge(DataContainer.STYLE_BITS, {
 									"single":		STYLE_SINGLE,
-									"editable":		STYLE_MULTI,
+									"multi":		STYLE_MULTI,
 								})),
 		'selection':			Property(),
 	})
