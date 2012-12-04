@@ -32,9 +32,6 @@ public:
 	
 	virtual QAbstractButton *createIconButton(const QIcon& icon);
 	
-	void setEmptyText(const QString& text) { fEmptyText = text; update(); }
-	QString emptyText() { return fEmptyText; }
-	
 	void setCancelIcon(const QIcon& icon);
 	QIcon cancelIcon() { return fCancelIcon; }
 	
@@ -49,7 +46,6 @@ public:
 	virtual QSize minimumSizeHint() const;
 	
 	virtual void resizeEvent(QResizeEvent *event);
-	virtual void paintEvent(QPaintEvent *event);
 	
 public slots:
 	void handleTextModified(const QString& text, int completion);
@@ -61,7 +57,6 @@ public slots:
 protected:
 	QToolButton		*fCancelButton;
 	QIcon			fCancelIcon;
-	QString			fEmptyText;
 	QMenu			*fMenu;
 };
 

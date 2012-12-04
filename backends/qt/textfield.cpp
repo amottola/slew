@@ -435,6 +435,21 @@ SL_DEFINE_METHOD(TextField, set_icon, {
 })
 
 
+SL_DEFINE_METHOD(TextField, get_empty_text, {
+	return createStringObject(impl->emptyText());
+})
+
+
+SL_DEFINE_METHOD(TextField, set_empty_text, {
+	QString text;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
+		return NULL;
+	
+	impl->setEmptyText(text);
+})
+
+
 
 SL_START_PROXY_DERIVED(TextField, Window)
 SL_METHOD(cut)
@@ -461,6 +476,7 @@ SL_PROPERTY(align)
 SL_PROPERTY(filter)
 SL_PROPERTY(format)
 SL_PROPERTY(icon)
+SL_PROPERTY(empty_text)
 SL_END_PROXY_DERIVED(TextField, Window)
 
 
