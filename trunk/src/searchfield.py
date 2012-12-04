@@ -44,12 +44,6 @@ class SearchField(TextField):
 		self.__menu = slew.Menu.ensure(menu)
 		self._impl.set_menu(self.__menu)
 	
-	def get_empty_text(self):
-		return self._impl.get_empty_text()
-	
-	def set_empty_text(self, text):
-		self._impl.set_empty_text(text)
-	
 	def get_cancel_icon(self):
 		return self.__cancel_icon
 	

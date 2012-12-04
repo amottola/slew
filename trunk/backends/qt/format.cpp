@@ -1513,6 +1513,24 @@ FormattedLineEdit::focusOutEvent(QFocusEvent *event)
 
 
 void
+FormattedLineEdit::paintEvent(QPaintEvent *event)
+{
+	QLineEdit::paintEvent(event);
+	
+	if ((QLineEdit::text().isEmpty()) && (!hasFocus())) {
+		QPainter painter(this);
+		QStyleOptionFrameV2 panel;
+		initStyleOption(&panel);
+		QRect rect = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
+		QMargins margins = textMargins();
+		
+		painter.setPen(QColor(Qt::lightGray));
+		painter.drawText(rect.adjusted(margins.left() + (fIcon ? 1 : 5), 0, -margins.right() - 5, 0), Qt::AlignLeft | Qt::AlignVCenter, fEmptyText);
+	}
+}
+
+
+void
 FormattedLineEdit::resizeEvent(QResizeEvent *event)
 {
 	int margin = 0;

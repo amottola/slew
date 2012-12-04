@@ -114,8 +114,9 @@ public:
 
 
 SearchField_Impl::SearchField_Impl()
-	: FormattedLineEdit(), WidgetInterface(), fCancelButton(NULL), fEmptyText("Search..."), fMenu(NULL)
+	: FormattedLineEdit(), WidgetInterface(), fCancelButton(NULL), fMenu(NULL)
 {
+	setEmptyText("Search\u2026");
 	connect(this, SIGNAL(textModified(const QString&, int)), this, SLOT(handleTextModified(const QString&, int)));
 	connect(this, SIGNAL(returnPressed()), this, SLOT(handleReturnPressed()));
 	connect(this, SIGNAL(iconClicked()), this, SLOT(handleSearchClicked()));
@@ -239,24 +240,6 @@ SearchField_Impl::minimumSizeHint() const
 	QSize size = FormattedLineEdit::minimumSizeHint();
 	size.setWidth(qMax(size.width(), 50 + (fIcon ? fIcon->icon().availableSizes().value(0).width() + 8 : 0)));
 	return size;
-}
-
-
-void
-SearchField_Impl::paintEvent(QPaintEvent *event)
-{
-	FormattedLineEdit::paintEvent(event);
-	
-	if ((text().isEmpty()) && (!hasFocus())) {
-		QPainter painter(this);
-		QStyleOptionFrameV2 panel;
-		initStyleOption(&panel);
-		QRect rect = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
-		QMargins margins = textMargins();
-		
-		painter.setPen(QColor(Qt::lightGray));
-		painter.drawText(rect.adjusted(margins.left() + (fIcon ? 1 : 5), 0, -margins.right() - 5, 0), Qt::AlignLeft | Qt::AlignVCenter, fEmptyText);
-	}
 }
 
 
@@ -449,21 +432,6 @@ SL_DEFINE_METHOD(SearchField, set_style, {
 })
 
 
-SL_DEFINE_METHOD(SearchField, get_empty_text, {
-	return createStringObject(impl->emptyText());
-})
-
-
-SL_DEFINE_METHOD(SearchField, set_empty_text, {
-	QString text;
-	
-	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
-		return NULL;
-	
-	impl->setEmptyText(text);
-})
-
-
 
 SL_START_PROXY_DERIVED(SearchField, TextField)
 SL_METHOD(get_menu)
@@ -472,7 +440,6 @@ SL_METHOD(get_cancel_icon)
 SL_METHOD(set_cancel_icon)
 
 SL_PROPERTY(style)
-SL_PROPERTY(empty_text)
 SL_END_PROXY_DERIVED(SearchField, TextField)
 
 

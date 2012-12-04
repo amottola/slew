@@ -35,7 +35,11 @@ class TextField(slew.Window):
 		'filter':				StringProperty(),
 		'format':				StringProperty(),
 		'icon':					IconProperty(),
+		'empty_text':			StringProperty(),
 	})
+	
+	
+	DEFAULT_EMPTY_TEXT			= None
 	
 	def initialize(self):
 		slew.Window.initialize(self)
@@ -43,6 +47,8 @@ class TextField(slew.Window):
 		self.__format_vars = {}
 		self.__icon = None
 		self.__completer = None
+		if self.DEFAULT_EMPTY_TEXT is not None:
+			self.set_empty_text(self.DEFAULT_EMPTY_TEXT)
 	
 # methods
 	
@@ -87,6 +93,10 @@ class TextField(slew.Window):
 	
 	def complete(self):
 		self._impl.complete()
+		
+	@classmethod
+	def set_default_empty_text(cls, text):
+		cls.DEFAULT_EMPTY_TEXT = text
 	
 # properties
 	
@@ -168,6 +178,12 @@ class TextField(slew.Window):
 	def set_icon(self, icon):
 		self.__icon = Icon.ensure(icon)
 		self._impl.set_icon(self.__icon)
+	
+	def get_empty_text(self):
+		return self._impl.get_empty_text()
+	
+	def set_empty_text(self, text):
+		self._impl.set_empty_text(text)
 	
 	value = DeprecatedDescriptor('value')
 	length = DeprecatedDescriptor('length')

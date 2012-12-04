@@ -441,6 +441,9 @@ public:
 	void setEnterTabs(bool on) { fEnterTabs = on; }
 	bool isEnterTabs() { return fEnterTabs; }
 	
+	void setEmptyText(const QString& text) { fEmptyText = text; update(); }
+	QString emptyText() { return fEmptyText; }
+	
 	void setCompleter(DataModel_Impl *model, int column, const QColor& color, const QColor& bgcolor, const QColor& hicolor, const QColor& hibgcolor);
 	
 	virtual QAbstractButton *createIconButton(const QIcon& icon);
@@ -490,6 +493,7 @@ protected:
 	virtual void focusOutEvent(QFocusEvent *event);
 	virtual void contextMenuEvent(QContextMenuEvent *event);
 	virtual void dropEvent(QDropEvent *event);
+	virtual void paintEvent(QPaintEvent *event);
 
 protected:
 	State						fState;
@@ -504,6 +508,7 @@ protected:
 	bool						fSelectedOnFocus;
 	bool						fCapsOnly;
 	bool						fEnterTabs;
+	QString						fEmptyText;
 	QRegExpValidator			*fValidator;
 	QAbstractButton				*fIcon;
 	Completer					*fCompleter;
