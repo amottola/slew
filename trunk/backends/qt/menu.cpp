@@ -3,6 +3,37 @@
 #include "menu.h"
 #include "menuitem.h"
 
+#include <QWidgetAction>
+#include <QPalette>
+
+
+
+class WidgetAction : public QWidgetAction
+{
+	Q_OBJECT
+	
+public:
+	WidgetAction(Menu_Impl *parent, QWidget *widget)
+		: QWidgetAction(parent), fWidget(widget)
+	{
+	}
+	
+	virtual QWidget *createWidget(QWidget *parent)
+	{
+		fWidget->setParent(parent);
+		return fWidget;
+	}
+	
+	virtual void deleteWidget(QWidget *widget)
+	{
+		widget->hide();
+	}
+
+private:
+	QWidget		*fWidget;
+};
+
+
 
 Menu_Impl::Menu_Impl()
 	: QMenu(), WidgetInterface()
@@ -77,6 +108,18 @@ SL_DEFINE_METHOD(Menu, insert, {
 			before = NULL;
 		impl->insertAction(before, widget);
 	}
+	else if (isWindow(object)) {
+		QWidget *widget = (QWidget *)child;
+		QList<QAction *> list = impl->actions();
+		QAction *before, *action;
+		
+		if ((signed)index < list.count())
+			before = list.at(index);
+		else
+			before = NULL;
+		action = new WidgetAction(impl, widget);
+		impl->insertAction(before, action);
+	}
 	else
 		SL_RETURN_CANNOT_ATTACH
 })
@@ -100,6 +143,18 @@ SL_DEFINE_METHOD(Menu, remove, {
 		MenuItem_Impl *widget = (MenuItem_Impl *)child;
 		impl->removeAction(widget);
 	}
+	else if (isWindow(object)) {
+		QList<QAction *> list = impl->actions();
+		
+		foreach(QAction *action, list) {
+			WidgetAction *wa = qobject_cast<WidgetAction *>(action);
+			if ((wa) && (wa->defaultWidget() == child)) {
+				impl->removeAction(action);
+				action->deleteLater();
+				break;
+			}
+		}
+	}
 	else
 		SL_RETURN_CANNOT_DETACH
 })
@@ -119,6 +174,11 @@ SL_DEFINE_METHOD(Menu, popup, {
 	impl->exec(pos);
 	
 	Py_END_ALLOW_THREADS
+})
+
+
+SL_DEFINE_METHOD(Menu, close, {
+	impl->close();
 })
 
 
@@ -160,6 +220,7 @@ SL_START_PROXY_DERIVED(Menu, Widget)
 SL_METHOD(insert)
 SL_METHOD(remove)
 SL_METHOD(popup)
+SL_METHOD(close)
 
 SL_PROPERTY(title)
 SL_BOOL_PROPERTY(enabled)
