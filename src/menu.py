@@ -18,6 +18,9 @@ class Menu(slew.Widget):
 	def popup(self, pos=None):
 		return self._impl.popup(Vector.ensure(pos))
 	
+	def close(self):
+		self._impl.close()
+	
 # properties
 	
 	def get_title(self):
