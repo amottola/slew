@@ -174,6 +174,7 @@ protected:
 	
 	DataSpecifier			*fCurrentSpec;
 	QKeyEvent				*fTabEvent;
+	QPixmap					fInvalidPattern;
 };
 
 
