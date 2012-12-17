@@ -382,6 +382,10 @@ private:
 ItemDelegate::ItemDelegate(QObject *parent)
 	: QItemDelegate(parent), fCurrentSpec(NULL), fTabEvent(NULL)
 {
+	fInvalidPattern = QPixmap(32,32);
+	fInvalidPattern.fill(Qt::transparent);
+	QPainter painter(&fInvalidPattern);
+	painter.fillRect(fInvalidPattern.rect(), QBrush(Qt::gray, Qt::Dense5Pattern));
 }
 
 
@@ -408,7 +412,7 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 	painter->setClipRect(option.rect);
 	
 	if ((!spec) || (spec->isNone())) {
-		painter->fillRect(opt.rect, QBrush(Qt::gray, Qt::Dense5Pattern));
+		painter->fillRect(opt.rect, QBrush(fInvalidPattern));
 	}
 	else if (spec->isCheckBox()) {
 		QStyleOptionViewItem o(opt);
