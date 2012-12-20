@@ -2750,6 +2750,8 @@ Application::eventFilter(QObject *obj, QEvent *event)
 							seq = SL_SEQUENCE_PASTE;
 						else if (e->matches(QKeySequence::Close))
 							seq = SL_SEQUENCE_CLOSE;
+						else if (e->matches(QKeySequence::SelectAll))
+							seq = SL_SEQUENCE_SELECT_ALL;
 					}
 					runner.setName("onKeyDown");
 					runner.set("count", e->count());
