@@ -373,11 +373,13 @@ Node::changeRows(int pos, int count)
 {
 	PyAutoLocker locker;
 	for (int i = pos; i < pos + count; i++) {
-		QList<Node *> *row = fChildren.at(i);
-		for (int j = 0; j < row->count(); j++) {
-			Node *node = row->at(j);
-			if (node != NULL) {
-				node->invalidate();
+		QList<Node *> *row = fChildren.value(i);
+		if (row) {
+			for (int j = 0; j < row->count(); j++) {
+				Node *node = row->at(j);
+				if (node != NULL) {
+					node->invalidate();
+				}
 			}
 		}
 	}
