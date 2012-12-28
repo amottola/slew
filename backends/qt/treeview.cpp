@@ -775,7 +775,6 @@ SL_DEFINE_METHOD(TreeView, set_style, {
 	impl->setDecorated(style & SL_TREEVIEW_STYLE_DECORATED_ROWS ? true : false);
 	impl->setShowExpanders(style & SL_TREEVIEW_STYLE_EXPANDERS ? true : false);
 	impl->setShowRules(style & SL_TREEVIEW_STYLE_RULES ? true : false);
-	impl->setFocusPolicy(style & SL_WINDOW_STYLE_NOFOCUS ? Qt::NoFocus : Qt::StrongFocus);
 	impl->header()->setStretchLastSection(!(style & SL_TREEVIEW_STYLE_FIT_COLS));
 	impl->update();
 })
