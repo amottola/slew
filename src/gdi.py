@@ -443,8 +443,8 @@ class DC(object):
 	def text_extent(self, text, max_width=None):
 		return self._impl.text_extent(text, int(max_width or -1))
 
-	def blit(self, dc, pos, size=None, repeat=False):
-		dc._impl.blit(self, Vector.ensure(pos, False), Vector.ensure(size), repeat)
+	def blit(self, dc, pos, size=None, source_pos=None, source_size=None, repeat=False):
+		dc._impl.blit(self, Vector.ensure(pos, False), Vector.ensure(size), Vector.ensure(source_pos), Vector.ensure(source_size), repeat)
 	
 	def set_clipping(self, tl, br=None):
 		self._impl.set_clipping(Vector.ensure(tl), Vector.ensure(br))

@@ -827,6 +827,11 @@ def get_screen_dpi():
 
 
 
+def get_screen_bitmap():
+	return _slew.get_screen_bitmap()
+
+
+
 def find_focus():
 	return _slew.find_focus()
 

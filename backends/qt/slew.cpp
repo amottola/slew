@@ -4148,6 +4148,12 @@ SL_DEFINE_MODULE_METHOD(get_screen_dpi, {
 #endif
 
 
+SL_DEFINE_MODULE_METHOD(get_screen_bitmap, {
+	QDesktopWidget *desktop = QApplication::desktop();
+	return createBitmapObject(QPixmap::grabWindow(desktop->winId()));
+})
+
+
 SL_DEFINE_MODULE_METHOD(find_focus, {
 	PyObject *focus = getObject(QApplication::focusWidget());
 	if (!focus)
@@ -4205,6 +4211,7 @@ SL_METHOD(get_mouse_pos)
 SL_METHOD(get_keyboard_modifiers)
 SL_METHOD(get_standard_bitmap)
 SL_METHOD(get_screen_dpi)
+SL_METHOD(get_screen_bitmap)
 SL_METHOD(find_focus)
 SL_METHOD(beep)
 SL_METHOD(get_backend_info)

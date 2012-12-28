@@ -106,12 +106,13 @@ SL_DEFINE_DC_METHOD(set_bits, {
 
 SL_DEFINE_DC_METHOD(blit, {
 	QPixmap *pixmap = (QPixmap *)self->fDevice;
-	PyObject *object, *sizeObj;
-	QPoint pos;
-	QRect target;
+	PyObject *object, *sizeObj, *sourcePosObj, *sourceSizeObj;
+	QPoint pos, sourcePos;
+	QSize size;
+	QRect target, source = pixmap->rect();
 	bool repeat;
 	
-	if (!PyArg_ParseTuple(args, "O!O&OO&", PyDC_Type, &object, convertPoint, &pos, &sizeObj, convertBool, &repeat))
+	if (!PyArg_ParseTuple(args, "O!O&OOOO&", PyDC_Type, &object, convertPoint, &pos, &sizeObj, &sourcePosObj, &sourceSizeObj, convertBool, &repeat))
 		return NULL;
 	
 	target.setTopLeft(pos);
@@ -119,10 +120,19 @@ SL_DEFINE_DC_METHOD(blit, {
 		target.setSize(pixmap->size());
 	}
 	else {
-		QSize size;
 		if (!convertSize(sizeObj, &size))
 			return NULL;
 		target.setSize(size);
+	}
+	if (sourcePosObj != Py_None) {
+		if (!convertPoint(sourcePosObj, &pos))
+			return NULL;
+		source.setTopLeft(pos);
+	}
+	if (sourceSizeObj != Py_None) {
+		if (!convertSize(sourceSizeObj, &size))
+			return NULL;
+		source.setSize(size);
 	}
 	
 	DC_Proxy *proxy = (DC_Proxy *)PyObject_GetAttrString(object, "_impl");
@@ -133,7 +143,7 @@ SL_DEFINE_DC_METHOD(blit, {
 		proxy->fPainter->fillRect(target, QBrush(*pixmap));
 	}
 	else {
-		proxy->fPainter->drawPixmap(target, *pixmap);
+		proxy->fPainter->drawPixmap(target, *pixmap, source);
 	}
 	
 	Py_DECREF(proxy);
