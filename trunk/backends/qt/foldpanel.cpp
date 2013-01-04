@@ -397,8 +397,11 @@ FoldPanel_Impl::paintEvent(QPaintEvent *event)
 	QFont font(this->font());
 	font.setBold(true);
     QFontMetrics metrics(font);
+	int h = metrics.height();
 	
 	QRect rect = this->rect();
+	if (!fIsExpanded)
+		rect.setHeight(h + 6);
 	QColor color, bgcolor;
 	QWidget *focused = NULL;
 	if (window())
@@ -430,7 +433,6 @@ FoldPanel_Impl::paintEvent(QPaintEvent *event)
 	painter.setBrush(color);
 	painter.drawRect(2, 0, rect.width() - 4, 1);
 	painter.drawRect(1, 1, rect.width() - 2, 1);
-	int h = metrics.height();
 	if ((fIsExpanded) || ((fTimeLine) && (fTimeLine->currentValue() > 0))) {
 		painter.drawRect(0, 2, rect.width(), h + 4);
 	}
