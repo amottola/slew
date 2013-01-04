@@ -470,8 +470,10 @@ SL_DEFINE_METHOD(Window, set_timeout, {
 
 
 SL_DEFINE_METHOD(Window, fit, {
-	if (impl->layout())
+	if (impl->layout()) {
+		impl->layout()->activate();
 		impl->resize(impl->layout()->minimumSize());
+	}
 })
 
 
