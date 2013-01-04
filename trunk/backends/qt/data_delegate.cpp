@@ -567,7 +567,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 				cursor.mergeCharFormat(format);
 			}
 		}
-		doc.setTextWidth(textRect.width());
+// 		doc.setTextWidth(textRect.width());
 		painter->save();
 		painter->translate(textRect.topLeft());
 		int height = doc.size().height();
@@ -845,8 +845,8 @@ ItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& in
 			QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent());
 			QTextDocument doc;
 			doc.setHtml(spec->fText);
-			doc.setTextWidth(view->visualRect(index).width() - margin);
-			size.rheight() = qMax(size.height(), int(doc.size().height()));
+// 			doc.setTextWidth(view->visualRect(index).width() - margin);
+			size = size.expandedTo(doc.size().toSize());
 		}
 	}
 	return size;

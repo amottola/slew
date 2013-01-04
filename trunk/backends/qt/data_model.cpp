@@ -964,6 +964,8 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 		}
 		Py_DECREF(spec);
 	}
+	if (flags & SL_DATA_SPECIFIER_AUTO_WIDTH)
+		width = 1;
 	
 	switch (role) {
 	case Qt::DisplayRole:
