@@ -65,7 +65,7 @@ protected:
 		case QEvent::ChildAdded:
 		case QEvent::ChildRemoved:
 // 		case QEvent::ChildPolished:
-// 		case QEvent::LayoutRequest:
+		case QEvent::LayoutRequest:
 		case QEvent::HideToParent:
 		case QEvent::ShowToParent:
 			emit layoutChanged();
