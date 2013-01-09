@@ -23,6 +23,7 @@ class Grid(View):
 	STYLE_MULTI					= 0x01000000
 	STYLE_NO_SELECTION			= 0x02000000
 	STYLE_DELAYED_EDIT			= 0x04000000
+	STYLE_AUTO_SCROLL			= 0x08000000
 	#}
 	
 	PROPERTIES = merge(View.PROPERTIES, {
@@ -39,6 +40,7 @@ class Grid(View):
 									'multi':				STYLE_MULTI,
 									'noselection':			STYLE_NO_SELECTION,
 									'delayedit':			STYLE_DELAYED_EDIT,
+									'autoscroll':			STYLE_AUTO_SCROLL,
 								})),
 		'row':					IntProperty(),
 		'column':				IntProperty(),
