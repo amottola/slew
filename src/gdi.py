@@ -294,6 +294,8 @@ class Font(object):
 	
 	STYLES = [ "bold", "italic", "underlined", "nokerning" ]
 	
+	TEMP_DC = None
+	
 	def __init__(self, family=0, face="", size=SIZE_DEFAULT, style=0, string=None):
 		self.family = family
 		self.face = face
@@ -330,6 +332,12 @@ class Font(object):
 	
 	def copy(self):
 		return Font(self.family, self.face, self.size, self.style)
+	
+	def text_extent(self, text, max_width=None):
+		if Font.TEMP_DC is None:
+			Font.TEMP_DC = slew.Bitmap(size=(1,1))
+		Font.TEMP_DC.set_font(self)
+		return Font.TEMP_DC.text_extent(text, max_width)
 	
 	@classmethod
 	def ensure(cls, value, **kwargs):
