@@ -558,6 +558,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 	if (fCurrentSpec->isHTML()) {
 		QTextDocument doc;
 		doc.setHtml(value);
+		doc.setDocumentMargin(0);
 		if (option.state & QStyle::State_Selected) {
 			for (QTextBlock block = doc.firstBlock(); block.isValid(); block = block.next()) {
 				QTextCursor cursor(block);
@@ -845,6 +846,7 @@ ItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& in
 			QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent());
 			QTextDocument doc;
 			doc.setHtml(spec->fText);
+			doc.setDocumentMargin(0);
 // 			doc.setTextWidth(view->visualRect(index).width() - margin);
 			size = size.expandedTo(doc.size().toSize());
 		}
