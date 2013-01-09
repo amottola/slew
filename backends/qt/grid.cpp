@@ -840,6 +840,8 @@ SL_DEFINE_METHOD(Grid, get_style, {
 		style |= SL_GRID_STYLE_READONLY;
 	else if (impl->editTriggers() == (QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed))
 		style |= SL_GRID_STYLE_DELAYED_EDIT;
+	if (impl->hasAutoScroll())
+		style |= SL_GRID_STYLE_AUTO_SCROLL;
 	
 	return PyInt_FromLong(style);
 })
@@ -865,6 +867,7 @@ SL_DEFINE_METHOD(Grid, set_style, {
 	impl->setSelectionBehavior(style & SL_GRID_STYLE_SELECT_ROWS ? QAbstractItemView::SelectRows : QAbstractItemView::SelectItems);
 	impl->setSelectionMode(style & SL_GRID_STYLE_NO_SELECTION ? QAbstractItemView::NoSelection : (style & SL_GRID_STYLE_MULTI ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection));
 	impl->setEditTriggers(style & SL_GRID_STYLE_READONLY ? QAbstractItemView::NoEditTriggers : ((style & SL_GRID_STYLE_DELAYED_EDIT) ? (QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed) : QAbstractItemView::AllEditTriggers));
+	impl->setAutoScroll(style & SL_GRID_STYLE_AUTO_SCROLL ? true : false);
 })
 
 
