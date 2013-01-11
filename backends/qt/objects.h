@@ -116,6 +116,7 @@ public:
 	void changeCell(int row, int column, const QModelIndex& parent);
 	
 	void resetAll();
+	void resetHeader();
 	
 	virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
 	
@@ -136,6 +137,7 @@ private slots:
 	
 private:
 	Node									*fRoot;
+	QList<DataSpecifier *>					fHeaderData;
 	PyObject								*fModel;
 };
 
