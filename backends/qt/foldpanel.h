@@ -83,7 +83,6 @@ private:
 	bool					fFlat;
 	bool					fExpandable;
 	int						fDuration;
-	QWidget					*fLastFocus;
 	QShortcut				*fShortcut;
 	bool					fInAnimation;
 	QSizeGrip				*fSizeGrip;

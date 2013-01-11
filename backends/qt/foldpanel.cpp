@@ -131,7 +131,7 @@ private:
 
 
 FoldPanel_Impl::FoldPanel_Impl()
-	: QWidget(), WidgetInterface(), fIsExpanded(true), fTimeLine(NULL), fFlat(false), fExpandable(true), fDuration(150), fLastFocus(NULL), fInAnimation(false), fHResize(false), fVResize(false)
+	: QWidget(), WidgetInterface(), fIsExpanded(true), fTimeLine(NULL), fFlat(false), fExpandable(true), fDuration(150), fInAnimation(false), fHResize(false), fVResize(false)
 {
 	fExpander = new FoldPanel_Expander(this);
 	fContent = new FoldPanel_Content(this);
@@ -250,6 +250,7 @@ FoldPanel_Impl::handleFrameChanged(int frame)
 		runner.set("value", fTimeLine->currentValue());
 		runner.run();
 	}
+	fContent->show();
 	setupLayout();
 }
 
@@ -261,16 +262,12 @@ FoldPanel_Impl::handleExpanded()
 	
 	if (fIsExpanded) {
 		fContent->show();
-		if (fLastFocus) {
-			fLastFocus->setFocus();
-		}
+		if (fContent->focusWidget())
+			fContent->focusWidget()->setFocus();
 		if (fTimeLine)
 			fTimeLine->setCurrentTime(fTimeLine->duration());
 	}
 	else {
-		fLastFocus = fContent->focusWidget();
-		if ((fLastFocus) && (!fLastFocus->hasFocus()))
-			fLastFocus = NULL;
 		fContent->hide();
 		setFocus();
 		if (fTimeLine)
@@ -291,8 +288,6 @@ FoldPanel_Impl::focusInEvent(QFocusEvent *event)
 			focusPreviousChild();
 		else if (event->reason() == Qt::TabFocusReason)
 			focusNextChild();
-		else if (fLastFocus)
-			fLastFocus->setFocus();
 	}
 }
 
