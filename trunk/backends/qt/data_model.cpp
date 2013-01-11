@@ -650,6 +650,7 @@ DataModel_Impl::~DataModel_Impl()
 	PyAutoLocker locker;
 	delete fRoot;
 	SL_QAPP()->unregisterObject(this);
+	resetHeader();
 }
 
 
@@ -670,6 +671,16 @@ void
 DataModel_Impl::resetAll()
 {
 	reset();
+	resetHeader();
+}
+
+
+void
+DataModel_Impl::resetHeader()
+{
+	foreach (DataSpecifier *data, fHeaderData)
+		delete data;
+	fHeaderData.clear();
 }
 
 
@@ -933,15 +944,16 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 {
 	QVariant value;
 	QPoint headerPos = orientation == Qt::Horizontal ? QPoint(section, -1) : QPoint(-1, section);
-	QString text;
-	int align, width, height, flags;
 	
-	{
+	DataSpecifier *data = fHeaderData.value(section);
+	if (!data) {
+		int align;
 		PyAutoLocker locker;
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
 		if (model == Py_None)
 			return value;
 		
+		data = new DataSpecifier();
 		PyObject *pos = createVectorObject(headerPos);
 		PyObject *spec = PyObject_CallMethod(model, "header", "O", pos);
 		Py_DECREF(pos);
@@ -949,40 +961,52 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 			PyErr_SetString(PyExc_TypeError, "expected 'DataSpecifier' object");
 		
 		if (spec) {
-			if ((!getObjectAttr(spec, "text", &text)) ||
+			if ((!getObjectAttr(spec, "text", &data->fText)) ||
 				(!getObjectAttr(spec, "align", &align)) ||
-				(!getObjectAttr(spec, "flags", &flags)) ||
-				(!getObjectAttr(spec, "width", &width)) ||
-				(!getObjectAttr(spec, "height", &height)))
+				(!getObjectAttr(spec, "flags", &data->fFlags)) ||
+				(!getObjectAttr(spec, "width", &data->fWidth)) ||
+				(!getObjectAttr(spec, "height", &data->fHeight)))
 				(void)0;
 		}
 		if (PyErr_Occurred()) {
 			PyErr_Print();
 			PyErr_Clear();
 			Py_XDECREF(spec);
+			delete data;
 			return value;
 		}
 		Py_DECREF(spec);
+		
+		data->fAlignment = fromAlign(align) & Qt::AlignHorizontal_Mask;
+		if (data->fAlignment == 0)
+			data->fAlignment = Qt::AlignLeft;
+		data->fAlignment |= Qt::AlignVCenter;
+		
+		DataModel_Impl *that = (DataModel_Impl *)this;
+		while (that->fHeaderData.size() <= section)
+			that->fHeaderData.append(NULL);
+		that->fHeaderData[section] = data;
 	}
-	if (flags & SL_DATA_SPECIFIER_AUTO_WIDTH)
-		width = 1;
+	
+	if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
+		data->fWidth = 1;
 	
 	switch (role) {
 	case Qt::DisplayRole:
 		{
-			value = text;
+			value = data->fText;
 			
 			Qt::TextElideMode elideMode = Qt::ElideNone;
 			QHeaderView::ResizeMode resizeMode = QHeaderView::Interactive;
 			
-			if (flags & SL_DATA_SPECIFIER_ELIDE_LEFT)
+			if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_LEFT)
 				elideMode = Qt::ElideLeft;
-			else if (flags & SL_DATA_SPECIFIER_ELIDE_MIDDLE)
+			else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_MIDDLE)
 				elideMode = Qt::ElideMiddle;
-			else if (flags & SL_DATA_SPECIFIER_ELIDE_RIGHT)
+			else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_RIGHT)
 				elideMode = Qt::ElideRight;
 			
-			if (flags & SL_DATA_SPECIFIER_AUTO_WIDTH)
+			if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
 				resizeMode = QHeaderView::ResizeToContents;
 			
 			emit configureHeader(headerPos, elideMode, resizeMode);
@@ -991,23 +1015,20 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 	
 	case Qt::TextAlignmentRole:
 		{
-			Qt::Alignment a = fromAlign(align) & Qt::AlignHorizontal_Mask;
-			if (a == 0)
-				a = Qt::AlignLeft;
-			value = int(a | Qt::AlignVCenter);
+			value = int(data->fAlignment);
 		}
 		break;
 		
 	case Qt::UserRole:
 		{
-			value = width;
+			value = data->fWidth;
 		}
 		break;
 	
 	case Qt::SizeHintRole:
 		{
-			if ((width) || (height))
-				return QSize(width, height);
+			if ((data->fWidth) || (data->fHeight))
+				return QSize(data->fWidth, data->fHeight);
 		}
 		break;
 	}
@@ -1202,6 +1223,8 @@ DataModel_Impl::insertColumns(int column, int count, const QModelIndex& parent)
 	PyAutoLocker locker;
 	Node *node;
 	
+	resetHeader();
+	
 	beginInsertColumns(parent, column, column + count - 1);
 	if (parent.isValid())
 		node = (Node *)parent.internalPointer();
@@ -1219,6 +1242,8 @@ DataModel_Impl::removeColumns(int column, int count, const QModelIndex& parent)
 {
 	PyAutoLocker locker;
 	Node *node;
+	
+	resetHeader();
 	
 	beginRemoveColumns(parent, column, column + count - 1);
 	if (parent.isValid())
@@ -1242,6 +1267,8 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 	QModelIndexList scan, changed;
 	QModelIndex idx;
 	int i, j;
+	
+	resetHeader();
 	
 	if (parent.isValid())
 		node = (Node *)parent.internalPointer();
