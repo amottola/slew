@@ -208,11 +208,6 @@ FoldPanel_Impl::toggleExpand(bool animate)
 	if ((focus) && (!focus->canFocusOut(focusw, this)))
 		return;
 	
-	if (fContent->isHidden()) {
-// 		fContent->resize(fContent->sizeHint());
-		fContent->show();
-	}
-	
 	if ((animate) && (fTimeLine)) {
 		fInAnimation = true;
 		fTimeLine->stop();
@@ -265,6 +260,7 @@ FoldPanel_Impl::handleExpanded()
 	setupLayout();
 	
 	if (fIsExpanded) {
+		fContent->show();
 		if (fLastFocus) {
 			fLastFocus->setFocus();
 		}
