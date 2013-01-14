@@ -650,7 +650,6 @@ DataModel_Impl::~DataModel_Impl()
 	PyAutoLocker locker;
 	delete fRoot;
 	SL_QAPP()->unregisterObject(this);
-	resetHeader();
 }
 
 
@@ -677,6 +676,7 @@ DataModel_Impl::resetAll()
 void
 DataModel_Impl::resetHeader()
 {
+	int size = fHeaderData.size();
 	foreach (DataSpecifier *data, fHeaderData)
 		delete data;
 	fHeaderData.clear();
@@ -945,8 +945,12 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 	QVariant value;
 	QPoint headerPos = orientation == Qt::Horizontal ? QPoint(section, -1) : QPoint(-1, section);
 	bool configure = false;
+	DataSpecifier *data = NULL;
+	DataSpecifier temp;
 	
-	DataSpecifier *data = fHeaderData.value(section);
+	if (orientation == Qt::Horizontal)
+		data = fHeaderData.value(section);
+	
 	if (!data) {
 		int align;
 		PyAutoLocker locker;
@@ -954,7 +958,11 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 		if (model == Py_None)
 			return value;
 		
-		data = new DataSpecifier();
+		if (orientation == Qt::Horizontal)
+			data = new DataSpecifier();
+		else
+			data = &temp;
+		
 		PyObject *pos = createVectorObject(headerPos);
 		PyObject *spec = PyObject_CallMethod(model, "header", "O", pos);
 		Py_DECREF(pos);
@@ -973,7 +981,8 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 			PyErr_Print();
 			PyErr_Clear();
 			Py_XDECREF(spec);
-			delete data;
+			if (orientation == Qt::Horizontal)
+				delete data;
 			return value;
 		}
 		Py_DECREF(spec);
@@ -983,11 +992,13 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 			data->fAlignment = Qt::AlignLeft;
 		data->fAlignment |= Qt::AlignVCenter;
 		
-		DataModel_Impl *that = (DataModel_Impl *)this;
-		while (that->fHeaderData.size() <= section)
-			that->fHeaderData.append(NULL);
-		that->fHeaderData[section] = data;
-		configure = true;
+		if (orientation == Qt::Horizontal) {
+			DataModel_Impl *that = (DataModel_Impl *)this;
+			while (that->fHeaderData.size() <= section)
+				that->fHeaderData.append(NULL);
+			that->fHeaderData[section] = data;
+			configure = true;
+		}
 	}
 	
 	if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
@@ -1031,7 +1042,7 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 	case Qt::SizeHintRole:
 		{
 			if ((data->fWidth) || (data->fHeight))
-				return QSize(data->fWidth, data->fHeight);
+				value = QSize(data->fWidth, data->fHeight);
 		}
 		break;
 	}
