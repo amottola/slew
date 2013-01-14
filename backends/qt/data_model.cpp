@@ -671,7 +671,6 @@ void
 DataModel_Impl::resetAll()
 {
 	reset();
-	resetHeader();
 }
 
 
@@ -687,6 +686,7 @@ DataModel_Impl::resetHeader()
 void
 DataModel_Impl::handleReset()
 {
+	resetHeader();
 	fRoot->invalidate();
 }
 
