@@ -944,7 +944,6 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 {
 	QVariant value;
 	QPoint headerPos = orientation == Qt::Horizontal ? QPoint(section, -1) : QPoint(-1, section);
-	bool configure = false;
 	DataSpecifier *data = NULL;
 	DataSpecifier temp;
 	
@@ -997,7 +996,6 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 			while (that->fHeaderData.size() <= section)
 				that->fHeaderData.append(NULL);
 			that->fHeaderData[section] = data;
-			configure = true;
 		}
 	}
 	
@@ -1008,22 +1006,20 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 	case Qt::DisplayRole:
 		{
 			value = data->fText;
-			if (configure) {
-				Qt::TextElideMode elideMode = Qt::ElideNone;
-				QHeaderView::ResizeMode resizeMode = QHeaderView::Interactive;
-				
-				if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_LEFT)
-					elideMode = Qt::ElideLeft;
-				else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_MIDDLE)
-					elideMode = Qt::ElideMiddle;
-				else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_RIGHT)
-					elideMode = Qt::ElideRight;
-				
-				if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
-					resizeMode = QHeaderView::ResizeToContents;
-				
-				emit configureHeader(headerPos, elideMode, resizeMode);
-			}
+			Qt::TextElideMode elideMode = Qt::ElideNone;
+			QHeaderView::ResizeMode resizeMode = QHeaderView::Interactive;
+			
+			if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_LEFT)
+				elideMode = Qt::ElideLeft;
+			else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_MIDDLE)
+				elideMode = Qt::ElideMiddle;
+			else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_RIGHT)
+				elideMode = Qt::ElideRight;
+			
+			if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
+				resizeMode = QHeaderView::ResizeToContents;
+			
+			emit configureHeader(headerPos, elideMode, resizeMode);
 		}
 		break;
 	
