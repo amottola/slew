@@ -259,7 +259,7 @@ SL_DEFINE_METHOD(Dialog, set_style, {
 	
 	bool visible = impl->isVisible();
 	impl->setWindowModality(modality);
-	if (flags |= impl->windowFlags())
+	if (flags != impl->windowFlags())
 		impl->setWindowFlags(flags);
 	
 	if (style & SL_FRAME_STYLE_RESIZEABLE) {
