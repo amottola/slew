@@ -1004,7 +1004,7 @@ convertColor(PyObject *object, QColor *value)
 int
 convertFont(PyObject *object, QFont *value)
 {
-	int family_id, size, style;
+	int family_id, size, style, spacing;
 	QString family, face;
 	QFont::StyleHint hint;
 	QFont font;
@@ -1018,7 +1018,8 @@ convertFont(PyObject *object, QFont *value)
 	if ((!getObjectAttr(object, "family", &family_id)) ||
 		(!getObjectAttr(object, "face", &face)) ||
 		(!getObjectAttr(object, "size", &size)) ||
-		(!getObjectAttr(object, "style", &style)))
+		(!getObjectAttr(object, "style", &style)) ||
+		(!getObjectAttr(object, "spacing", &spacing)))
 		return 0;
 	
 	if (family_id != SL_FONT_FAMILY_DEFAULT) {
@@ -1050,6 +1051,7 @@ convertFont(PyObject *object, QFont *value)
 	font.setItalic(style & SL_FONT_STYLE_ITALIC ? true : false);
 	font.setUnderline(style & SL_FONT_STYLE_UNDERLINED ? true : false);
 	font.setKerning(style & SL_FONT_STYLE_NO_KERNING ? false : true);
+	font.setLetterSpacing(QFont::AbsoluteSpacing, spacing);
 	
 	*value = font;
 	return 1;
@@ -1451,7 +1453,9 @@ createFontObject(const QFont& font)
 	if (font.underline())
 		style |= SL_FONT_STYLE_UNDERLINED;
 	
-	return PyObject_CallFunction(sFontType, "isii", family, (const char *)face.toUtf8(), size, style);
+	int spacing = font.letterSpacing();
+	
+	return PyObject_CallFunction(sFontType, "isiii", family, (const char *)face.toUtf8(), size, style, spacing);
 }
 
 
