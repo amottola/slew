@@ -296,11 +296,12 @@ class Font(object):
 	
 	TEMP_DC = None
 	
-	def __init__(self, family=0, face="", size=SIZE_DEFAULT, style=0, string=None):
+	def __init__(self, family=0, face="", size=SIZE_DEFAULT, style=0, spacing=0, string=None):
 		self.family = family
 		self.face = face
 		self.size = size
 		self.style = style
+		self.spacing = spacing
 		if string is not None:
 			parts = string.split(',')
 			for p in parts:
@@ -313,6 +314,9 @@ class Font(object):
 					self.size = int(value)
 				elif key == 'style':
 					self.style = parse_bit_flags(value, Font.STYLES)
+				elif key == 'spacing':
+					self.spacing = int(value)
+	
 	def __str__(self):
 		s = "family:" + Font.FAMILIES[self.family]
 		if self.face:
@@ -320,18 +324,20 @@ class Font(object):
 		s += ",size:%d" % self.size
 		if self.style:
 			s += ",style:%s" % build_bit_flags(self.style, Font.STYLES)
+		if self.spacing:
+			s += ",spacing:%d" % self.spacing
 		return s
 	
 	def __hash__(self):
 		return hash((self.family, self.face, self.size, self.style))
 	
 	def __cmp__(self, other):
-		if isinstance(other, Font) and (other.family == self.family) and (other.face == self.face) and (other.size == self.size) and (other.style == self.style):
+		if isinstance(other, Font) and (other.family == self.family) and (other.face == self.face) and (other.size == self.size) and (other.style == self.style) and (other.spacing == self.spacing):
 			return 0
 		return -1
 	
 	def copy(self):
-		return Font(self.family, self.face, self.size, self.style)
+		return Font(self.family, self.face, self.size, self.style, self.spacing)
 	
 	def text_extent(self, text, max_width=None):
 		if Font.TEMP_DC is None:
