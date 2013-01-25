@@ -289,6 +289,12 @@ SL_DEFINE_METHOD(Frame, get_style, {
 })
 
 
+#ifdef Q_WS_X11
+#define NO_BUTTONS_FLAGS	Qt::WindowSystemMenuHint
+#else
+#define NO_BUTTONS_FLAGS	Qt::FramelessWindowHint
+#endif
+
 SL_DEFINE_METHOD(Frame, set_style, {
 	int style;
 	
@@ -310,8 +316,10 @@ SL_DEFINE_METHOD(Frame, set_style, {
 		flags |= Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint;
 	if (style & SL_FRAME_STYLE_STAY_ON_TOP)
 		flags |= Qt::WindowStaysOnTopHint;
-	if ((style & SL_WINDOW_STYLE_FRAMELESS) || (!(flags & (Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint))))
+	if (style & SL_WINDOW_STYLE_FRAMELESS)
 		flags |= Qt::FramelessWindowHint;
+	if (!(flags & (Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint)))
+		flags |= NO_BUTTONS_FLAGS;
 	
 	flags |= Qt::Window;
 	bool visible = impl->isVisible();
