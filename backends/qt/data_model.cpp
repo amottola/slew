@@ -676,7 +676,6 @@ DataModel_Impl::resetAll()
 void
 DataModel_Impl::resetHeader()
 {
-	int size = fHeaderData.size();
 	foreach (DataSpecifier *data, fHeaderData)
 		delete data;
 	fHeaderData.clear();
@@ -1173,9 +1172,8 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	Node *node;
 	QModelIndexList from_list;
 	QModelIndexList to_list;
-	QModelIndexList scan, changed;
 	QModelIndex idx;
-	int i, j;
+	int i;
 	
 	if (parent.isValid())
 		node = (Node *)parent.internalPointer();
@@ -1185,39 +1183,20 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	from_list = persistentIndexList();
 	to_list = from_list;
 	
-	for (i = row; i < row + count; i++) {
-		for (j = 0; j < columnCount(parent); j++) {
-			scan.append(index(i, j, parent));
-		}
-	}
-	while (!scan.isEmpty()) {
-		idx = scan.takeFirst();
-		changed.append(idx);
-		for (i = 0; i < rowCount(idx); i++) {
-			for (j = 0; j < columnCount(idx); j++) {
-				scan.append(index(i, j, idx));
-			}
-		}
-	}
-	
 	emit layoutAboutToBeChanged();
 
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (changed.contains(idx)) {
-			if (idx.parent() != parent)
-				to_list[i] = QModelIndex();
-		}
+		if (idx.parent() != parent)
+			to_list[i] = QModelIndex();
 	}
 
 	node->changeRows(row, count);
 	
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (changed.contains(idx)) {
-			if (idx.parent() == parent)
-				to_list[i] = index(idx.row(), idx.column(), parent);
-		}
+		if (idx.parent() == parent)
+			to_list[i] = index(idx.row(), idx.column(), parent);
 	}
 	changePersistentIndexList(from_list, to_list);
 	emit layoutChanged();
@@ -1274,9 +1253,8 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 	Node *node;
 	QModelIndexList from_list;
 	QModelIndexList to_list;
-	QModelIndexList scan, changed;
 	QModelIndex idx;
-	int i, j;
+	int i;
 	
 	resetHeader();
 	
@@ -1288,39 +1266,20 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 	from_list = persistentIndexList();
 	to_list = from_list;
 	
-	for (i = 0; i < rowCount(parent); i++) {
-		for (j = column; j < column + count; j++) {
-			scan.append(index(i, j, parent));
-		}
-	}
-	while (!scan.isEmpty()) {
-		idx = scan.takeFirst();
-		changed.append(idx);
-		for (i = 0; i < rowCount(idx); i++) {
-			for (j = 0; j < columnCount(idx); j++) {
-				scan.append(index(i, j, idx));
-			}
-		}
-	}
-	
 	emit layoutAboutToBeChanged();
 
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (changed.contains(idx)) {
-			if (idx.parent() != parent)
-				to_list[i] = QModelIndex();
-		}
+		if (idx.parent() != parent)
+			to_list[i] = QModelIndex();
 	}
 
 	node->changeColumns(column, count);
 	
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (changed.contains(idx)) {
-			if (idx.parent() == parent)
-				to_list[i] = index(idx.row(), idx.column(), parent);
-		}
+		if (idx.parent() == parent)
+			to_list[i] = index(idx.row(), idx.column(), parent);
 	}
 	changePersistentIndexList(from_list, to_list);
 	emit layoutChanged();
