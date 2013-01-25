@@ -329,7 +329,7 @@ class Font(object):
 		return s
 	
 	def __hash__(self):
-		return hash((self.family, self.face, self.size, self.style))
+		return hash((self.family, self.face, self.size, self.style, self.spacing))
 	
 	def __cmp__(self, other):
 		if isinstance(other, Font) and (other.family == self.family) and (other.face == self.face) and (other.size == self.size) and (other.style == self.style) and (other.spacing == self.spacing):
