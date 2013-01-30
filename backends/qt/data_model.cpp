@@ -1172,6 +1172,7 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	Node *node;
 	QModelIndexList from_list;
 	QModelIndexList to_list;
+	QModelIndexList changed_list;
 	QModelIndex idx;
 	int i;
 	
@@ -1187,15 +1188,23 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (idx.parent() != parent)
-			to_list[i] = QModelIndex();
+		bool found = false;
+		while (idx.isValid()) {
+			if (idx.parent() == parent) {
+				found = true;
+				break;
+			}
+			idx = idx.parent();
+		}
+		if (found)
+			changed_list.append(to_list.at(i));
 	}
 
 	node->changeRows(row, count);
 	
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (idx.parent() == parent)
+		if (changed_list.contains(idx))
 			to_list[i] = index(idx.row(), idx.column(), parent);
 	}
 	changePersistentIndexList(from_list, to_list);
@@ -1253,6 +1262,7 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 	Node *node;
 	QModelIndexList from_list;
 	QModelIndexList to_list;
+	QModelIndexList changed_list;
 	QModelIndex idx;
 	int i;
 	
@@ -1270,15 +1280,23 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (idx.parent() != parent)
-			to_list[i] = QModelIndex();
+		bool found = false;
+		while (idx.isValid()) {
+			if (idx.parent() == parent) {
+				found = true;
+				break;
+			}
+			idx = idx.parent();
+		}
+		if (found)
+			changed_list.append(to_list.at(i));
 	}
 
 	node->changeColumns(column, count);
 	
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
-		if (idx.parent() == parent)
+		if (changed_list.contains(idx))
 			to_list[i] = index(idx.row(), idx.column(), parent);
 	}
 	changePersistentIndexList(from_list, to_list);
