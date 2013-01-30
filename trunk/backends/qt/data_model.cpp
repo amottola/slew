@@ -1205,7 +1205,7 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
 		if (changed_list.contains(idx))
-			to_list[i] = index(idx.row(), idx.column(), parent);
+			to_list[i] = index(idx.row(), idx.column(), idx.parent());
 	}
 	changePersistentIndexList(from_list, to_list);
 	emit layoutChanged();
@@ -1297,7 +1297,7 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 	for (i = 0; i < to_list.size(); i++) {
 		idx = to_list.at(i);
 		if (changed_list.contains(idx))
-			to_list[i] = index(idx.row(), idx.column(), parent);
+			to_list[i] = index(idx.row(), idx.column(), idx.parent());
 	}
 	changePersistentIndexList(from_list, to_list);
 	emit layoutChanged();
