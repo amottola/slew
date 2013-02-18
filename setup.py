@@ -71,8 +71,12 @@ if sys.platform == 'darwin':
 	else:
 		cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers '
 		ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
-	cflags += '-gstabs+ -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wno-write-strings -fvisibility=hidden'
-	ldflags += '-Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -mmacosx-version-min=10.5 -headerpad_max_install_names'
+	if os.path.exists('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk'):
+		sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk'
+	else:
+		sdk = '/Developer/SDKs/MacOSX10.5.sdk'
+	cflags += '-g -mmacosx-version-min=10.5 -isysroot %s -Wno-write-strings -fvisibility=hidden' % sdk
+	ldflags += '-Wl,-syslibroot,%s -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -mmacosx-version-min=10.5 -headerpad_max_install_names' % sdk
 	data_files = []
 	if develop:
 		os.environ['ARCHFLAGS'] = '-arch x86_64'
