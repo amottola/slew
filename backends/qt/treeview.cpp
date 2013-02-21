@@ -19,18 +19,8 @@ public:
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const
 	{
 		if (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) {
-			if ((fTreeView->isDecorated()) && (!(fTreeView->showExpanders())) && (index.column() == 0)) {
-				if (index.parent().isValid()) {
-#ifdef Q_WS_WIN
-					opt->rect.adjust(4, 0, 0, 0);
-#elif defined(Q_WS_MAC)
-					opt->rect.adjust(6, 0, 0, 0);
-#endif
-				}
-				backOpt->rect.setLeft(0);
-			}
-			if ((!fTreeView->header()->stretchLastSection()) && (index.column() == fTreeView->header()->count() - 1))
-				backOpt->rect.setRight(1000000);
+			backOpt->rect.setLeft(0);
+			backOpt->rect.setRight(1000000);
 		}
 	}
 	
@@ -40,38 +30,7 @@ public:
 	
 		QRect viewRect = fTreeView->viewport()->rect();
 		QRect rect = fTreeView->visualRect(index);
-		if (fTreeView->isDecorated()) {
-			if ((!fTreeView->indexBelow(index).isValid()) || (!fTreeView->indexBelow(index).parent().isValid())) {
-				QModelIndex parent = index;
-				while (parent.parent().isValid())
-					parent = fTreeView->model()->parent(parent);
-				QVariant color = fTreeView->model()->data(parent, Qt::ForegroundRole);
-				QPen pen(qvariant_cast<QColor>(color));
-				painter->setClipping(false);
-				painter->setPen(pen);
-				painter->drawLine(viewRect.left(), rect.bottom(), viewRect.right(), rect.bottom());
-			}
-			else if (!index.parent().isValid()) {
-				if (!fTreeView->isExpanded(index)) {
-					QVariant color = fTreeView->model()->data(index, Qt::ForegroundRole);
-					QPen pen(qvariant_cast<QColor>(color));
-					painter->setClipping(false);
-					painter->setPen(pen);
-					painter->drawLine(viewRect.left(), rect.bottom(), viewRect.right(), rect.bottom());
-				}
-			}
-			else {
-				QColor color = qvariant_cast<QColor>(fTreeView->model()->data(index, Qt::ForegroundRole));
-				QPen pen(color.darker(120));
-				QVector<qreal> dashes;
-				dashes << 1 << 1;
-				pen.setDashPattern(dashes);
-				rect.adjust(fTreeView->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, fTreeView) + 1, 0, 0, 0);
-				painter->setPen(pen);
-				painter->drawLine(rect.left(), rect.bottom(), viewRect.right() + 1, rect.bottom());
-			}
-		}
-		else if ((fTreeView->showRules()) && (!(option.state & QStyle::State_Selected))) {
+		if ((fTreeView->showRules()) && (!(option.state & QStyle::State_Selected))) {
 			QColor color = qvariant_cast<QColor>(fTreeView->model()->data(index, Qt::BackgroundRole));
 			if (!color.isValid())
 				color = Qt::gray;
@@ -97,7 +56,7 @@ private:
 
 
 TreeView_Impl::TreeView_Impl()
-	: QTreeView(), WidgetInterface(), fShowExpanders(true), fIsDecorated(false), fShowRules(false), fExpandState(Waiting)
+	: QTreeView(), WidgetInterface(), fShowExpanders(true), fShowRules(false), fExpandState(Waiting)
 {
 	setHorizontalScrollMode(ScrollPerPixel);
 	setVerticalScrollMode(ScrollPerPixel);
@@ -603,22 +562,6 @@ TreeView_Impl::drawBranches(QPainter *painter, const QRect& rect, const QModelIn
 }
 
 
-void
-TreeView_Impl::drawRow(QPainter *painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-	QStyleOptionViewItem opt(option);
-	
-	if (selectionBehavior() == QAbstractItemView::SelectRows) {
-		if ((fIsDecorated) && (!fShowExpanders)) {
-			if (index.column() == 0)
-				opt.rect.setLeft(0);
-		}
-	}
-	
-	QTreeView::drawRow(painter, opt, index);
-}
-
-
 SL_DEFINE_METHOD(TreeView, edit, {
 	PyObject *object;
 	int pos;
@@ -747,8 +690,6 @@ SL_DEFINE_METHOD(TreeView, get_style, {
 		style |= SL_TREEVIEW_STYLE_DELAYED_EDIT;
 	if (impl->isAnimated())
 		style |= SL_TREEVIEW_STYLE_ANIMATED;
-	if (impl->isDecorated())
-		style |= SL_TREEVIEW_STYLE_DECORATED_ROWS;
 	if (impl->showExpanders())
 		style |= SL_TREEVIEW_STYLE_EXPANDERS;
 	if (impl->showRules())
@@ -772,13 +713,26 @@ SL_DEFINE_METHOD(TreeView, set_style, {
 	impl->setSelectionBehavior(style & SL_TREEVIEW_STYLE_SELECT_ROWS ? QAbstractItemView::SelectRows : QAbstractItemView::SelectItems);
 	impl->setSelectionMode(style & SL_TREEVIEW_STYLE_NO_SELECTION ? QAbstractItemView::NoSelection : (style & SL_TREEVIEW_STYLE_MULTI ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection));
 	impl->setEditTriggers(style & SL_TREEVIEW_STYLE_READONLY ? QAbstractItemView::NoEditTriggers : (style & SL_TREEVIEW_STYLE_DELAYED_EDIT ? QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed : QAbstractItemView::AllEditTriggers));
-	impl->setDecorated(style & SL_TREEVIEW_STYLE_DECORATED_ROWS ? true : false);
 	impl->setShowExpanders(style & SL_TREEVIEW_STYLE_EXPANDERS ? true : false);
 	impl->setShowRules(style & SL_TREEVIEW_STYLE_RULES ? true : false);
 	impl->header()->setStretchLastSection(!(style & SL_TREEVIEW_STYLE_FIT_COLS));
 	impl->update();
 })
 
+
+SL_DEFINE_METHOD(TreeView, get_indentation, {
+	return PyInt_FromLong(impl->indentation());
+})
+
+
+SL_DEFINE_METHOD(TreeView, set_indentation, {
+	int indentation;
+	
+	if (!PyArg_ParseTuple(args, "i", &indentation))
+		return NULL;
+	
+	impl->setIndentation(indentation);
+})
 
 
 SL_START_VIEW_PROXY(TreeView)
@@ -792,6 +746,7 @@ SL_METHOD(select_all)
 SL_METHOD(move_cursor)
 
 SL_PROPERTY(style)
+SL_PROPERTY(indentation)
 SL_END_VIEW_PROXY(TreeView)
 
 

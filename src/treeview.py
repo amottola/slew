@@ -18,13 +18,12 @@ class TreeView(View):
 	STYLE_EXPANDERS				= 0x00040000
 	STYLE_SELECT_ROWS			= 0x00080000
 	STYLE_HEADER				= 0x00100000
-	STYLE_DECORATED_ROWS		= 0x00200000
-	STYLE_ANIMATED				= 0x00400000
-	STYLE_RULES					= 0x00800000
-	STYLE_DELAYED_EDIT			= 0x01000000
-	STYLE_ALT_ROWS				= 0x02000000
-	STYLE_READONLY				= 0x04000000
-	STYLE_FIT_COLS				= 0x08000000
+	STYLE_ANIMATED				= 0x00200000
+	STYLE_RULES					= 0x00400000
+	STYLE_DELAYED_EDIT			= 0x00800000
+	STYLE_ALT_ROWS				= 0x01000000
+	STYLE_READONLY				= 0x02000000
+	STYLE_FIT_COLS				= 0x04000000
 	#}
 	
 	PROPERTIES = merge(View.PROPERTIES, {
@@ -35,7 +34,6 @@ class TreeView(View):
 									'expanders':			STYLE_EXPANDERS,
 									'selectrows':			STYLE_SELECT_ROWS,
 									'header':				STYLE_HEADER,
-									'decoratedrows':		STYLE_DECORATED_ROWS,
 									'animated':				STYLE_ANIMATED,
 									'rules':				STYLE_RULES,
 									'delayedit':			STYLE_DELAYED_EDIT,
@@ -87,5 +85,13 @@ class TreeView(View):
 	
 	def move_cursor(self, dx, dy):
 		self._impl.move_cursor(dx, dy)
+	
+# properties
+	
+	def get_indentation(self):
+		return self._impl.get_indentation()
+	
+	def set_indentation(self, indentation):
+		self._impl.set_indentation(indentation)
 	
 

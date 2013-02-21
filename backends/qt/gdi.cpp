@@ -21,9 +21,9 @@ SL_DEFINE_DC_METHOD(set_color, {
 		return NULL;
 	
 	if (color != pen.color()) {
-		if (color.isValid())
+		if ((color.isValid()) && (pen.style() == Qt::NoPen))
 			pen.setStyle(Qt::SolidLine);
-		else
+		else if (!color.isValid())
 			pen.setStyle(Qt::NoPen);
 		pen.setColor(color);
 		painter->setPen(pen);
@@ -114,6 +114,17 @@ SL_DEFINE_DC_METHOD(get_penstyle, {
 	case Qt::DotLine:			style = SL_DC_PEN_STYLE_DOT; break;
 	case Qt::DashDotLine:		style = SL_DC_PEN_STYLE_DASH_DOT; break;
 	case Qt::DashDotDotLine:	style = SL_DC_PEN_STYLE_DASH_DOT_DOT; break;
+	case Qt::CustomDashLine:
+		{
+			QString pattern;
+			QVector<qreal> vector = painter->pen().dashPattern();
+			for (int i = 0; i < vector.size(); i += 2) {
+				pattern += QString("-").repeated(vector[i]);
+				pattern += QString(" ").repeated(vector[i+1]);
+			}
+			return createStringObject(pattern);
+		}
+		break;
 	case Qt::SolidLine:
 	default:					style = SL_DC_PEN_STYLE_SOLID; break;
 	}
@@ -124,17 +135,40 @@ SL_DEFINE_DC_METHOD(get_penstyle, {
 
 SL_DEFINE_DC_METHOD(set_penstyle, {
 	QPen pen = painter->pen();
+	PyObject *styleObj;
 	int style;
 	
-	if (!PyArg_ParseTuple(args, "i", &style))
+	if (!PyArg_ParseTuple(args, "O", &styleObj))
 		return NULL;
-	
-	switch (style) {
-	case SL_DC_PEN_STYLE_DASH:			pen.setStyle(Qt::DashLine); break;
-	case SL_DC_PEN_STYLE_DOT:			pen.setStyle(Qt::DotLine); break;
-	case SL_DC_PEN_STYLE_DASH_DOT:		pen.setStyle(Qt::DashDotLine); break;
-	case SL_DC_PEN_STYLE_DASH_DOT_DOT:	pen.setStyle(Qt::DashDotDotLine); break;
-	default:							pen.setStyle(Qt::SolidLine); break;
+	style = PyInt_AsLong(styleObj);
+	if (!PyErr_Occurred()) {
+		switch (style) {
+		case SL_DC_PEN_STYLE_DASH:			pen.setStyle(Qt::DashLine); break;
+		case SL_DC_PEN_STYLE_DOT:			pen.setStyle(Qt::DotLine); break;
+		case SL_DC_PEN_STYLE_DASH_DOT:		pen.setStyle(Qt::DashDotLine); break;
+		case SL_DC_PEN_STYLE_DASH_DOT_DOT:	pen.setStyle(Qt::DashDotDotLine); break;
+		default:							pen.setStyle(Qt::SolidLine); break;
+		}
+	}
+	else {
+		PyErr_Clear();
+		QString pattern;
+		if (!convertString(styleObj, &pattern))
+			return NULL;
+		QVector<qreal> vector;
+		int solid = 0, empty = 0;
+		for (int i = 0; i < pattern.size(); i++) {
+			if (pattern[i].isSpace())
+				empty++;
+			else
+				solid++;
+			if (((i + 1 == pattern.size()) || (pattern[i].isSpace() != pattern[i+1].isSpace())) && (empty) && (solid)) {
+				vector.append(solid);
+				vector.append(empty);
+				solid = empty = 0;
+			}
+		}
+		pen.setDashPattern(vector);
 	}
 	if (pen != painter->pen())
 		painter->setPen(pen);
