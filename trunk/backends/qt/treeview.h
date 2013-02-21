@@ -34,9 +34,6 @@ public:
 	void setShowExpanders(bool enabled) { fShowExpanders = enabled; }
 	bool showExpanders() { return fShowExpanders; }
 	
-	void setDecorated(bool enabled) { fIsDecorated = enabled; }
-	bool isDecorated() { return fIsDecorated; }
-	
 	void setShowRules(bool enabled) { fShowRules = enabled; }
 	bool showRules() { return fShowRules; }
 	
@@ -67,13 +64,11 @@ public slots:
 protected:
 	virtual bool edit(const QModelIndex& index, EditTrigger trigger, QEvent* event);
 	virtual void drawBranches(QPainter *painter, const QRect& rect, const QModelIndex& index) const;
-	virtual void drawRow(QPainter *painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 	virtual bool eventFilter(QObject *obj, QEvent *event);
 	virtual void focusInEvent(QFocusEvent *event);
 	
 private:
 	bool					fShowExpanders;
-	bool					fIsDecorated;
 	bool					fShowRules;
 	QBasicTimer				fExpandTimer;
 	ExpandState				fExpandState;
