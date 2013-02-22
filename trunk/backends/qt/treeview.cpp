@@ -18,7 +18,7 @@ public:
 	
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const
 	{
-		if (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) {
+		if ((fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) && (index.column() == 0)) {
 			backOpt->rect.setLeft(0);
 			backOpt->rect.setRight(1000000);
 		}
