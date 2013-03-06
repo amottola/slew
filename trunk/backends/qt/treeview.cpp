@@ -6,6 +6,32 @@
 #include <QItemSelectionModel>
 #include <QMouseEvent>
 #include <QToolTip>
+#include <QCommonStyle>
+
+
+
+class TreeView_Style : public QCommonStyle
+{
+	Q_OBJECT
+	
+public:
+	TreeView_Style(TreeView_Impl *parent) : QCommonStyle(), fTreeView(parent) {}
+	
+	virtual void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *widget = 0) const
+	{
+		if ((pe == PE_PanelItemViewItem) && (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) && (opt->state & QStyle::State_Selected)) {
+			p->save();
+			p->setClipping(false);
+			p->fillRect(QRect(0, opt->rect.top(), 1000000, opt->rect.height()), fTreeView->palette().highlight());
+			p->restore();
+			return;
+		}
+		qApp->style()->drawPrimitive(pe, opt, p, widget);
+	}
+
+private:
+	TreeView_Impl		*fTreeView;
+};
 
 
 
@@ -18,8 +44,7 @@ public:
 	
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const
 	{
-		if ((fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) && (index.column() == 0)) {
-			backOpt->rect.setLeft(0);
+		if (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) {
 			backOpt->rect.setRight(1000000);
 		}
 	}
@@ -78,6 +103,7 @@ TreeView_Impl::TreeView_Impl()
 	header()->setContextMenuPolicy(Qt::CustomContextMenu);
 	header()->setMinimumHeight(style()->pixelMetric(QStyle::PM_HeaderMargin, NULL, header()) + header()->fontMetrics().height());
 	new HeaderStyle(header());
+	setStyle(new TreeView_Style(this));
 	
 	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(handleContextMenu(const QPoint&)));
 	connect(header(), SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(handleContextMenuOnHeader(const QPoint&)));
