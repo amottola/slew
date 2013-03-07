@@ -50,6 +50,7 @@ void
 Menu_Impl::handleAboutToHide()
 {
 	PyAutoLocker locker;
+	EventRunner(this, "onCollapse").run();
 	PyObject *object = getObject(this, false);
 	Py_DECREF(object);
 }
@@ -61,6 +62,7 @@ Menu_Impl::handleAboutToShow()
 	PyAutoLocker locker;
 	PyObject *object = getObject(this, false);
 	Py_INCREF(object);
+	EventRunner(this, "onExpand").run();
 }
 
 
