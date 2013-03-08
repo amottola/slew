@@ -268,7 +268,7 @@ FoldPanel_Impl::handleExpanded()
 			fTimeLine->setCurrentTime(fTimeLine->duration());
 	}
 	else {
-		fContent->hide();
+		QMetaObject::invokeMethod(fContent, "hide", Qt::QueuedConnection);
 		setFocus();
 		if (fTimeLine)
 			fTimeLine->setCurrentTime(0);
@@ -391,7 +391,7 @@ FoldPanel_Impl::paintEvent(QPaintEvent *event)
 	int h = metrics.height();
 	
 	QRect rect = this->rect();
-	if (!fIsExpanded)
+	if ((!fIsExpanded) && (!fInAnimation))
 		rect.setHeight(h + 6);
 	QColor color, bgcolor;
 	QWidget *focused = NULL;
