@@ -268,7 +268,7 @@ FoldPanel_Impl::handleExpanded()
 			fTimeLine->setCurrentTime(fTimeLine->duration());
 	}
 	else {
-		QMetaObject::invokeMethod(fContent, "hide", Qt::QueuedConnection);
+		fContent->hide();
 		setFocus();
 		if (fTimeLine)
 			fTimeLine->setCurrentTime(0);
