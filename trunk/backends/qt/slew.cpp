@@ -2160,11 +2160,11 @@ Application::notify(QObject *receiver, QEvent *event)
 								widget = NULL;
 								break;
 							}
- 							if (target->focusPolicy() != Qt::NoFocus) {
+//  							if (target->focusPolicy() != Qt::NoFocus) {
 								if (!impl->canFocusOut(oldFocus, target))
 									return true;
 								widget = NULL;
-							}
+// 							}
 						}
 						break;
 						
