@@ -78,7 +78,7 @@ class LineEdit_Editor : public FormattedLineEdit, public Base_Editor
 	
 public:
 	LineEdit_Editor(QWidget *parent, const QModelIndex& index)
-		: FormattedLineEdit(parent), Base_Editor(index)
+		: FormattedLineEdit(parent), Base_Editor(index), fCurrentCompletion(-1)
 	{
 		connect(this, SIGNAL(textModified(const QString&, int)), this, SLOT(handleTextModified(const QString&, int)));
 		connect(this, SIGNAL(iconClicked()), this, SLOT(handleStartEditingEvent()));
@@ -89,7 +89,7 @@ public:
 	int currentCompletion()
 	{
 		if (!Completer::isRunningOn(this))
-			return -1;
+			return fCurrentCompletion;
 		return Completer::completion();
 	}
 	
@@ -99,11 +99,6 @@ public:
 			QString text, oldText = QLineEdit::text();
 			return (isValidInput((QKeyEvent *)event, &text)) && (oldText != text);
 		}
-// 		else if ((event->type() == QEvent::MouseButtonPress) || (event->type() == QEvent::MouseButtonRelease) || (event->type() == QEvent::MouseButtonDblClick)) {
-// 			QMouseEvent *e = (QMouseEvent *)event;
-// 			if ((fIcon) && (fIcon->geometry().contains(fIcon->mapFromGlobal(e->globalPos()))))
-// 				return true;
-// 		}
 		return false;
 	}
 	
@@ -124,6 +119,8 @@ public slots:
 		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
 		DataModel_Impl *model = (DataModel_Impl *)view->model();
 		DataSpecifier *spec = model->getDataSpecifier(fIndex);
+		
+		fCurrentCompletion = -1;
 		
 		if (event) {
 			if ((event->type() == QEvent::MouseButtonPress) || (event->type() == QEvent::MouseButtonRelease)) {
@@ -152,6 +149,8 @@ public slots:
 	{
 		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
 		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		
+		fCurrentCompletion = completion;
 		
 		EventRunner runner(view, "onChange");
 		if (runner.isValid()) {
@@ -184,6 +183,9 @@ public slots:
 			}
 		}
 	}
+	
+private:
+	int			fCurrentCompletion;
 };
 
 
@@ -1071,8 +1073,8 @@ ItemDelegate::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 	}
 	
 	if (lineEdit) {
+		completion = lineEdit->currentCompletion();
 		if (Completer::isRunningOn(lineEdit)) {
-			completion = lineEdit->currentCompletion();
 			lineEdit->handleTextModified(lineEdit->value(), completion);
 		}
 		if (!lineEdit->isValid()) {
