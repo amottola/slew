@@ -4051,6 +4051,24 @@ SL_DEFINE_MODULE_METHOD(get_keyboard_modifiers, {
 })
 
 
+SL_DEFINE_MODULE_METHOD(get_keyboard_repeat_rate, {
+	if (qobject_cast<QApplication *>(qApp))
+		return PyInt_FromLong((long)qApp->keyboardInputInterval());
+	return PyInt_FromLong(0);
+})
+
+
+SL_DEFINE_MODULE_METHOD(set_keyboard_repeat_rate, {
+	if (qobject_cast<QApplication *>(qApp)) {
+		static char *kwlist[] = { "rate", NULL };
+		int rate;
+		if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:set_keyboard_repeat_rate", kwlist, &rate))
+			return NULL;
+		qApp->setKeyboardInputInterval(rate);
+	}
+})
+
+
 SL_DEFINE_MODULE_METHOD(get_standard_bitmap, {
 	static char *kwlist[] = { "bitmap", "size", NULL };
 	int type;
@@ -4213,6 +4231,8 @@ SL_METHOD(call_later_timeout)
 SL_METHOD(get_mouse_buttons)
 SL_METHOD(get_mouse_pos)
 SL_METHOD(get_keyboard_modifiers)
+SL_METHOD(get_keyboard_repeat_rate)
+SL_METHOD(set_keyboard_repeat_rate)
 SL_METHOD(get_standard_bitmap)
 SL_METHOD(get_screen_dpi)
 SL_METHOD(get_screen_bitmap)

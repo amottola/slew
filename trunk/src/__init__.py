@@ -807,6 +807,16 @@ def get_keyboard_modifiers():
 
 
 
+def get_keyboard_repeat_rate():
+	return _slew.get_keyboard_repeat_rate()
+
+
+
+def set_keyboard_repeat_rate(rate):
+	_slew.set_keyboard_repeat_rate(rate)
+
+
+
 def process_events():
 	_slew.process_events()
 
