@@ -162,6 +162,7 @@ class Widget(EventHandler):
 	
 	PROPERTIES = merge(EventHandler.PROPERTIES, {
 		'name':		StringProperty(),
+		'extra':	ExtraProperty(),
 	})
 	
 	def __new__(cls, *args, **kwargs):
@@ -185,6 +186,7 @@ class Widget(EventHandler):
 			else:
 				self.__name = name
 			Widget.AUTO_NAME[class_name] += 1
+		self.__extra = None
 		
 		if xml is not None:
 			self.load(xml, globals, locals)
@@ -376,6 +378,12 @@ class Widget(EventHandler):
 	
 	def set_name(self, name):
 		self.__name = str(name)
+	
+	def get_extra(self):
+		return self.__extra
+	
+	def set_extra(self, extra):
+		self.__extra = extra
 	
 	def get_index(self):
 		if self.__parent is None:
