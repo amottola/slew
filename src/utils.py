@@ -416,3 +416,11 @@ class DateTimeProperty(Property):
 			ts = time.strptime(node.attrib[name], '%Y-%m-%d %H:%M:%S')
 			getattr(instance, 'set_' + name)(datetime(*(ts[0:6])))
 
+
+
+class ExtraProperty(Property):
+	def load(self, instance, name, node, globals, locals):
+		if name in node.attrib:
+			getattr(instance, 'set_' + name)(eval(node.attrib[name]))
+
+
