@@ -45,6 +45,7 @@ public:
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const
 	{
 		if (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) {
+			backOpt->rect.setLeft(0);
 			backOpt->rect.setRight(1000000);
 		}
 	}
