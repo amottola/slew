@@ -25,6 +25,9 @@ del version_info
 
 
 #defs{SL_
+APPLICATION_QUIT_ON_WINDOWS_CLOSED	= 0x1
+
+
 EXECUTABLE_NAME						= 0
 EXECUTABLE_PATH						= 1
 APPLICATION_PATH					= 2
@@ -625,6 +628,11 @@ def get_application():
 
 def set_application_name(name):
 	_slew.set_application_name(name)
+
+
+
+def set_application_flags(flags):
+	_slew.set_application_flags(flags)
 
 
 

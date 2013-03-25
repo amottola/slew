@@ -2914,6 +2914,17 @@ SL_DEFINE_MODULE_METHOD(set_application_name, {
 })
 
 
+SL_DEFINE_MODULE_METHOD(set_application_flags, {
+	static char *kwlist[] = { "flags", NULL };
+	int flags;
+	
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &flags))
+		return NULL;
+	
+	qApp->setQuitOnLastWindowClosed(flags & SL_APPLICATION_QUIT_ON_WINDOWS_CLOSED ? true : false);
+})
+
+
 SL_DEFINE_MODULE_METHOD(run, {
 	Py_BEGIN_ALLOW_THREADS
 	
@@ -4201,6 +4212,7 @@ SL_METHOD(init)
 SL_METHOD(exit)
 SL_METHOD(report_exception)
 SL_METHOD(set_application_name)
+SL_METHOD(set_application_flags)
 SL_METHOD(run)
 SL_METHOD(process_events)
 SL_METHOD(flush_events)
