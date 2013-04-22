@@ -218,11 +218,11 @@ class Widget(EventHandler):
 		self.remove(index)
 	
 	def __contains__(self, widget):
-		if isinstance(child, basestring):
+		if isinstance(widget, basestring):
 			for child in self.__children:
 				if child.__name == widget:
 					return True
-		elif isinstance(child, Widget):
+		elif isinstance(widget, Widget):
 			for child in self.__children:
 				if child is widget:
 					return True
