@@ -159,12 +159,12 @@ TextView_Impl::TextView_Impl()
 void
 TextView_Impl::setLineNumberArea(bool enabled)
 {
-	delete fLineNumberArea;
-	if (enabled) {
-		fLineNumberArea = new LineNumberArea(this);
-	}
-	else {
+	if ((fLineNumberArea) && (!enabled)) {
+		delete fLineNumberArea;
 		fLineNumberArea = NULL;
+	}
+	else if ((!fLineNumberArea) && (enabled)) {
+		fLineNumberArea = new LineNumberArea(this);
 	}
 	updateLineNumberAreaWidth();
 	highlightLines();
