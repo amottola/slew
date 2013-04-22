@@ -778,7 +778,7 @@ SL_DEFINE_METHOD(TextView, get_position, {
 		return NULL;
 	
 	QTextCursor cursor = impl->textCursor();
-	QTextBlock block = impl->document()->findBlockByLineNumber(line);
+	QTextBlock block = impl->document()->findBlockByLineNumber(line - 1);
 	return PyInt_FromLong(block.position() + column - 1);
 })
 
@@ -893,8 +893,8 @@ SL_DEFINE_METHOD(TextView, set_line, {
 	}
 	else {
 		QTextCursor cursor = impl->textCursor();
-		QTextBlock block = impl->document()->findBlockByLineNumber(line);
-		cursor.setPosition(block.position() + cursor.positionInBlock() - 1);
+		QTextBlock block = impl->document()->findBlockByLineNumber(line - 1);
+		cursor.setPosition(block.position() + cursor.positionInBlock());
 		impl->setTextCursor(cursor);
 	}
 })
