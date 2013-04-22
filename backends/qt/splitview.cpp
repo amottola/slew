@@ -82,8 +82,8 @@ void
 SplitView_Impl::setPolicies(bool restore)
 {
 	QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-	policy.setHorizontalStretch(1);
-	policy.setVerticalStretch(1);
+// 	policy.setHorizontalStretch(1);
+// 	policy.setVerticalStretch(1);
 	int count = this->count();
 	
 	if (restore) {
