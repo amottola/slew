@@ -81,10 +81,15 @@ SplitView_Impl::handleSplitterMoved(int pos, int index)
 void
 SplitView_Impl::setPolicies(bool restore)
 {
-	QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-// 	policy.setHorizontalStretch(1);
-// 	policy.setVerticalStretch(1);
+	QSizePolicy policy;
 	int count = this->count();
+	
+	while (fProps.size() < count) {
+		if (fProps.empty())
+			fProps.append(1);
+		else
+			fProps.append(0);
+	}
 	
 	if (restore) {
 		for (int i = 0; i < count; i++) {
@@ -94,13 +99,20 @@ SplitView_Impl::setPolicies(bool restore)
 		}
 	}
 	else {
-		widget(count - 1)->setSizePolicy(policy);
-		policy.setHorizontalPolicy(QSizePolicy::Maximum);
-		policy.setVerticalPolicy(QSizePolicy::Maximum);
-		policy.setHorizontalStretch(0);
-		policy.setVerticalStretch(0);
-		for (int i = 0; i < count - 1; i++)
+		for (int i = 0; i < count; i++) {
+			int prop = fProps.value(i);
+			if (prop == 0) {
+				policy.setHorizontalPolicy(QSizePolicy::Preferred);
+				policy.setVerticalPolicy(QSizePolicy::Preferred);
+			}
+			else {
+				policy.setHorizontalPolicy(QSizePolicy::MinimumExpanding);
+				policy.setVerticalPolicy(QSizePolicy::MinimumExpanding);
+			}
+			policy.setHorizontalStretch(prop);
+			policy.setVerticalStretch(prop);
 			widget(i)->setSizePolicy(policy);
+		}
 	}
 }
 
@@ -233,6 +245,20 @@ SL_DEFINE_METHOD(SplitView, set_sizes, {
 })
 
 
+SL_DEFINE_METHOD(SplitView, get_props, {
+	return createIntListObject(impl->props());
+})
+
+
+SL_DEFINE_METHOD(SplitView, set_props, {
+	QList<int> props;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertIntList, &props))
+		return NULL;
+	
+	impl->setProps(props);
+})
+
 
 SL_START_PROXY_DERIVED(SplitView, Window)
 SL_METHOD(insert)
@@ -240,6 +266,7 @@ SL_METHOD(remove)
 
 SL_PROPERTY(style)
 SL_PROPERTY(sizes)
+SL_PROPERTY(props)
 SL_END_PROXY_DERIVED(SplitView, Window)
 
 
