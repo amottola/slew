@@ -86,9 +86,9 @@ SplitView_Impl::setPolicies(bool restore)
 	
 	while (fProps.size() < count) {
 		if (fProps.empty())
-			fProps.append(1);
-		else
 			fProps.append(0);
+		else
+			fProps.append(1);
 	}
 	
 	if (restore) {
