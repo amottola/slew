@@ -23,6 +23,9 @@ public:
 	void setSizes(const QList<int>& sizes) { QSplitter::setSizes(sizes); fSizes = QSplitter::sizes(); }
 	QList<int> storedSizes() { return fSizes; }
 	
+	void setProps(const QList<int>& props) { fProps = props; setPolicies(); }
+	QList<int> props() { return fProps; }
+	
 	void setPolicies(bool restore = false);
 	
 	virtual QSplitterHandle *createHandle();
@@ -32,6 +35,7 @@ public slots:
 	
 private:
 	QList<int>	fSizes;
+	QList<int>	fProps;
 };
 
 

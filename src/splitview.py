@@ -19,6 +19,7 @@ class SplitView(slew.Window):
 									"vertical":		STYLE_VERTICAL
 								})),
 		'sizes':				IntListProperty(),
+		'props':				IntListProperty(),
 	})
 	
 # properties
@@ -29,7 +30,14 @@ class SplitView(slew.Window):
 	def set_sizes(self, sizes):
 		self._impl.set_sizes(sizes)
 	
+	def get_props(self):
+		return self._impl.get_props()
+	
+	def set_props(self, props):
+		self._impl.set_props(props)
+	
 	sizes = DeprecatedDescriptor('sizes')
+	props = DeprecatedDescriptor('props')
 
 
 
