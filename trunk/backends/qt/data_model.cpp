@@ -1141,6 +1141,8 @@ DataModel_Impl::insertRows(int row, int count, const QModelIndex& parent)
 	PyAutoLocker locker;
 	Node *node;
 	
+	resetHeader();
+	
 	beginInsertRows(parent, row, row + count - 1);
 	if (parent.isValid())
 		node = (Node *)parent.internalPointer();
@@ -1157,6 +1159,8 @@ DataModel_Impl::removeRows(int row, int count, const QModelIndex& parent)
 {
 	PyAutoLocker locker;
 	Node *node;
+	
+	resetHeader();
 	
 	beginRemoveRows(parent, row, row + count - 1);
 	if (parent.isValid())
@@ -1180,6 +1184,8 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	QModelIndexList changed_list;
 	QModelIndex idx;
 	int i;
+	
+	resetHeader();
 	
 	if (parent.isValid())
 		node = (Node *)parent.internalPointer();
