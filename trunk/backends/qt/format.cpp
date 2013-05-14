@@ -801,7 +801,13 @@ getFormattedValue(const QString& input, QColor *color, Qt::Alignment *align, int
 							}
 							else {
 								int length = fPart.length();
-								fPart = QString::number(fPart.toULongLong() + 1);
+								int leadingZeroes = 0;
+								QString temp = fPart;
+								while ((leadingZeroes < length) && (temp[leadingZeroes] == '0')) {
+									leadingZeroes++;
+								}
+								temp.truncate(leadingZeroes);
+								fPart = temp + QString::number(fPart.toULongLong() + 1);
 								if (fPart.length() > length) {
 									fPart = "";
 									iPart = QString::number(iPart.toULongLong() + 1);
