@@ -311,6 +311,7 @@ Grid_Impl::setModel(QAbstractItemModel *model)
 	if (qobject_cast<DataModel_Impl *>(oldModel)) {
 		disconnect(oldModel, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode)));
 		disconnect(oldModel, SIGNAL(sorted(int, Qt::SortOrder)), this, SLOT(handleSortIndicatorChanged(int, Qt::SortOrder)));
+		disconnect(oldModel, SIGNAL(rowsInserted(QModelIndex, int, int)), this, SLOT(resizeColumns()));
 		disconnect(oldModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)));
 		disconnect(oldModel, SIGNAL(columnsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)));
 		disconnect(oldModel, SIGNAL(modelReset()), this, SLOT(resetColumns()));
@@ -319,6 +320,7 @@ Grid_Impl::setModel(QAbstractItemModel *model)
 	if (qobject_cast<DataModel_Impl *>(model)) {
 		connect(model, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode)));
 		connect(model, SIGNAL(sorted(int, Qt::SortOrder)), this, SLOT(handleSortIndicatorChanged(int, Qt::SortOrder)));
+		connect(model, SIGNAL(rowsInserted(QModelIndex, int, int)), this, SLOT(resizeColumns()));
 		connect(model, SIGNAL(rowsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)), Qt::QueuedConnection);
 		connect(model, SIGNAL(columnsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)));
 		connect(model, SIGNAL(modelReset()), this, SLOT(resetColumns()));
@@ -465,10 +467,17 @@ Grid_Impl::handleSectionResized(int logicalIndex, int fromWidth, int toWidth)
 
 
 void
+Grid_Impl::resizeColumns()
+{
+	QMetaObject::invokeMethod(horizontalHeader(), "resizeSections", Qt::QueuedConnection);
+}
+
+
+void
 Grid_Impl::scrollContentsBy(int dx, int dy)
 {
 	QTableView::scrollContentsBy(dx, dy);
-	QMetaObject::invokeMethod(horizontalHeader(), "resizeSections", Qt::QueuedConnection);
+	resizeColumns();
 }
 
 
@@ -477,6 +486,7 @@ Grid_Impl::handleRowsColsRemoved(const QModelIndex& index, int start, int end)
 {
 	if (indexWidget(currentIndex()))
 		setState(EditingState);
+	resizeColumns();
 }
 
 

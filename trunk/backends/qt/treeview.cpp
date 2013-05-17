@@ -484,10 +484,17 @@ TreeView_Impl::resetColumns()
 
 
 void
+TreeView_Impl::resizeColumns()
+{
+	QMetaObject::invokeMethod(header(), "resizeSections", Qt::QueuedConnection);
+}
+
+
+void
 TreeView_Impl::scrollContentsBy(int dx, int dy)
 {
 	QTreeView::scrollContentsBy(dx, dy);
-	QMetaObject::invokeMethod(header(), "resizeSections", Qt::QueuedConnection);
+	resizeColumns();
 }
 
 
