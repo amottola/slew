@@ -284,13 +284,13 @@ TreeView_Impl::setModel(QAbstractItemModel *model)
 		return;
 	
 	if (qobject_cast<DataModel_Impl *>(oldModel)) {
-		disconnect(oldModel, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)));
+		disconnect(oldModel, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode)));
 		disconnect(oldModel, SIGNAL(modelReset()), this, SLOT(resetColumns()));
 		disconnect(oldModel, SIGNAL(layoutChanged()), this, SLOT(handleResizeToContents()));
 	}
 	
 	if (qobject_cast<DataModel_Impl *>(model)) {
-		connect(model, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)));
+		connect(model, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode)));
 		connect(model, SIGNAL(modelReset()), this, SLOT(resetColumns()));
 		connect(model, SIGNAL(layoutChanged()), this, SLOT(handleResizeToContents()), Qt::QueuedConnection);
 	}
@@ -322,14 +322,12 @@ TreeView_Impl::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 
 
 void
-TreeView_Impl::handleConfigureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode, QHeaderView::ResizeMode resizeMode)
+TreeView_Impl::handleConfigureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode)
 {
 	if (headerPos.x() == -1)
 		return;
 	HeaderStyle *style = (HeaderStyle *)header()->style();
 	style->setMode(elideMode);
-	if (header()->resizeMode(headerPos.x()) != resizeMode)
-		header()->setResizeMode(resizeMode);
 }
 
 
@@ -467,12 +465,18 @@ TreeView_Impl::reset()
 void
 TreeView_Impl::resetColumns()
 {
-	QAbstractItemModel *model = header()->model();
+	QHeaderView *header = this->header();
+	QAbstractItemModel *model = header->model();
 	if (model) {
 		int count = model->columnCount();
 		
-		for (int i = 0; i < count; i++)
-			header()->resizeSection(i, model->headerData(i, Qt::Horizontal, Qt::UserRole).toInt());
+		for (int i = 0; i < count; i++) {
+			int width = model->headerData(i, Qt::Horizontal, Qt::UserRole).toInt();
+			if (width >= 0)
+				header->resizeSection(i, width);
+			else
+				header->setResizeMode(QHeaderView::ResizeToContents);
+		}
 	}
 }
 

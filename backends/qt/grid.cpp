@@ -309,7 +309,7 @@ Grid_Impl::setModel(QAbstractItemModel *model)
 		return;
 	
 	if (qobject_cast<DataModel_Impl *>(oldModel)) {
-		disconnect(oldModel, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)));
+		disconnect(oldModel, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode)));
 		disconnect(oldModel, SIGNAL(sorted(int, Qt::SortOrder)), this, SLOT(handleSortIndicatorChanged(int, Qt::SortOrder)));
 		disconnect(oldModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)));
 		disconnect(oldModel, SIGNAL(columnsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)));
@@ -317,7 +317,7 @@ Grid_Impl::setModel(QAbstractItemModel *model)
 	}
 	
 	if (qobject_cast<DataModel_Impl *>(model)) {
-		connect(model, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode, QHeaderView::ResizeMode)));
+		connect(model, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode)));
 		connect(model, SIGNAL(sorted(int, Qt::SortOrder)), this, SLOT(handleSortIndicatorChanged(int, Qt::SortOrder)));
 		connect(model, SIGNAL(rowsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)), Qt::QueuedConnection);
 		connect(model, SIGNAL(columnsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)));
@@ -351,15 +351,13 @@ Grid_Impl::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 
 
 void
-Grid_Impl::handleConfigureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode, QHeaderView::ResizeMode resizeMode)
+Grid_Impl::handleConfigureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode)
 {
 	QHeaderView *header = horizontalHeader();
 	if ((headerPos.x() == -1) || (!header))
 		return;
 	HeaderStyle *style = (HeaderStyle *)header->style();
 	style->setMode(elideMode);
-	if (header->resizeMode(headerPos.x()) != resizeMode)
-		header->setResizeMode(resizeMode);
 }
 
 
@@ -539,8 +537,13 @@ Grid_Impl::resetColumns()
 	if (model) {
 		int count = model->columnCount();
 		
-		for (int i = 0; i < count; i++)
-			header->resizeSection(i, model->headerData(i, Qt::Horizontal, Qt::UserRole).toInt());
+		for (int i = 0; i < count; i++) {
+			int width = model->headerData(i, Qt::Horizontal, Qt::UserRole).toInt();
+			if (width >= 0)
+				header->resizeSection(i, width);
+			else
+				header->setResizeMode(QHeaderView::ResizeToContents);
+		}
 	}
 }
 

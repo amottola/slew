@@ -13,6 +13,7 @@
 #include <QKeySequence>
 #include <QLatin1Char>
 #include <QScrollBar>
+#include <QHeaderView>
 
 #include <QMargins>
 #include <QPoint>

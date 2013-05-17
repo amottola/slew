@@ -130,7 +130,7 @@ public:
 	
 signals:
 	void sorted(int column, Qt::SortOrder order);
-	void configureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode, QHeaderView::ResizeMode resizeMode) const;
+	void configureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode) const;
 
 private slots:
 	void handleReset();
