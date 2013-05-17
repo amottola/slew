@@ -66,6 +66,7 @@ protected:
 	virtual void drawBranches(QPainter *painter, const QRect& rect, const QModelIndex& index) const;
 	virtual bool eventFilter(QObject *obj, QEvent *event);
 	virtual void focusInEvent(QFocusEvent *event);
+	virtual void scrollContentsBy(int dx, int dy);
 	
 private:
 	bool					fShowExpanders;

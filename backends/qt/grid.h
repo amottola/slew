@@ -61,6 +61,7 @@ protected:
 	virtual bool eventFilter(QObject *obj, QEvent *event);
 	virtual void focusInEvent(QFocusEvent *event);
 	virtual void keyPressEvent(QKeyEvent *event);
+	virtual void scrollContentsBy(int dx, int dy);
 
 private:
 	Qt::Orientations		fHeaders;
