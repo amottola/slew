@@ -472,12 +472,22 @@ TreeView_Impl::resetColumns()
 		
 		for (int i = 0; i < count; i++) {
 			int width = model->headerData(i, Qt::Horizontal, Qt::UserRole).toInt();
-			if (width >= 0)
+			if (width >= 0) {
+				header->setResizeMode(i, QHeaderView::Interactive);
 				header->resizeSection(i, width);
+			}
 			else
-				header->setResizeMode(QHeaderView::ResizeToContents);
+				header->setResizeMode(i, QHeaderView::ResizeToContents);
 		}
 	}
+}
+
+
+void
+TreeView_Impl::scrollContentsBy(int dx, int dy)
+{
+	QTreeView::scrollContentsBy(dx, dy);
+	QMetaObject::invokeMethod(header(), "resizeSections", Qt::QueuedConnection);
 }
 
 

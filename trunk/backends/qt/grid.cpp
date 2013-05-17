@@ -465,6 +465,14 @@ Grid_Impl::handleSectionResized(int logicalIndex, int fromWidth, int toWidth)
 
 
 void
+Grid_Impl::scrollContentsBy(int dx, int dy)
+{
+	QTableView::scrollContentsBy(dx, dy);
+	QMetaObject::invokeMethod(horizontalHeader(), "resizeSections", Qt::QueuedConnection);
+}
+
+
+void
 Grid_Impl::handleRowsColsRemoved(const QModelIndex& index, int start, int end)
 {
 	if (indexWidget(currentIndex()))
@@ -539,10 +547,12 @@ Grid_Impl::resetColumns()
 		
 		for (int i = 0; i < count; i++) {
 			int width = model->headerData(i, Qt::Horizontal, Qt::UserRole).toInt();
-			if (width >= 0)
+			if (width >= 0) {
+				header->setResizeMode(i, QHeaderView::Interactive);
 				header->resizeSection(i, width);
+			}
 			else
-				header->setResizeMode(QHeaderView::ResizeToContents);
+				header->setResizeMode(i, QHeaderView::ResizeToContents);
 		}
 	}
 }
