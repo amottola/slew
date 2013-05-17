@@ -56,6 +56,7 @@ public slots:
 	void stopEdit();
 	virtual void reset();
 	virtual void resetColumns();
+	void resizeColumns();
 	
 	QStyleOptionViewItem initOptionView() { return viewOptions(); }
 	void prepareDrag() { setDirtyRegion(viewport()->rect()); startAutoScroll(); }
