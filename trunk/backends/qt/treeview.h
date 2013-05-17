@@ -43,7 +43,7 @@ public:
 	virtual bool canFocusOut(QWidget *oldFocus, QWidget *newFocus);
 	
 public slots:
-	void handleConfigureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode, QHeaderView::ResizeMode resizeMode);
+	void handleConfigureHeader(const QPoint& headerPos, Qt::TextElideMode elideMode);
 	void handleContextMenu(const QPoint& pos);
 	void handleContextMenuOnHeader(const QPoint& pos);
 	void handleActivated(const QModelIndex& index);

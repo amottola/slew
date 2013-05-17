@@ -999,31 +999,25 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 		}
 	}
 	
-	if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
-		data->fWidth = 1;
+	if (!(data->fFlags & HEADER_CONFIGURED)) {
+		data->fFlags |= HEADER_CONFIGURED;
+		
+		Qt::TextElideMode elideMode = Qt::ElideNone;
+		
+		if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_LEFT)
+			elideMode = Qt::ElideLeft;
+		else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_MIDDLE)
+			elideMode = Qt::ElideMiddle;
+		else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_RIGHT)
+			elideMode = Qt::ElideRight;
+		
+		emit configureHeader(headerPos, elideMode);
+	}
 	
 	switch (role) {
 	case Qt::DisplayRole:
 		{
 			value = data->fText;
-			if (!(data->fFlags & HEADER_CONFIGURED)) {
-				data->fFlags |= HEADER_CONFIGURED;
-				
-				Qt::TextElideMode elideMode = Qt::ElideNone;
-				QHeaderView::ResizeMode resizeMode = QHeaderView::Interactive;
-				
-				if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_LEFT)
-					elideMode = Qt::ElideLeft;
-				else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_MIDDLE)
-					elideMode = Qt::ElideMiddle;
-				else if (data->fFlags & SL_DATA_SPECIFIER_ELIDE_RIGHT)
-					elideMode = Qt::ElideRight;
-				
-				if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
-					resizeMode = QHeaderView::ResizeToContents;
-				
-				emit configureHeader(headerPos, elideMode, resizeMode);
-			}
 		}
 		break;
 	
@@ -1035,7 +1029,10 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 		
 	case Qt::UserRole:
 		{
-			value = data->fWidth;
+			if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
+				value = -1;
+			else
+				value = data->fWidth;
 		}
 		break;
 	
@@ -1141,8 +1138,6 @@ DataModel_Impl::insertRows(int row, int count, const QModelIndex& parent)
 	PyAutoLocker locker;
 	Node *node;
 	
-	resetHeader();
-	
 	beginInsertRows(parent, row, row + count - 1);
 	if (parent.isValid())
 		node = (Node *)parent.internalPointer();
@@ -1150,6 +1145,7 @@ DataModel_Impl::insertRows(int row, int count, const QModelIndex& parent)
 		node = fRoot;
 	node->insertRows(row, count);
 	endInsertRows();
+	
 	return true;
 }
 
@@ -1159,8 +1155,6 @@ DataModel_Impl::removeRows(int row, int count, const QModelIndex& parent)
 {
 	PyAutoLocker locker;
 	Node *node;
-	
-	resetHeader();
 	
 	beginRemoveRows(parent, row, row + count - 1);
 	if (parent.isValid())
@@ -1184,8 +1178,6 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	QModelIndexList changed_list;
 	QModelIndex idx;
 	int i;
-	
-	resetHeader();
 	
 	if (parent.isValid())
 		node = (Node *)parent.internalPointer();
