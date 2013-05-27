@@ -20,7 +20,7 @@ public:
 	virtual void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *widget = 0) const
 	{
 		if ((fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) && (opt->state & QStyle::State_Selected)) {
-			if (pe == PE_PanelItemViewRow) {
+			if ((pe == PE_PanelItemViewRow) || (pe == PE_PanelItemViewItem)) {
 				p->save();
 				p->setClipping(false);
 				p->fillRect(QRect(0, opt->rect.top(), 1000000, opt->rect.height()), opt->palette.highlight());
