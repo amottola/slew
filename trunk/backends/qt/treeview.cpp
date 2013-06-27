@@ -472,9 +472,13 @@ TreeView_Impl::resetColumns()
 		
 		for (int i = 0; i < count; i++) {
 			int width = model->headerData(i, Qt::Horizontal, Qt::UserRole).toInt();
-			if (width >= 0) {
-				header->setResizeMode(i, QHeaderView::Interactive);
-				header->resizeSection(i, width);
+			
+			if (width != -1) {
+				if (width & 0x80000000)
+					header->setResizeMode(i, QHeaderView::Fixed);
+				else
+					header->setResizeMode(i, QHeaderView::Interactive);
+				header->resizeSection(i, width & 0x7FFFFFFF);
 			}
 			else
 				header->setResizeMode(i, QHeaderView::ResizeToContents);

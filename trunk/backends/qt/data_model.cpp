@@ -1031,8 +1031,12 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 		{
 			if (data->fFlags & SL_DATA_SPECIFIER_AUTO_WIDTH)
 				value = -1;
-			else
-				value = data->fWidth;
+			else {
+				if (data->fFlags & SL_DATA_SPECIFIER_FIXED_WIDTH)
+					value = data->fWidth | 0x80000000;
+				else
+					value = data->fWidth;
+			}
 		}
 		break;
 	
