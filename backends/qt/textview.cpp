@@ -309,7 +309,7 @@ TextView_Impl::keyPressEvent(QKeyEvent *event)
 		QTextCursor cursor = textCursor();
 		int pos = cursor.position();
 		
-		QTextBrowser::keyPressEvent(event);
+		QTextEdit::keyPressEvent(event);
 		
 		text = toPlainText();
 		if (fValidator->validate(text, pos) == QValidator::Invalid) {
@@ -319,7 +319,7 @@ TextView_Impl::keyPressEvent(QKeyEvent *event)
 		}
 	}
 	else {
-		QTextBrowser::keyPressEvent(event);
+		QTextEdit::keyPressEvent(event);
 	}
 }
 
