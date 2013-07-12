@@ -53,11 +53,10 @@ public:
 	
 	virtual void finishPaint(QPainter *painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 	{
-		painter->save();
-	
-		QRect viewRect = fTreeView->viewport()->rect();
-		QRect rect = fTreeView->visualRect(index);
 		if ((fTreeView->showRules()) && (!(option.state & QStyle::State_Selected))) {
+			painter->save();
+			
+			QRect rect = fTreeView->visualRect(index);
 			QColor color = qvariant_cast<QColor>(fTreeView->model()->data(index, Qt::BackgroundRole));
 			if (!color.isValid())
 				color = Qt::gray;
@@ -72,8 +71,9 @@ public:
 			painter->drawLine(left, rect.bottom(), rect.right(), rect.bottom());
 			if (index.column() > 0)
 				painter->drawLine(left, rect.top(), left, rect.bottom());
+			
+			painter->restore();
 		}
-		painter->restore();
 	}
 	
 private:
