@@ -48,6 +48,7 @@ Label_Impl::paintEvent(QPaintEvent *event)
 			fStaticText.setTextOption(QTextOption(alignment & Qt::AlignHorizontal_Mask));
 		}
 		
+		fStaticText.prepare(painter.worldTransform(), painter.font());
 		QRect rect = style()->alignedRect(layoutDirection(), alignment, fStaticText.size().toSize(), QRect(0, 0, width, height()));
 		
 		painter.drawStaticText(rect.topLeft(), fStaticText);
