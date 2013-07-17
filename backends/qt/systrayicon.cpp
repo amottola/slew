@@ -207,8 +207,10 @@ public:
 	
 	static void showMessage(const QString& title, const QString& message, QSystemTrayIcon::MessageIcon icon)
 	{
-		Notification *n = new Notification(title, message, icon);
-		n->popup();
+		if (!helper_notify_center(title, message)) {
+			Notification *n = new Notification(title, message, icon);
+			n->popup();
+		}
 	}
 
 public slots:
