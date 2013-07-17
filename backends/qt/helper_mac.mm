@@ -81,7 +81,7 @@ helper_notify_center(const QString &title, const QString &text)
 		id<SlewUserNotificationCenter> center = [_NSUserNotificationCenter performSelector:@selector(defaultUserNotificationCenter)];
 		if (center) {
 			NotificationCenterDelegate *delegate = [[NotificationCenterDelegate alloc] init];
-			center.delegate = delegate;
+			[center setDelegate: delegate];
 			
 			id<SlewUserNotification> ns_notification = [[NSClassFromString(@"NSUserNotification") alloc] init];
 			NSString *ns_title = [[NSString alloc] initWithUTF8String:(char *)title.toUtf8().constData()];
@@ -97,7 +97,7 @@ helper_notify_center(const QString &title, const QString &text)
 			[ns_text release];
 			[ns_notification release];
 			
-			center.delegate = nil;
+			[center setDelegate: nil];
 			[delegate release];
 			
 			return true;
