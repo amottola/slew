@@ -118,12 +118,28 @@ SL_DEFINE_METHOD(SpinField, set_value, {
 })
 
 
+SL_DEFINE_METHOD(SpinField, get_step, {
+	return PyInt_FromLong(impl->singleStep());
+})
+
+
+SL_DEFINE_METHOD(SpinField, set_step, {
+	int value;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertInt, &value))
+		return NULL;
+	
+	impl->setSingleStep(value);
+})
+
+
 
 SL_START_PROXY_DERIVED(SpinField, Ranged)
 SL_PROPERTY(style)
 SL_PROPERTY(min)
 SL_PROPERTY(max)
 SL_PROPERTY(value)
+SL_PROPERTY(step)
 SL_END_PROXY_DERIVED(SpinField, Ranged)
 
 
