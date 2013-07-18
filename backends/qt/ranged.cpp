@@ -54,11 +54,27 @@ SL_DEFINE_ABSTRACT_METHOD(Ranged, QAbstractSlider, set_value, {
 })
 
 
+SL_DEFINE_ABSTRACT_METHOD(Ranged, QAbstractSlider, get_step, {
+	return PyInt_FromLong(impl->singleStep());
+})
+
+
+SL_DEFINE_ABSTRACT_METHOD(Ranged, QAbstractSlider, set_step, {
+	int value;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertInt, &value))
+		return NULL;
+	
+	impl->setSingleStep(value);
+})
+
+
 
 SL_START_ABSTRACT_PROXY_DERIVED(Ranged, Window)
 SL_PROPERTY(min)
 SL_PROPERTY(max)
 SL_PROPERTY(value)
+SL_PROPERTY(step)
 SL_END_ABSTRACT_PROXY_DERIVED(Ranged, Window)
 
 

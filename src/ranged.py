@@ -20,6 +20,7 @@ class Ranged(slew.Window):
 		'min':					IntProperty(),
 		'max':					IntProperty(),
 		'value':				IntProperty(),
+		'step':					IntProperty(),
 	})
 	
 # properties
@@ -42,9 +43,16 @@ class Ranged(slew.Window):
 	def set_value(self, value):
 		self._impl.set_value(value)
 	
+	def get_step(self):
+		return self._impl.get_step()
+	
+	def set_step(self, step):
+		self._impl.set_step(step)
+	
 	min = DeprecatedDescriptor('min')
 	max = DeprecatedDescriptor('max')
 	value = DeprecatedDescriptor('value')
+	step = DeprecatedDescriptor('step')
 
 
 
