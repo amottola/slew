@@ -567,12 +567,22 @@ SL_DEFINE_METHOD(type, set_current_index, {										\
 SL_DEFINE_METHOD(type, set_model, {												\
 	PyObject *object;															\
 																				\
-	if (!PyArg_ParseTuple(args, "O!", PyDataModel_Type, &object))				\
+	if (!PyArg_ParseTuple(args, "O", &object))									\
 		return NULL;															\
+	if ((object != Py_None) &&													\
+			(!PyObject_TypeCheck(object, (PyTypeObject *)PyDataModel_Type))) {	\
+		PyErr_SetString(PyExc_ValueError, "expected DataModel object");			\
+		return NULL;															\
+	}																			\
 																				\
-	DataModel_Impl *model = (DataModel_Impl *)getImpl(object);					\
-	if (!model)																	\
-		SL_RETURN_NO_IMPL;														\
+	DataModel_Impl *model;														\
+	if (object == Py_None)														\
+		model = NULL;															\
+	else {																		\
+		model = (DataModel_Impl *)getImpl(object);								\
+		if (!model)																\
+			SL_RETURN_NO_IMPL;													\
+	}																			\
 																				\
 	impl->setModel(model);														\
 })																				\

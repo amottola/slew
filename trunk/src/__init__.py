@@ -424,7 +424,7 @@ class DataModel(object):
 	
 	@classmethod
 	def ensure(cls, model):
-		if not isinstance(model, slew.DataModel):
+		if (model is not None) and (not isinstance(model, slew.DataModel)):
 			raise ValueError("expecting 'DataModel' object")
 		return model
 

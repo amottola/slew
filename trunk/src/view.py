@@ -11,16 +11,13 @@ class View(slew.Window):
 	
 	def initialize(self):
 		slew.Window.initialize(self)
-		self.set_model(None)
+		self.__model = None
 	
 	def get_model(self):
 		return self.__model
 	
 	def set_model(self, model):
-		if model is None:
-			model = slew.DataModel()
-		else:
-			model = slew.DataModel.ensure(model)
+		model = slew.DataModel.ensure(model)
 		self._impl.set_model(model)
 		self.__model = model
 	

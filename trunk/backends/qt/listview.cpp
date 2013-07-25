@@ -51,7 +51,9 @@ ListView_Impl::setModel(QAbstractItemModel *model)
 	if (model == oldModel)
 		return;
 	
+	QItemSelectionModel *m = selectionModel();
 	QListView::setModel(model);
+	delete m;
 	connect(selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(handleSelectionChanged(const QItemSelection&, const QItemSelection&)));
 }
 

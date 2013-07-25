@@ -30,6 +30,7 @@ public:
 		QTextCharFormat stringStyle;
 		QTextCharFormat stringMultilineStyle;
 		QTextCharFormat commentStyle;
+		QTextCharFormat specialCommentStyle;
 		
 		keywordStyle.setForeground(QColor("blue"));
 		operatorStyle.setForeground(QColor("red"));
@@ -40,6 +41,9 @@ public:
 		stringMultilineStyle.setForeground(QColor("darkMagenta"));
 		commentStyle.setForeground(QColor("darkGreen"));
 		commentStyle.setFontItalic(true);
+		specialCommentStyle.setForeground(QColor("darkGreen"));
+		specialCommentStyle.setFontItalic(true);
+		specialCommentStyle.setFontWeight(QFont::Bold);
 		
 		for (i = 0; keywords[i]; i++)
 			fRules.append(Rule(QString("\\b%1\\b").arg(keywords[i]), 0, keywordStyle));
@@ -53,6 +57,7 @@ public:
 		fRules.append(Rule("\\bdef\\b\\s*(\\w+)", 1, defclassStyle));
 		fRules.append(Rule("\\bclass\\b\\s*(\\w+)", 1, defclassStyle));
 		fRules.append(Rule("#[^\\n]*", 0, commentStyle));
+		fRules.append(Rule("#\\s*\\-\\*\\-\\s*\\w+\\s*\\:(.*)\\-\\*\\-", 1, specialCommentStyle));
 		
 		fMultiline[0] = Rule("'''", 1, stringMultilineStyle);
 		fMultiline[1] = Rule("\"\"\"", 2, stringMultilineStyle);

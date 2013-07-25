@@ -9,19 +9,18 @@
 #define HEADER_CONFIGURED			0x80000000
 
 
-// class Counter
-// {
-// public:
-// 	Counter() { fCount = 0; }
+class Counter
+{
+public:
+	Counter() {}
 // 	~Counter() { qDebug() << "final count is" << fCount; }
-// 	void inc() { fCount++; }
-// 	void dec() { fCount--; }
-// 	
-// private:
-// 	int		fCount;
-// };
-// 
-// static Counter sCounter;
+	void inc(void *w) { fCount[w]++; }
+	void dec(void *w) { fCount[w]--; }
+	
+	QHash<void *, int>	fCount;
+};
+
+static Counter sCounter;
 
 
 
@@ -106,14 +105,14 @@ Node::Node(PyObject *model, int row, int column, Node *parent)
 {
 	PyAutoLocker locker;
 	Py_XINCREF(fModel);
-// 	sCounter.inc();
+// 	sCounter.inc(fModel);
 }
 
 
 Node::~Node()
 {
 	PyAutoLocker locker;
-// 	sCounter.dec();
+// 	sCounter.dec(fModel);
 	invalidate();
 	Py_XDECREF(fModel);
 }
@@ -126,8 +125,7 @@ Node::invalidate(bool full)
 	
 	if (full) {
 		foreach(QList<Node *> *row, fChildren) {
-			for (int j = 0; j < row->count(); j++) {
-				Node *node = row->at(j);
+			foreach (Node *node, *row) {
 				delete node;
 			}
 			delete row;
@@ -151,12 +149,9 @@ Node::resetData()
 	PyAutoLocker locker;
 	
 	foreach(QList<Node *> *row, fChildren) {
-		if (row) {
-			for (int j = 0; j < row->count(); j++) {
-				Node *node = row->at(j);
-				if (node)
-					node->resetData();
-			}
+		foreach (Node *node, *row) {
+			if (node)
+				node->resetData();
 		}
 	}
 	
@@ -233,6 +228,7 @@ Node::rowCount()
 			PyErr_Print();
 			PyErr_Clear();
 			fRowCount = 0;
+			return 0;
 		}
 		
 		if (fChildren.size() < fRowCount) {
@@ -269,6 +265,7 @@ Node::columnCount()
 			PyErr_Print();
 			PyErr_Clear();
 			fColumnCount = 0;
+			return 0;
 		}
 		
 		foreach(QList<Node *> *row, fChildren) {
@@ -346,8 +343,7 @@ Node::removeRows(int pos, int count)
 	
 	for (i = pos + count; i < fChildren.size(); i++) {
 		QList<Node *> *row = fChildren.at(i);
-		for (int j = 0; j < row->count(); j++) {
-			Node *node = row->at(j);
+		foreach (Node *node, *row) {
 			if (node != NULL) {
 				node->fRow -= count;
 				node->invalidate(false);
@@ -359,8 +355,7 @@ Node::removeRows(int pos, int count)
 	
 	while ((count > 0) && (fChildren.size() > pos)) {
 		QList<Node *> *row = fChildren.takeAt(pos);
-		for (int j = 0; j < row->count(); j++) {
-			Node *node = row->at(j);
+		foreach (Node *node, *row) {
 			delete node;
 		}
 		delete row;
@@ -373,14 +368,11 @@ void
 Node::changeRows(int pos, int count)
 {
 	PyAutoLocker locker;
-	for (int i = pos; i < pos + count; i++) {
-		QList<Node *> *row = fChildren.value(i);
-		if (row) {
-			for (int j = 0; j < row->count(); j++) {
-				Node *node = row->at(j);
-				if (node != NULL) {
-					node->invalidate();
-				}
+	for (int i = pos; (i < pos + count) && (i < fChildren.count()); i++) {
+		QList<Node *> *row = fChildren.at(i);
+		foreach (Node *node, *row) {
+			if (node != NULL) {
+				node->invalidate();
 			}
 		}
 	}
@@ -406,9 +398,8 @@ Node::insertColumns(int pos, int count)
 			}
 		}
 		
-		while (count > 0) {
+		for (i = 0; i < count; i++) {
 			row->insert(pos, NULL);
-			count--;
 		}
 	}
 }
@@ -431,9 +422,9 @@ Node::removeColumns(int pos, int count)
 			}
 		}
 		
-		while (count > 0) {
-			delete row->takeAt(pos);
-			count--;
+		for (i = 0; i < count; i++) {
+			if (row->count() > pos)
+				delete row->takeAt(pos);
 		}
 	}
 }
@@ -446,7 +437,7 @@ Node::changeColumns(int pos, int count)
 	
 	foreach(QList<Node *> *row, fChildren) {
 		for (int i = pos; i < pos + count; i++) {
-			Node *node = row->at(i);
+			Node *node = row->value(i);
 			if (node != NULL) {
 				node->invalidate();
 			}
@@ -651,6 +642,7 @@ DataModel_Impl::~DataModel_Impl()
 	PyAutoLocker locker;
 	delete fRoot;
 	SL_QAPP()->unregisterObject(this);
+// 	qDebug() << "final count for" << fModel << "is" << sCounter.fCount[fModel];
 }
 
 
@@ -1413,6 +1405,7 @@ DataModel_dealloc(DataModel_Proxy *self)
 	QMutexLocker locker(SL_QAPP()->getLock());
 	SL_QAPP()->deallocProxy((Abstract_Proxy *)self);
 	Py_DECREF(self->fModel);
+
 	self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -1426,6 +1419,7 @@ DataModel_init(DataModel_Proxy *self, PyObject *args, PyObject *kwds)
 	Py_DECREF(self->fModel);
 	self->fModel = PyWeakref_NewProxy(object, NULL);
 	self->fImpl->initModel(self->fModel);
+// 	qDebug() << "init count for" << self->fModel;
 	return 0;
 }
 
