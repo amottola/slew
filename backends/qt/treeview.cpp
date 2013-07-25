@@ -296,7 +296,9 @@ TreeView_Impl::setModel(QAbstractItemModel *model)
 	}
 	
 	stopEdit();
+	QItemSelectionModel *m = selectionModel();
 	QTreeView::setModel(model);
+	delete m;
 	connect(selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(handleSelectionChanged(const QItemSelection&, const QItemSelection&)));
 }
 
