@@ -1251,6 +1251,19 @@ getObjectAttr(PyObject *object, const char *name, int *value)
 
 
 bool
+getObjectAttr(PyObject *object, const char *name, short *value)
+{
+	PyObject *attr;
+	attr = PyObject_GetAttrString(object, name);
+	if (!attr)
+		return false;
+	*value = (short)PyInt_AsLong(attr);
+	Py_DECREF(attr);
+	return bool(!PyErr_Occurred());
+}
+
+
+bool
 getObjectAttr(PyObject *object, const char *name, double *value)
 {
 	PyObject *attr;

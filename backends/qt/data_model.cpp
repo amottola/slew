@@ -60,11 +60,11 @@ indexLessThan(const QModelIndex& a, const QModelIndex& b)
 class Node
 {
 public:
-	Node(PyObject *model, int row, int column, Node *parent = NULL);
+	Node(PyObject *model, int row, short column, Node *parent = NULL);
 	~Node();
 	
 	int row() { return fRow; }
-	int column() { return fColumn; }
+	int column() { return (int)fColumn; }
 	Node *parent() { return fParent; }
 	PyObject *dataIndex();
 	DataSpecifier *dataSpecifier();
@@ -89,9 +89,9 @@ public:
 	
 private:
 	int						fRow;
-	int						fColumn;
 	int						fRowCount;
-	int						fColumnCount;
+	short					fColumn;
+	short					fColumnCount;
 	Node					*fParent;
 	QList<QList<Node *> *>	fChildren;
 	DataSpecifier			*fData;
@@ -100,8 +100,8 @@ private:
 };
 
 
-Node::Node(PyObject *model, int row, int column, Node *parent)
-	: fRow(row), fColumn(column), fRowCount(-1), fColumnCount(-1), fParent(parent), fData(NULL), fModel(model), fIndex(NULL)
+Node::Node(PyObject *model, int row, short column, Node *parent)
+	: fRow(row), fRowCount(-1), fColumn(column), fColumnCount(-1), fParent(parent), fData(NULL), fModel(model), fIndex(NULL)
 {
 	PyAutoLocker locker;
 	Py_XINCREF(fModel);
@@ -175,7 +175,7 @@ Node::dataIndex()
 			Py_INCREF(fIndex);
 		}
 		else {
-			fIndex = PyObject_CallMethod(model, "index", "iiO", fRow, fColumn, fParent->dataIndex());
+			fIndex = PyObject_CallMethod(model, "index", "iiO", fRow, (int)fColumn, fParent->dataIndex());
 			if (!fIndex) {
 				PyErr_Print();
 				PyErr_Clear();
@@ -1483,9 +1483,14 @@ SL_DEFINE_METHOD(DataModel, notify, {
 })
 
 
+SL_DEFINE_METHOD(DataModel, refresh_data_cache, {
+	impl->invalidateDataSpecifiers();
+})
+
 
 SL_START_METHODS(DataModel)
 SL_METHOD(notify)
+SL_METHOD(refresh_data_cache)
 SL_END_METHODS()
 
 

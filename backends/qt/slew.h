@@ -112,6 +112,7 @@ bool getObjectAttr(PyObject *object, const char *name, QSize *value);
 bool getObjectAttr(PyObject *object, const char *name, QSizeF *value);
 bool getObjectAttr(PyObject *object, const char *name, bool *value);
 bool getObjectAttr(PyObject *object, const char *name, int *value);
+bool getObjectAttr(PyObject *object, const char *name, short *value);
 bool getObjectAttr(PyObject *object, const char *name, double *value);
 bool getObjectAttr(PyObject *object, const char *name, QString *value);
 bool getObjectAttr(PyObject *object, const char *name, QColor *value);
