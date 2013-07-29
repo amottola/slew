@@ -173,16 +173,18 @@ getViewSelection(QAbstractItemView *view)
 	QItemSelectionRange range;
 	QModelIndexList list;
 	QModelIndex index;
-	PyObject *dataIndex, *selection = PyTuple_New(0);
+	PyObject *dataIndex, *selection;
 	
 	if (view->selectionMode() == QAbstractItemView::SingleSelection) {
 		range = selected.value(0);
 		if (range.isValid()) {
-			_PyTuple_Resize(&selection, 1);
+			selection = PyTuple_New(1);
 			dataIndex = model->getDataIndex(range.topLeft());
 			Py_INCREF(dataIndex);
 			PyTuple_SET_ITEM(selection, 0, dataIndex);
 		}
+		else
+			selection = PyTuple_New(0);
 	}
 	else {
 		Py_ssize_t pos = 0;
@@ -191,14 +193,12 @@ getViewSelection(QAbstractItemView *view)
 		else
 			list = view->selectionModel()->selectedRows();
 		
-		if (list.size() > 0) {
-			_PyTuple_Resize(&selection, (Py_ssize_t)list.size());
-			foreach (index, list) {
-				dataIndex = model->getDataIndex(index);
-				Py_INCREF(dataIndex);
-				PyTuple_SET_ITEM(selection, pos, dataIndex);
-				pos++;
-			}
+		selection = PyTuple_New((Py_ssize_t)list.size());
+		foreach (index, list) {
+			dataIndex = model->getDataIndex(index);
+			Py_INCREF(dataIndex);
+			PyTuple_SET_ITEM(selection, pos, dataIndex);
+			pos++;
 		}
 	}
 	return selection;

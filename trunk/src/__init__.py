@@ -422,6 +422,9 @@ class DataModel(object):
 	def notify(self, what, index=0, count=1, parent=None):
 		self._impl.notify(what, index, count, parent)
 	
+	def refresh_data_cache(self):
+		self._impl.refresh_data_cache()
+	
 	@classmethod
 	def ensure(cls, model):
 		if (model is not None) and (not isinstance(model, slew.DataModel)):
