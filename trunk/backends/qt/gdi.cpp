@@ -288,10 +288,25 @@ SL_DEFINE_DC_METHOD(ellipse, {
 	QPointF pos;
 	int a, b;
 	
-	if (!PyArg_ParseTuple(args, "O&i", convertPointF, &pos, &a, &b))
+	if (!PyArg_ParseTuple(args, "O&ii", convertPointF, &pos, &a, &b))
 		return NULL;
 	
 	painter->drawEllipse(pos, a, b);
+})
+
+
+SL_DEFINE_DC_METHOD(arc, {
+	QPointF pos;
+	int a, b, angle, span;
+	double start, end;
+	
+	if (!PyArg_ParseTuple(args, "O&iidd", convertPointF, &pos, &a, &b, &start, &end))
+		return NULL;
+	
+	if (painter->brush().color() == Qt::transparent)
+		painter->drawArc(pos.x() - a, pos.y() - b, a * 2, b * 2, start * 16.0, end * 16.0);
+	else
+		painter->drawPie(pos.x() - a, pos.y() - b, a * 2, b * 2, start * 16.0, end * 16.0);
 })
 
 
@@ -534,6 +549,7 @@ SL_METHOD(line)
 SL_METHOD(rect)
 SL_METHOD(rounded_rect)
 SL_METHOD(ellipse)
+SL_METHOD(arc)
 SL_METHOD(text)
 SL_METHOD(text_extent)
 SL_METHOD(blit)

@@ -449,6 +449,9 @@ class DC(object):
 	def ellipse(self, pos, a, b):
 		self._impl.ellipse(Vector.ensure(pos, False), a, b)
 	
+	def arc(self, pos, a, b, start, end):
+		self._impl.arc(Vector.ensure(pos, False), a, b, start, end)
+	
 	def text(self, text, tl, br=None, flags=0):
 		if br is None:
 			flags = -1
