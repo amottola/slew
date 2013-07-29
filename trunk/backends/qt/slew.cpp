@@ -1024,11 +1024,11 @@ convertFont(PyObject *object, QFont *value)
 	
 	if (family_id != SL_FONT_FAMILY_DEFAULT) {
 		switch (family_id) {
-		case SL_FONT_FAMILY_ROMAN:			hint = QFont::Times; 		family = "Times New Roman"; break;
-		case SL_FONT_FAMILY_SCRIPT:			hint = QFont::Decorative;	family = "Comic Sans MS"; break;
-		case SL_FONT_FAMILY_SANS_SERIF:		hint = QFont::SansSerif;	family = "Helvetica"; break;
+		case SL_FONT_FAMILY_ROMAN:			hint = QFont::Times; 		family = "serif"; break;
+		case SL_FONT_FAMILY_SCRIPT:			hint = QFont::Decorative;	family = "cursive"; break;
+		case SL_FONT_FAMILY_SANS_SERIF:		hint = QFont::SansSerif;	family = "sans-serif"; break;
 		case SL_FONT_FAMILY_FIXED_PITCH:
-		case SL_FONT_FAMILY_TELETYPE:		hint = QFont::TypeWriter;	family = "Courier New"; break;
+		case SL_FONT_FAMILY_TELETYPE:		hint = QFont::TypeWriter;	family = "monospace"; break;
 		default:							hint = QFont::System;		break;
 		}
 		

@@ -65,11 +65,13 @@ SL_DEFINE_DC_METHOD(get_font, {
 
 SL_DEFINE_DC_METHOD(set_font, {
 	QFont font;
+	QFont::StyleStrategy strategy = (QFont::StyleStrategy)((painter->renderHints() & QPainter::TextAntialiasing ? QFont::PreferAntialias : QFont::NoAntialias) | QFont::PreferOutline | QFont::PreferMatch);
 	
 	if (!PyArg_ParseTuple(args, "O&", convertFont, &font))
 		return NULL;
 	
-	font.setStyleStrategy((QFont::StyleStrategy)((painter->renderHints() & QPainter::TextAntialiasing ? QFont::PreferAntialias : QFont::NoAntialias) | QFont::PreferOutline | QFont::PreferMatch));
+	font.setStyleHint(font.styleHint(), strategy);
+	font.setStyleStrategy(strategy);
 	font.resolve(QApplication::font());
 	if (font != painter->font())
 		painter->setFont(font);
@@ -297,16 +299,16 @@ SL_DEFINE_DC_METHOD(ellipse, {
 
 SL_DEFINE_DC_METHOD(arc, {
 	QPointF pos;
-	int a, b, angle, span;
+	int a, b;
 	double start, end;
 	
 	if (!PyArg_ParseTuple(args, "O&iidd", convertPointF, &pos, &a, &b, &start, &end))
 		return NULL;
 	
 	if (painter->brush().color() == Qt::transparent)
-		painter->drawArc(pos.x() - a, pos.y() - b, a * 2, b * 2, start * 16.0, end * 16.0);
+		painter->drawArc(pos.x() - a, pos.y() - b, a * 2, b * 2, start * 16.0, (end - start) * 16.0);
 	else
-		painter->drawPie(pos.x() - a, pos.y() - b, a * 2, b * 2, start * 16.0, end * 16.0);
+		painter->drawPie(pos.x() - a, pos.y() - b, a * 2, b * 2, start * 16.0, (end - start) * 16.0);
 })
 
 

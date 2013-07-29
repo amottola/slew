@@ -119,6 +119,7 @@ SceneItem_Impl::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	if (fRepaint) {
 		QPicture picture;
 		QPainter picturePainter(&picture);
+		picturePainter.setRenderHints(painter->renderHints());
 		EventRunner runner(this, "onPaint");
 		if (runner.isValid()) {
 			runner.set("dc", createDCObject(&picturePainter, NULL, (PyObject *)&SceneItemDC_Type, (QPaintDevice *)this));
