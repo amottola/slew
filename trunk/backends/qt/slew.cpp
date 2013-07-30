@@ -1007,6 +1007,7 @@ convertFont(PyObject *object, QFont *value)
 	int family_id, size, style, spacing;
 	QString family, face;
 	QFont::StyleHint hint;
+	QFont::StyleStrategy strategy = (QFont::StyleStrategy)(QFont::PreferOutline | QFont::PreferAntialias);
 	QFont font;
 	
 	if (!object)
@@ -1024,15 +1025,16 @@ convertFont(PyObject *object, QFont *value)
 	
 	if (family_id != SL_FONT_FAMILY_DEFAULT) {
 		switch (family_id) {
-		case SL_FONT_FAMILY_ROMAN:			hint = QFont::Times; 		family = "serif"; break;
-		case SL_FONT_FAMILY_SCRIPT:			hint = QFont::Decorative;	family = "cursive"; break;
-		case SL_FONT_FAMILY_SANS_SERIF:		hint = QFont::SansSerif;	family = "sans-serif"; break;
+		case SL_FONT_FAMILY_ROMAN:			hint = QFont::Times; 			family = "serif"; break;
+		case SL_FONT_FAMILY_SCRIPT:			hint = QFont::Decorative;		family = "cursive"; break;
+		case SL_FONT_FAMILY_SANS_SERIF:		hint = QFont::SansSerif;		family = "sans-serif"; break;
 		case SL_FONT_FAMILY_FIXED_PITCH:
-		case SL_FONT_FAMILY_TELETYPE:		hint = QFont::TypeWriter;	family = "monospace"; break;
-		default:							hint = QFont::System;		break;
+		case SL_FONT_FAMILY_TELETYPE:		hint = QFont::TypeWriter;		family = "monospace";
+											strategy = QFont::PreferBitmap;	break;
+		default:							hint = QFont::System;			break;
 		}
 		
-		font.setStyleHint(hint, QFont::StyleStrategy(QFont::PreferOutline | QFont::PreferAntialias | QFont::PreferMatch));
+		font.setStyleHint(hint, QFont::StyleStrategy(strategy | QFont::PreferMatch));
 	}
 	if (!face.isEmpty())
 		family = face;
