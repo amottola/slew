@@ -65,13 +65,16 @@ SL_DEFINE_DC_METHOD(get_font, {
 
 SL_DEFINE_DC_METHOD(set_font, {
 	QFont font;
-	QFont::StyleStrategy strategy = (QFont::StyleStrategy)((painter->renderHints() & QPainter::TextAntialiasing ? QFont::PreferAntialias : QFont::NoAntialias) | QFont::PreferOutline | QFont::PreferMatch);
+	int strategy;
 	
 	if (!PyArg_ParseTuple(args, "O&", convertFont, &font))
 		return NULL;
 	
-	font.setStyleHint(font.styleHint(), strategy);
-	font.setStyleStrategy(strategy);
+	strategy = font.styleStrategy() & ~(QFont::PreferAntialias | QFont::NoAntialias);
+	strategy |= painter->renderHints() & QPainter::TextAntialiasing ? QFont::PreferAntialias : QFont::NoAntialias;
+	
+	font.setStyleHint(font.styleHint(), (QFont::StyleStrategy)strategy);
+	font.setStyleStrategy((QFont::StyleStrategy)strategy);
 	font.resolve(QApplication::font());
 	if (font != painter->font())
 		painter->setFont(font);
