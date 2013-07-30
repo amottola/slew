@@ -9,16 +9,18 @@ class View(slew.Window):
 		'selection':			Property(),
 	})
 	
+	EMPTY_MODEL = slew.DataModel()
+	
 	def initialize(self):
 		slew.Window.initialize(self)
-		self.__model = None
+		self.set_model(None)
 	
 	def get_model(self):
 		return self.__model
 	
 	def set_model(self, model):
 		model = slew.DataModel.ensure(model)
-		self._impl.set_model(model)
+		self._impl.set_model(model or View.EMPTY_MODEL)
 		self.__model = model
 	
 	def show_index(self, index):
