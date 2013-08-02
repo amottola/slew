@@ -9,10 +9,12 @@ class View(slew.Window):
 		'selection':			Property(),
 	})
 	
-	EMPTY_MODEL = slew.DataModel()
+	EMPTY_MODEL = None
 	
 	def initialize(self):
 		slew.Window.initialize(self)
+		if View.EMPTY_MODEL is None:
+			View.EMPTY_MODEL = slew.DataModel()
 		self.set_model(None)
 	
 	def get_model(self):
