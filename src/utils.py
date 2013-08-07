@@ -7,7 +7,7 @@ from datetime import datetime, date
 import slew
 
 
-def patch_etree():
+def _patch_etree():
 	OriginalXMLTreeBuilder = ET.XMLTreeBuilder
 	OriginalElementTree = ET.ElementTree
 	Original_serialize_xml = ET._serialize_xml
@@ -95,7 +95,10 @@ def patch_etree():
 	ET._serialize_xml = Patched_serialize_xml
 	ET.CDATA = CDATA
 
-patch_etree()
+try:
+	from xml.etree.ElementTree import CDATA
+except:
+	_patch_etree()
 
 
 
