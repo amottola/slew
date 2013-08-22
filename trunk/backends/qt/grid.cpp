@@ -253,6 +253,7 @@ Grid_Impl::moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers
 // 		if (!edit(index, QAbstractItemView::AllEditTriggers, NULL))
 // 			selectionModel()->setCurrentIndex(index, flags);
 // 	}
+	scrollTo(index);
 	return index;
 }
 
