@@ -4228,6 +4228,20 @@ SL_DEFINE_MODULE_METHOD(get_backend_info, {
 })
 
 
+SL_DEFINE_MODULE_METHOD(get_font_text_extent, {
+	static char *kwlist[] = { "font", "text", "max_width", NULL };
+	QFont font;
+	QString text;
+	int max_width;
+	
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&i:get_font_text_extent", kwlist, convertFont, &font, convertString, &text, &max_width))
+		return NULL;
+	
+	QFontMetrics fm(font);
+	QRect rect = fm.boundingRect(0, 0, max_width <= 0 ? 1000000000 : max_width, 1000000000, Qt::AlignTop | Qt::AlignLeft | (max_width <= 0 ? 0 : Qt::TextWordWrap), text);
+	return createVectorObject(rect.size());
+})
+
 
 SL_START_METHODS(slew)
 SL_METHOD(init)
@@ -4274,6 +4288,7 @@ SL_METHOD(get_screen_bitmap)
 SL_METHOD(find_focus)
 SL_METHOD(beep)
 SL_METHOD(get_backend_info)
+SL_METHOD(get_font_text_extent)
 SL_END_METHODS()
 
 
