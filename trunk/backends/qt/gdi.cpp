@@ -319,16 +319,16 @@ SL_DEFINE_DC_METHOD(text, {
 	QString text;
 	QPointF tl, br;
 	int flags;
+	int qflags = 0;
 	
 	if (!PyArg_ParseTuple(args, "O&O&O&i", convertString, &text, convertPointF, &tl, convertPointF, &br, &flags))
 		return NULL;
 	
 	if (flags == -1) {
-		tl.ry() += QFontMetricsF(painter->fontMetrics()).ascent();
-		painter->drawText(tl, text);
+		br = QPointF(1000000000, 1000000000);
+		qflags = Qt::AlignTop | Qt::AlignLeft;
 	}
 	else {
-		int qflags = 0;
 		Qt::TextElideMode mode = Qt::ElideNone;
 		switch (flags & 0xF00) {
 		case SL_DC_TEXT_ELIDE_LEFT:		mode = Qt::ElideLeft; break;
@@ -347,9 +347,9 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_ALIGN_VCENTER:			qflags |= Qt::AlignVCenter; break;
 		case SL_ALIGN_BOTTOM:			qflags |= Qt::AlignBottom; break;
 		}
-		QString elided = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x() - tl.x(), 0);
-		painter->drawText(QRectF(tl, br), qflags, elided);
+		text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x() - tl.x(), qflags);
 	}
+	painter->drawText(QRectF(tl, br), qflags, text);
 })
 
 

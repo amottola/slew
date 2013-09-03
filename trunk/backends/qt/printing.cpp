@@ -169,12 +169,10 @@ SL_DEFINE_DC_METHOD(clear, {
 
 
 SL_DEFINE_DC_METHOD(text, {
-	QStaticText *staticText;
 	QPrinter *printer = (QPrinter *)device;
-	const QFontMetrics& fm = painter->fontMetrics();
 	QString key, text;
 	QPointF tl, br;
-	int flags;
+	int flags, qflags = 0;
 	
 	if (!PyArg_ParseTuple(args, "O&O&O&i", convertString, &text, convertPointF, &tl, convertPointF, &br, &flags))
 		return NULL;
@@ -186,10 +184,10 @@ SL_DEFINE_DC_METHOD(text, {
 	painter->setWorldTransform(transform);
 	
 	if (flags == -1) {
-		tl = QPointF(0,0);
+		br = QPointF(1000000000, 1000000000);
+		qflags = Qt::AlignTop | Qt::AlignLeft;
 	}
 	else {
-		int qflags = 0;
 		Qt::TextElideMode mode = Qt::ElideNone;
 		switch (flags & 0xF00) {
 		case SL_DC_TEXT_ELIDE_LEFT:		mode = Qt::ElideLeft; break;
@@ -208,18 +206,10 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_ALIGN_VCENTER:			qflags |= Qt::AlignVCenter; break;
 		case SL_ALIGN_BOTTOM:			qflags |= Qt::AlignBottom; break;
 		}
-		QRect rect(0, 0, (br.x() - tl.x()) * printer->logicalDpiX() / DPI, (br.y() - tl.y()) * printer->logicalDpiY() / DPI);
-		text = fm.elidedText(text, mode, rect.width(), 0);
-		tl = QStyle::alignedRect(Qt::LayoutDirectionAuto, (Qt::Alignment)qflags, fm.size(0, text), rect).topLeft();
+		br = QPoint((br.x() - tl.x()) * printer->logicalDpiX() / DPI, (br.y() - tl.y()) * printer->logicalDpiY() / DPI);
+		text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x(), qflags);
 	}
-	key = QString("%1__%2").arg(painter->font().key()).arg(text);
-	
-	staticText = sTextCache[key];
-	if (!staticText) {
-		staticText = new QStaticText(text);
-		sTextCache.insert(key, staticText);
-	}
-	painter->drawStaticText(tl, *staticText);
+	painter->drawText(QRectF(QPointF(0,0), br), qflags, text);
 	painter->setWorldTransform(orig_transform);
 })
 
@@ -232,8 +222,13 @@ SL_DEFINE_DC_METHOD(text_extent, {
 	if (!PyArg_ParseTuple(args, "O&i", convertString, &text, &maxWidth))
 		return NULL;
 	
-	QSizeF size = painter->fontMetrics().boundingRect(QRect(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap) | Qt::TextLongestVariant, text).size();
-	return createVectorObject(QSize(size.width() * DPI / printer->logicalDpiX(), size.height() * DPI / printer->logicalDpiY()));
+	QSizeF size = QFontMetricsF(painter->fontMetrics()).boundingRect(QRect(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
+	size.rwidth()--;
+	
+	size.rwidth() *= DPI / printer->logicalDpiX();
+	size.rheight() *= DPI / printer->logicalDpiY();
+	
+	return createVectorObject(size);
 })
 
 
