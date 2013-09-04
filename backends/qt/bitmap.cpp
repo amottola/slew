@@ -43,8 +43,7 @@ _init(DC_Proxy *self, PyObject *args, PyObject *kwds)
 static void
 _dealloc(DC_Proxy *self)
 {
-	delete self->fPainter;
-	delete self->fDevice;
+	freeBitmapResources(self->fPainter, self->fDevice);
 	self->ob_type->tp_free((PyObject*)self);
 }
 

@@ -120,6 +120,7 @@ class InfoBalloon;
 
 static bool sIsRunning = false;
 static QEvent::Type sExceptionEvent;
+static QEvent::Type sFreeBitmapResourcesEvent;
 static int sArgc;
 static char **sArgv;
 static QLocale sLocale;
@@ -336,6 +337,24 @@ public:
 
 private:
 	QString		fMessage;
+};
+
+
+
+class FreeBitmapResourcesEvent : public QEvent
+{
+public:
+	FreeBitmapResourcesEvent(QPainter *painter, QPaintDevice *device) : QEvent(sFreeBitmapResourcesEvent), fPainter(painter), fDevice(device) {}
+	
+	void deleteResources()
+	{
+		delete fPainter;
+		delete fDevice;
+	}
+	
+private:
+	QPainter		*fPainter;
+	QPaintDevice	*fDevice;
 };
 
 
@@ -2066,6 +2085,12 @@ getLocale()
 }
 
 
+void
+freeBitmapResources(QPainter *painter, QPaintDevice *device)
+{
+	QApplication::postEvent(qApp, new FreeBitmapResourcesEvent(painter, device));
+}
+
 
 Application::Application(int& argc, char **argv)
 	: QApplication(argc, argv)
@@ -2088,6 +2113,7 @@ Application::Application(int& argc, char **argv)
 	qRegisterMetaType<QList<QActionGroup *> *>();
 	
 	sExceptionEvent = (QEvent::Type)QEvent::registerEventType();
+	sFreeBitmapResourcesEvent = (QEvent::Type)QEvent::registerEventType();
 	
 	installEventFilter(this);
 	QNetworkProxyFactory::setUseSystemConfiguration(true);
@@ -2225,6 +2251,11 @@ Application::eventFilter(QObject *obj, QEvent *event)
 	if (event->type() == sExceptionEvent) {
 		ExceptionEvent *e = (ExceptionEvent *)event;
 		e->report();
+		return true;
+	}
+	else if (event->type() == sFreeBitmapResourcesEvent) {
+		FreeBitmapResourcesEvent *e = (FreeBitmapResourcesEvent *)event;
+		e->deleteResources();
 		return true;
 	}
 	
