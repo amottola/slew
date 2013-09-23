@@ -363,6 +363,39 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_title, {
 })
 
 
+SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, get_framesize, {
+	return createVectorObject(impl->frameGeometry().size());
+})
+
+
+SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
+	QSize size, minSize = impl->minimumSize(), sizeHint = impl->sizeHint();
+	
+	if (!PyArg_ParseTuple(args, "O&", convertSize, &size))
+		return NULL;
+	
+	size -= (impl->frameGeometry().size() - impl->geometry().size());
+	
+	if (minSize.isNull())
+		minSize = impl->minimumSizeHint();
+	
+	if (size.width() <= 0)
+		size.rwidth() = minSize.width();
+	if (size.height() <= 0)
+		size.rheight() = minSize.height();
+	if (size.width() <= 0)
+		size.rwidth() = sizeHint.width();
+	if (size.height() <= 0)
+		size.rheight() = sizeHint.height();
+	
+	impl->setProperty("explicitSize", QVariant::fromValue(size));
+	impl->blockSignals(true);
+	impl->resize(size);
+	impl->blockSignals(false);
+	impl->updateGeometry();
+})
+
+
 SL_START_PROXY_DERIVED(Frame, Window)
 SL_METHOD(insert)
 SL_METHOD(remove)
@@ -381,6 +414,7 @@ SL_METHOD(restore_geometry)
 
 SL_PROPERTY(style)
 SL_PROPERTY(title)
+SL_PROPERTY(framesize)
 SL_END_PROXY_DERIVED(Frame, Window)
 
 

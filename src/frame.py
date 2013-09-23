@@ -40,6 +40,7 @@ class Frame(slew.Window):
 									"default":		STYLE_DEFAULT
 								})),
 		'title':				TranslatedStringProperty(),
+		'framesize':			VectorProperty(),
 	})
 	
 # methods
@@ -87,5 +88,11 @@ class Frame(slew.Window):
 	def set_title(self, title):
 		self._impl.set_title(title)
 
+	def get_framesize(self):
+		return self._impl.get_framesize()
+	
+	def set_framesize(self, size):
+		self._impl.set_framesize(Vector.ensure(size))
+	
 	title = DeprecatedDescriptor('title')
 
