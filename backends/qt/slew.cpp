@@ -2097,6 +2097,9 @@ Application::Application(int& argc, char **argv)
 {
 	fMutex = new QMutex(QMutex::Recursive);
 	fShadowWindow = new QMainWindow;
+	fShadowWindow->move(10000, 10000);
+	fShadowWindow->show();
+	fShadowWindow->hide();
 	
 // 	qRegisterMetaType<SL_Widget *>();
 // 	qRegisterMetaType<SL_DataItem *>();
