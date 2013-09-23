@@ -374,7 +374,9 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 	if (!PyArg_ParseTuple(args, "O&", convertSize, &size))
 		return NULL;
 	
-	size -= (impl->frameGeometry().size() - impl->geometry().size());
+	QSize diff = (SL_QAPP()->shadowWindow()->frameGeometry().size() - SL_QAPP()->shadowWindow()->geometry().size());
+	qDebug() << diff;
+	size -= diff;
 	
 	if (minSize.isNull())
 		minSize = impl->minimumSizeHint();
