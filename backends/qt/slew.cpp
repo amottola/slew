@@ -2097,9 +2097,10 @@ Application::Application(int& argc, char **argv)
 {
 	fMutex = new QMutex(QMutex::Recursive);
 	fShadowWindow = new QMainWindow;
+	fShadowWindow->setAttribute(Qt::WA_DontShowOnScreen);
+	fShadowWindow->setAttribute(Qt::WA_QuitOnClose, false);
 	fShadowWindow->move(10000, 10000);
 	fShadowWindow->show();
-	fShadowWindow->hide();
 	
 // 	qRegisterMetaType<SL_Widget *>();
 // 	qRegisterMetaType<SL_DataItem *>();
