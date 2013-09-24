@@ -709,6 +709,15 @@ SL_DEFINE_METHOD(TreeView, get_insertion_point, {
 })
 
 
+SL_DEFINE_METHOD(TreeView, get_edit_text, {
+	FormattedLineEdit *editor = qobject_cast<FormattedLineEdit *>(impl->indexWidget(impl->currentIndex()));
+	QString text;
+	if (editor)
+		text = editor->text();
+	return createStringObject(text);
+})
+
+
 SL_DEFINE_METHOD(TreeView, select_all, {
 	impl->QTreeView::selectAll();
 })
@@ -797,6 +806,7 @@ SL_METHOD(is_expanded)
 SL_METHOD(set_span_first_column)
 SL_METHOD(complete)
 SL_METHOD(get_insertion_point)
+SL_METHOD(get_edit_text)
 SL_METHOD(select_all)
 SL_METHOD(move_cursor)
 

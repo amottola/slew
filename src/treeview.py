@@ -80,6 +80,9 @@ class TreeView(View):
 	def get_insertion_point(self):
 		return self._impl.get_insertion_point()
 	
+	def get_edit_text(self):
+		return self._impl.get_edit_text()
+	
 	def select_all(self):
 		self._impl.select_all()
 	

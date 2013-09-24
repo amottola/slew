@@ -156,6 +156,7 @@ public slots:
 		if (runner.isValid()) {
 			runner.set("index", model->getDataIndex(fIndex), false);
 			runner.set("value", text);
+			runner.set("text", FormattedLineEdit::text());
 			runner.set("completion", completion);
 			runner.run();
 			
@@ -895,6 +896,7 @@ ItemDelegate::startEditing(const QModelIndex& index)
 			Py_INCREF(value);
 		}
 		runner.set("value", value);
+		runner.set("text", spec->fText);
 		runner.set("index", model->getDataIndex(index), false);
 		if (runner.run()) {
 			QWidget *editor = view->indexWidget(index);

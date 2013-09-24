@@ -311,6 +311,7 @@ SearchField_Impl::handleTextModified(const QString& text, int completion)
 	EventRunner runner(this, "onChange");
 	if (runner.isValid()) {
 		runner.set("value", text);
+		runner.set("text", FormattedLineEdit::text());
 		runner.set("completion", completion);
 		runner.run();
 	}
