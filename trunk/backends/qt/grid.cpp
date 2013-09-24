@@ -797,6 +797,15 @@ SL_DEFINE_METHOD(Grid, get_insertion_point, {
 })
 
 
+SL_DEFINE_METHOD(Grid, get_edit_text, {
+	FormattedLineEdit *editor = qobject_cast<FormattedLineEdit *>(impl->indexWidget(impl->currentIndex()));
+	QString text;
+	if (editor)
+		text = editor->text();
+	return createStringObject(text);
+})
+
+
 SL_DEFINE_METHOD(Grid, select_all, {
 	impl->QTableView::selectAll();
 })
@@ -1018,6 +1027,7 @@ SL_METHOD(set_column_pos)
 SL_METHOD(set_sorting)
 SL_METHOD(complete)
 SL_METHOD(get_insertion_point)
+SL_METHOD(get_edit_text)
 SL_METHOD(select_all)
 SL_METHOD(move_cursor)
 SL_METHOD(set_default_row_height)
