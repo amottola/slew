@@ -1,5 +1,7 @@
 #include "slew.h"
 
+#include <QEventLoop>
+
 #include "frame.h"
 #include "dialog.h"
 #include "menubar.h"
@@ -380,6 +382,10 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 	else {
 		impl->setAttribute (Qt::WA_DontShowOnScreen, true);
 		impl->show();
+		QEventLoop EventLoop(impl);
+		for (int i = 0 ; i < 10 ; i++)
+			if (!EventLoop.processEvents())
+				break;
 		size -= (impl->frameGeometry().size() - impl->geometry().size());
 		impl->hide();
 		impl->setAttribute (Qt::WA_DontShowOnScreen, false);
