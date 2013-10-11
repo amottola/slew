@@ -898,6 +898,11 @@ def translate(text, lang='it'):
 
 
 
+def mac_set_dock_menu(menu):
+	_slew.mac_set_dock_menu(menu)
+
+
+
 @deprecated
 def get_default_archive():
 	pass
