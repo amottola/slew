@@ -113,6 +113,8 @@
 #include <QEventLoop>
 #include <QNetworkProxyFactory>
 
+extern void qt_mac_set_dock_menu(QMenu *);
+
 
 class ResourceReader;
 class InfoBalloon;
@@ -136,6 +138,8 @@ static PyObject *sColorType;
 static PyObject *sFontType;
 static PyObject *sBitmapType;
 static PyObject *sIconType;
+static PyObject *sCurrentDockMenu = NULL;
+
 PyObject *PyDC_Type;
 PyObject *PyPrintDC_Type;
 PyObject *PyPaper_Type;
@@ -4278,6 +4282,27 @@ SL_DEFINE_MODULE_METHOD(get_font_text_extent, {
 })
 
 
+SL_DEFINE_MODULE_METHOD(mac_set_dock_menu, {
+	PyObject *object;
+	QMenu *menu;
+	
+	if (!PyArg_ParseTuple(args, "O", &object))
+		return NULL;
+	
+	if (object == Py_None) {
+		Py_XDECREF(sCurrentDockMenu);
+		sCurrentDockMenu = NULL;
+	}
+	else {
+		Py_INCREF(object);
+		menu = (QMenu *)getImpl(object);
+		Py_XDECREF(sCurrentDockMenu);
+		sCurrentDockMenu = object;
+		qt_mac_set_dock_menu(menu);
+	}
+})
+
+
 SL_START_METHODS(slew)
 SL_METHOD(init)
 SL_METHOD(exit)
@@ -4324,6 +4349,7 @@ SL_METHOD(find_focus)
 SL_METHOD(beep)
 SL_METHOD(get_backend_info)
 SL_METHOD(get_font_text_extent)
+SL_METHOD(mac_set_dock_menu)
 SL_END_METHODS()
 
 
