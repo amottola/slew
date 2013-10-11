@@ -4282,6 +4282,8 @@ SL_DEFINE_MODULE_METHOD(get_font_text_extent, {
 })
 
 
+#ifdef Q_WS_MAC
+
 SL_DEFINE_MODULE_METHOD(mac_set_dock_menu, {
 	PyObject *object;
 	QMenu *menu;
@@ -4301,6 +4303,8 @@ SL_DEFINE_MODULE_METHOD(mac_set_dock_menu, {
 		qt_mac_set_dock_menu(menu);
 	}
 })
+
+#endif
 
 
 SL_START_METHODS(slew)
@@ -4349,7 +4353,9 @@ SL_METHOD(find_focus)
 SL_METHOD(beep)
 SL_METHOD(get_backend_info)
 SL_METHOD(get_font_text_extent)
+#ifdef Q_WS_MAC
 SL_METHOD(mac_set_dock_menu)
+#endif
 SL_END_METHODS()
 
 
