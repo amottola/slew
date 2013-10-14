@@ -2838,6 +2838,7 @@ Application::eventFilter(QObject *obj, QEvent *event)
 	
 	case QEvent::FileOpen:
 		{
+			PyAutoLocker locker;
 			QFileOpenEvent *e = (QFileOpenEvent *)event;
 			PyObject *file = createStringObject(e->file());
 			
