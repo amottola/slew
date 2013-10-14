@@ -98,6 +98,7 @@
 #include <QClipboard>
 #include <QTimer>
 #include <QDragMoveEvent>
+#include <QFileOpenEvent>
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QListView>
@@ -120,6 +121,7 @@ class ResourceReader;
 class InfoBalloon;
 
 
+static PyObject *sApplication = NULL;
 static bool sIsRunning = false;
 static QEvent::Type sExceptionEvent;
 static QEvent::Type sFreeBitmapResourcesEvent;
@@ -2834,6 +2836,27 @@ Application::eventFilter(QObject *obj, QEvent *event)
 		}
 		break;
 	
+	case QEvent::FileOpen:
+		{
+			QFileOpenEvent *e = (QFileOpenEvent *)event;
+			
+			PyObject *method = PyString_FromString("open_file");
+			if (method) {
+				PyObject *file = createStringObject(e->file());
+				PyObject *result = PyObject_CallMethodObjArgs(sApplication, method, file, NULL);
+				if (result) {
+					Py_DECREF(result);
+				}
+				else {
+					PyErr_Print();
+					PyErr_Clear();
+				}
+				Py_DECREF(file);
+				Py_DECREF(method);
+			}
+		}
+		break;
+	
 	}
 	
 	return false;
@@ -2928,6 +2951,7 @@ SL_DEFINE_MODULE_METHOD(init, {
 		return NULL;
 	
 	dict = PyModule_GetDict(module);
+	sApplication = PyDict_GetItemString(dict, "sApplication");
 	PyEvent_Type = PyDict_GetItemString(dict, "Event");
 	PyPaper_Type = PyDict_GetItemString(dict, "Paper");
 	sVectorType = PyDict_GetItemString(dict, "Vector");
