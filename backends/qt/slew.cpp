@@ -2839,21 +2839,27 @@ Application::eventFilter(QObject *obj, QEvent *event)
 	case QEvent::FileOpen:
 		{
 			QFileOpenEvent *e = (QFileOpenEvent *)event;
+			PyObject *file = createStringObject(e->file());
 			
-			PyObject *method = PyString_FromString("open_file");
-			if (method) {
-				PyObject *file = createStringObject(e->file());
-				PyObject *result = PyObject_CallMethodObjArgs(sApplication, method, file, NULL);
-				if (result) {
-					Py_DECREF(result);
-				}
-				else {
-					PyErr_Print();
-					PyErr_Clear();
-				}
-				Py_DECREF(file);
-				Py_DECREF(method);
+			if ((!sApplication) || (sApplication == Py_None)) {
+				PyObject *args = PySys_GetObject("argv");
+				PyList_Append(args, file);
 			}
+			else {
+				PyObject *method = PyObject_GetAttrString(sApplication, "open_file");
+				if (method) {
+					PyObject *result = PyObject_CallFunctionObjArgs(method, file, NULL);
+					if (result) {
+						Py_DECREF(result);
+					}
+					else {
+						PyErr_Print();
+						PyErr_Clear();
+					}
+					Py_DECREF(method);
+				}
+			}
+			Py_DECREF(file);
 		}
 		break;
 	
