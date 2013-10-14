@@ -121,7 +121,6 @@ class ResourceReader;
 class InfoBalloon;
 
 
-static PyObject *sApplication = NULL;
 static bool sIsRunning = false;
 static QEvent::Type sExceptionEvent;
 static QEvent::Type sFreeBitmapResourcesEvent;
@@ -2842,23 +2841,33 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			QFileOpenEvent *e = (QFileOpenEvent *)event;
 			PyObject *file = createStringObject(e->file());
 			
-			if ((!sApplication) || (sApplication == Py_None)) {
-				PyObject *args = PySys_GetObject("argv");
-				PyList_Append(args, file);
-			}
-			else {
-				PyObject *method = PyObject_GetAttrString(sApplication, "open_file");
-				if (method) {
-					PyObject *result = PyObject_CallFunctionObjArgs(method, file, NULL);
-					if (result) {
-						Py_DECREF(result);
-					}
-					else {
-						PyErr_Print();
-						PyErr_Clear();
-					}
-					Py_DECREF(method);
+			PyObject *module = PyImport_AddModule("slew");
+			PyObject *method, *application;
+			
+			method = PyObject_GetAttrString(module, "get_application");
+			if (method) {
+				application = PyObject_CallFunctionObjArgs(method, NULL);
+				Py_DECREF(method);
+				
+				if ((!application) && (application == Py_None)) {
+					PyObject *args = PySys_GetObject("argv");
+					PyList_Append(args, file);
 				}
+				else {
+					method = PyObject_GetAttrString(application, "open_file");
+					if (method) {
+						PyObject *result = PyObject_CallFunctionObjArgs(method, file, NULL);
+						if (result) {
+							Py_DECREF(result);
+						}
+						else {
+							PyErr_Print();
+							PyErr_Clear();
+						}
+						Py_DECREF(method);
+					}
+				}
+				Py_XDECREF(application);
 			}
 			Py_DECREF(file);
 		}
@@ -2958,7 +2967,6 @@ SL_DEFINE_MODULE_METHOD(init, {
 		return NULL;
 	
 	dict = PyModule_GetDict(module);
-	sApplication = PyDict_GetItemString(dict, "sApplication");
 	PyEvent_Type = PyDict_GetItemString(dict, "Event");
 	PyPaper_Type = PyDict_GetItemString(dict, "Paper");
 	sVectorType = PyDict_GetItemString(dict, "Vector");
