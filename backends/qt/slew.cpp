@@ -121,6 +121,7 @@ class ResourceReader;
 class InfoBalloon;
 
 
+static PyObject *sApplication = NULL;
 static bool sIsRunning = false;
 static QEvent::Type sExceptionEvent;
 static QEvent::Type sFreeBitmapResourcesEvent;
@@ -2841,32 +2842,22 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			QFileOpenEvent *e = (QFileOpenEvent *)event;
 			PyObject *file = createStringObject(e->file());
 			
-			PyObject *module = PyImport_AddModule("slew");
-			PyObject *method, *application;
-			
-			method = PyDict_GetItemString(PyModule_GetDict(module), "get_application");
-			if (method) {
-				application = PyObject_CallFunctionObjArgs(method, NULL);
+			if ((!sApplication) || (sApplication == Py_None)) {
+				PyObject *args = PySys_GetObject("argv");
+				PyList_Append(args, file);
+			}
+			else {
+				PyObject *method = PyString_FromString("open_file");
+				PyObject *result = PyObject_CallMethodObjArgs(sApplication, method, file, NULL);
 				Py_DECREF(method);
 				
-				if ((!application) || (application == Py_None)) {
-					PyObject *args = PySys_GetObject("argv");
-					PyList_Append(args, file);
+				if (result) {
+					Py_DECREF(result);
 				}
 				else {
-					method = PyString_FromString("open_file");
-					PyObject *result = PyObject_CallMethodObjArgs(application, method, file, NULL);
-					Py_DECREF(method);
-					
-					if (result) {
-						Py_DECREF(result);
-					}
-					else {
-						PyErr_Print();
-						PyErr_Clear();
-					}
+					PyErr_Print();
+					PyErr_Clear();
 				}
-				Py_XDECREF(application);
 			}
 			Py_DECREF(file);
 		}
@@ -3025,12 +3016,20 @@ SL_DEFINE_MODULE_METHOD(set_application_flags, {
 
 
 SL_DEFINE_MODULE_METHOD(run, {
+	static char *kwlist[] = { "application", NULL };
+	
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &sApplication))
+		return NULL;
+	
+	Py_INCREF(sApplication);
 	Py_BEGIN_ALLOW_THREADS
 	
 	sIsRunning = true;
 	qApp->exec();
 	
 	Py_END_ALLOW_THREADS
+	Py_DECREF(sApplication);
+	sApplication = NULL;
 	
     Py_RETURN_NONE;
 })
