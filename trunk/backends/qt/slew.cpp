@@ -2844,12 +2844,12 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			PyObject *module = PyImport_AddModule("slew");
 			PyObject *method, *application;
 			
-			method = PyObject_GetAttrString(module, "get_application");
+			method = PyDict_GetItemString(PyModule_GetDict(module), "get_application");
 			if (method) {
 				application = PyObject_CallFunctionObjArgs(method, NULL);
 				Py_DECREF(method);
 				
-				if ((!application) && (application == Py_None)) {
+				if ((!application) || (application == Py_None)) {
 					PyObject *args = PySys_GetObject("argv");
 					PyList_Append(args, file);
 				}
