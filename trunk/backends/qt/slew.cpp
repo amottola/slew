@@ -2854,17 +2854,16 @@ Application::eventFilter(QObject *obj, QEvent *event)
 					PyList_Append(args, file);
 				}
 				else {
-					method = PyObject_GetAttrString(application, "open_file");
-					if (method) {
-						PyObject *result = PyObject_CallFunctionObjArgs(method, file, NULL);
-						if (result) {
-							Py_DECREF(result);
-						}
-						else {
-							PyErr_Print();
-							PyErr_Clear();
-						}
-						Py_DECREF(method);
+					method = PyString_FromString("open_file");
+					PyObject *result = PyObject_CallMethodObjArgs(application, method, file, NULL);
+					Py_DECREF(method);
+					
+					if (result) {
+						Py_DECREF(result);
+					}
+					else {
+						PyErr_Print();
+						PyErr_Clear();
 					}
 				}
 				Py_XDECREF(application);
