@@ -651,7 +651,7 @@ def run(application):
 		_slew.set_application_name(application.NAME)
 	if application.init() is not False:
 		if application.run() is not False:
-			_slew.run()
+			_slew.run(application)
 		application.exit()
 
 
