@@ -51,6 +51,9 @@
 		else
 			return false;
 	}
+	
+	extern void qt_mac_set_dock_menu(QMenu *);
+	static PyObject *sCurrentDockMenu = NULL;
 
 #elif defined(Q_WS_WIN)
 	#include <shlobj.h>
@@ -114,12 +117,9 @@
 #include <QEventLoop>
 #include <QNetworkProxyFactory>
 
-extern void qt_mac_set_dock_menu(QMenu *);
-
 
 class ResourceReader;
 class InfoBalloon;
-
 
 static PyObject *sApplication = NULL;
 static bool sIsRunning = false;
@@ -140,7 +140,6 @@ static PyObject *sColorType;
 static PyObject *sFontType;
 static PyObject *sBitmapType;
 static PyObject *sIconType;
-static PyObject *sCurrentDockMenu = NULL;
 
 PyObject *PyDC_Type;
 PyObject *PyPrintDC_Type;
