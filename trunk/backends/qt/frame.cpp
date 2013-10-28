@@ -84,6 +84,10 @@ Frame_Impl::moveEvent(QMoveEvent *event)
 void
 Frame_Impl::resizeEvent(QResizeEvent *event)
 {
+#ifdef Q_WS_X11
+	helper_set_resizeable(this, fResizeable);
+#endif
+	
 	hidePopupMessage();
 	Completer::hide();
 	

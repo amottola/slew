@@ -58,6 +58,10 @@ Dialog_Impl::moveEvent(QMoveEvent *event)
 void
 Dialog_Impl::resizeEvent(QResizeEvent *event)
 {
+#ifdef Q_WS_X11
+	helper_set_resizeable(this, fResizeable);
+#endif
+	
 	QDialog::resizeEvent(event);
 	
 	hidePopupMessage();
