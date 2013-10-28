@@ -194,6 +194,9 @@ void helper_init_notification(QWidget *widget);
 void helper_clear_menu_previous_action(QMenu *menu);
 bool helper_notify_center(const QString &title, const QString &text);
 
+#elif defined(Q_WS_X11)
+void helper_set_resizeable(QWidget *widget, bool enabled);
+
 #endif
 
 
