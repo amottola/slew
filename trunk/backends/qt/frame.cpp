@@ -44,7 +44,7 @@ Frame_Impl::setResizeable(bool resizeable)
 {
 	fResizeable = resizeable;
 	
-#ifdef Q_WS_MAC
+#if (defined(Q_WS_MAC) || defined(Q_WS_X11))
 	helper_set_resizeable(this, resizeable);
 #endif
 }
