@@ -2,6 +2,10 @@
 
 #ifdef Q_WS_X11
 
+#include <QX11Info>
+#include <X11/Xlib.h>
+
+
 // MWM support
 struct MWMHints {
 	unsigned long flags, functions, decorations;
@@ -42,17 +46,15 @@ static MWMHints
 GetMWMHints(Display *display, Window window)
 {
     MWMHints mwmhints;
-
+	
+	Atom _motif_wm_hints = XInternAtom(display, "_MOTIF_WM_HINTS", true);
     Atom type;
     int format;
     ulong nitems, bytesLeft;
     uchar *data = 0;
-    if ((XGetWindowProperty(display, window, ATOM(_MOTIF_WM_HINTS), 0, 5, false,
-                            ATOM(_MOTIF_WM_HINTS), &type, &format, &nitems, &bytesLeft,
-                            &data) == Success)
-        && (type == ATOM(_MOTIF_WM_HINTS)
-            && format == 32
-            && nitems >= 5)) {
+    if ((_motif_wm_hints != None) &&
+		(XGetWindowProperty(display, window, _motif_wm_hints, 0, 5, false, _motif_wm_hints, &type, &format, &nitems, &bytesLeft, &data) == Success) &&
+		(type == _motif_wm_hints) && (format == 32) && (nitems >= 5)) {
         mwmhints = *(reinterpret_cast<MWMHints *>(data));
     } else {
         mwmhints.flags = 0L;
@@ -72,11 +74,15 @@ GetMWMHints(Display *display, Window window)
 static void
 SetMWMHints(Display *display, Window window, const MWMHints &mwmhints)
 {
+	Atom _motif_wm_hints = XInternAtom(display, "_MOTIF_WM_HINTS", true);
+	if (_motif_wm_hints == None)
+		return;
+	
     if (mwmhints.flags != 0l) {
-        XChangeProperty(display, window, ATOM(_MOTIF_WM_HINTS), ATOM(_MOTIF_WM_HINTS), 32,
+        XChangeProperty(display, window, _motif_wm_hints, _motif_wm_hints, 32,
                         PropModeReplace, (unsigned char *) &mwmhints, 5);
     } else {
-        XDeleteProperty(display, window, ATOM(_MOTIF_WM_HINTS));
+        XDeleteProperty(display, window, _motif_wm_hints);
     }
 }
 
@@ -85,12 +91,12 @@ void
 helper_set_resizeable(QWidget *widget, bool enabled)
 {
 	Window window = (Window)widget->winId();
-	Display *display = widget->x11info().display();
+	Display *display = widget->x11Info().display();
 	
 	MWMHints mwmHints = GetMWMHints(display, window);
 	const bool wasFuncResize = mwmHints.functions & MWM_FUNC_RESIZE;
 	
-	if ((enabled) && (impl->minimumSize() != impl->maximumSize()))
+	if ((enabled) && (widget->minimumSize() != widget->maximumSize()))
 		mwmHints.functions |= MWM_FUNC_RESIZE;
 	else
 		mwmHints.functions &= ~MWM_FUNC_RESIZE;
