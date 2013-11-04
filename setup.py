@@ -71,12 +71,44 @@ if sys.platform == 'darwin':
 	else:
 		cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers '
 		ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
-	if os.path.exists('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk'):
-		sdk = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk'
+	
+	sdk = None
+	for index, arg in enumerate(sys.argv):
+		if arg == '--sdk':
+			if index + 1 >= len(sys.argv):
+				print 'Missing sdk parameter'
+				sys.exit(1)
+			sdk = sys.argv[index + 1]
+			del sys.argv[index:index+2]
+			break
+		elif arg.startswith('--sdk='):
+			sdk = arg[6:].strip()
+			del sys.argv[index]
+			break
+	known_sdks = {
+		'10.5':		('/Developer/SDKs/MacOSX10.5.sdk', '10.5'),
+		'10.6':		('/Developer/SDKs/MacOSX10.6.sdk', '10.5'),
+		'10.7':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk', '10.5'),
+		'10.8':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk', '10.6'),
+		'10.9':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk', '10.7'),
+	}
+	if sdk is not None:
+		if (sdk in known_sdks) and (os.path.exists(known_sdks[sdk][0])):
+			sdk, macosx_version_min = known_sdks[sdk]
+		else:
+			print 'Error: unknown SDK:', sdk
+			sys.exit(1)
 	else:
-		sdk = '/Developer/SDKs/MacOSX10.5.sdk'
-	cflags += '-g -mmacosx-version-min=10.5 -isysroot %s -Wno-write-strings -fvisibility=hidden' % sdk
-	ldflags += '-Wl,-syslibroot,%s -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -mmacosx-version-min=10.5 -headerpad_max_install_names' % sdk
+		for sdk in sorted(known_sdks.keys(), reverse=True):
+			if os.path.exists(known_sdks[sdk][0]):
+				sdk, macosx_version_min = known_sdks[sdk]
+				break
+		else:
+			print 'Error: no valid SDK found!'
+			sys.exit(1)
+	
+	cflags += '-g -mmacosx-version-min=%s -isysroot %s -Wno-write-strings -fvisibility=hidden' % (macosx_version_min, sdk)
+	ldflags += '-Wl,-syslibroot,%s -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -mmacosx-version-min=%s -headerpad_max_install_names' % (sdk, macosx_version_min)
 	data_files = []
 	if develop:
 		os.environ['ARCHFLAGS'] = '-arch x86_64'
