@@ -21,7 +21,7 @@ Frame_Impl::Frame_Impl()
 }
 
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 
 #include "windows.h"
 
@@ -44,7 +44,7 @@ Frame_Impl::setResizeable(bool resizeable)
 {
 	fResizeable = resizeable;
 	
-#if (defined(Q_WS_MAC) || defined(Q_WS_X11))
+#if (defined(Q_OS_MAC) || defined(Q_OS_LINUX))
 	helper_set_resizeable(this, resizeable);
 #endif
 }
@@ -53,7 +53,7 @@ Frame_Impl::setResizeable(bool resizeable)
 bool
 Frame_Impl::event(QEvent *event)
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	if (event->type() == QEvent::StatusTip) {
 		static bool inStatusTip = false;
 		bool result;
@@ -84,7 +84,7 @@ Frame_Impl::moveEvent(QMoveEvent *event)
 void
 Frame_Impl::resizeEvent(QResizeEvent *event)
 {
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 	helper_set_resizeable(this, fResizeable);
 #endif
 	
@@ -295,7 +295,7 @@ SL_DEFINE_METHOD(Frame, get_style, {
 })
 
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 #define NO_BUTTONS_FLAGS	Qt::WindowSystemMenuHint
 #else
 #define NO_BUTTONS_FLAGS	Qt::FramelessWindowHint

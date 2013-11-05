@@ -3,6 +3,7 @@ import glob
 import os
 import os.path
 import re
+import subprocess
 
 try:
 	from setuptools import setup, Extension
@@ -56,6 +57,7 @@ distutils.ccompiler.new_compiler = slew_compiler
 sources = []
 
 qt_dir = os.environ.get('QTDIR')
+qt5 = False
 
 vars = {
 	'qt_dir':			qt_dir,
@@ -65,12 +67,29 @@ vars = {
 if sys.platform == 'darwin':
 	moc = 'moc'
 	if qt_dir is None:
-		vars['qt_dir'] = '/Library/Frameworks'
-		cflags = '-I/Library/Frameworks/QtCore.framework/Headers -I/Library/Frameworks/QtGui.framework/Headers -I/Library/Frameworks/QtOpenGL.framework/Headers -I/Library/Frameworks/QtWebKit.framework/Headers -I/Library/Frameworks/QtNetwork.framework/Headers '
-		ldflags = ''
+		home = os.environ['HOME']
+		for path in os.listdir(home):
+			if path.startswith('Qt5.'):
+				qt_ver = path[2:]
+				if os.path.exists(os.path.join(home, path, qt_ver)):
+					qt_dir = os.path.join(home, path, qt_ver, 'clang_64')
+					vars['qt_dir'] = qt_dir
+					vars['qt_ver'] = qt_ver
+					moc = '%(qt_dir)s/bin/moc'
+					cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtGui/%(qt_ver)s/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers -I%(qt_dir)s/lib/QtWidgets.framework/Headers -I%(qt_dir)s/lib/QtWebKitWidgets.framework/Headers -I%(qt_dir)s/lib/QtPrintSupport.framework/Headers '
+					ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
+					qt5 = True
+					break
+		else:
+			vars['qt_dir'] = '/Library/Frameworks'
+			cflags = '-I/Library/Frameworks/QtCore.framework/Headers -I/Library/Frameworks/QtGui.framework/Headers -I/Library/Frameworks/QtOpenGL.framework/Headers -I/Library/Frameworks/QtWebKit.framework/Headers -I/Library/Frameworks/QtNetwork.framework/Headers '
+			ldflags = ''
 	else:
 		cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers '
 		ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
+
+	if 'clang' in subprocess.check_output('gcc --version', stderr=subprocess.STDOUT, shell=True, universal_newlines=True):
+		cflags += '-Qunused-arguments -Wno-unused-private-field -Wno-self-assign '
 	
 	sdk = None
 	for index, arg in enumerate(sys.argv):
@@ -109,9 +128,11 @@ if sys.platform == 'darwin':
 	
 	cflags += '-g -mmacosx-version-min=%s -isysroot %s -Wno-write-strings -fvisibility=hidden' % (macosx_version_min, sdk)
 	ldflags += '-Wl,-syslibroot,%s -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -mmacosx-version-min=%s -headerpad_max_install_names' % (sdk, macosx_version_min)
+	if qt5:
+		ldflags += ' -framework QtWidgets -framework QtWebKitWidgets -framework QtPrintSupport'
 	data_files = []
 	if develop:
-		os.environ['ARCHFLAGS'] = '-arch x86_64'
+		os.environ['ARCHFLAGS'] = '-arch x86_64 -O0'
 	if profile:
 		cflags += ' -pg'
 		ldflags += ' -pg'
@@ -151,8 +172,11 @@ if not os.path.exists(os.path.join('backends', 'qt', 'constants')):
 	os.mkdir(os.path.join('backends', 'qt', 'constants'))
 
 sources += glob.glob(os.path.join('backends', 'qt', '*.cpp'))
+if sys.platform == 'darwin':
+	sources += glob.glob(os.path.join('backends', 'qt', '*.mm'))
+
 for source in sources:
-	target = '%s.moc' % os.path.split(source)[-1][:-4]
+	target = '%s.moc' % os.path.splitext(os.path.split(source)[-1])[0]
 	cmd = '%s -nw -i -o %s %s' % (moc, os.path.join('backends', 'qt', 'moc', target), source)
 	os.system(cmd)
 
@@ -164,9 +188,6 @@ for source in glob.glob(os.path.join('backends', 'qt', '*.h')):
 sources += glob.glob(os.path.join('backends', 'qt', 'minizip', '*.c'))
 if sys.platform == 'win32':
 	sources += glob.glob(os.path.join('backends', 'qt', 'minizip', 'win32', '*.c'))
-
-if sys.platform == 'darwin':
-	sources += glob.glob(os.path.join('backends', 'qt', '*.mm'))
 
 
 for py in glob.glob(os.path.join('src', '*.py')):

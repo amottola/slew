@@ -16,7 +16,7 @@ Dialog_Impl::Dialog_Impl()
 }
 
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 
 #include "windows.h"
 
@@ -39,7 +39,7 @@ Dialog_Impl::setResizeable(bool resizeable)
 {
 	fResizeable = resizeable;
 	
-#if (defined(Q_WS_MAC) || defined(Q_WS_X11))
+#if (defined(Q_OS_MAC) || defined(Q_OS_LINUX))
 	helper_set_resizeable(this, resizeable);
 #endif
 }
@@ -58,7 +58,7 @@ Dialog_Impl::moveEvent(QMoveEvent *event)
 void
 Dialog_Impl::resizeEvent(QResizeEvent *event)
 {
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 	helper_set_resizeable(this, fResizeable);
 #endif
 	
@@ -132,7 +132,7 @@ SL_DEFINE_METHOD(Dialog, set_visible, {
 })
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #define SHOW		open
 #else
 #define SHOW		show
@@ -233,7 +233,7 @@ SL_DEFINE_METHOD(Dialog, get_style, {
 })
 
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 #define NO_BUTTONS_FLAGS	Qt::WindowSystemMenuHint
 #else
 #define NO_BUTTONS_FLAGS	Qt::FramelessWindowHint

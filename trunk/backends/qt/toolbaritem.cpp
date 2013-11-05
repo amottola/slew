@@ -44,7 +44,7 @@ public:
 		style()->drawPrimitive(QStyle::PE_IndicatorToolBarSeparator, &opt, &p, parentWidget());
 	}
 	
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	virtual void mousePressEvent(QMouseEvent *event)
 	{
 		QMainWindow *win = qobject_cast<QMainWindow *>(window());
@@ -157,7 +157,7 @@ ToolBarItem_Impl::update()
 		button->setAutoRepeatDelay(300);
 	}
 	
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	QObject::disconnect(this, SIGNAL(triggered()), button, SLOT(showMenu()));
 	if ((fMenu) && (fMenuMode == QToolButton::InstantPopup)) {
 		button->setPopupMode(QToolButton::MenuButtonPopup);

@@ -14,7 +14,7 @@ StatusBar_Impl::StatusBar_Impl()
 }
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 
 static void
 set_font_helper(QObject *object, const QFont& font)
@@ -33,7 +33,7 @@ set_font_helper(QObject *object, const QFont& font)
 bool
 StatusBar_Impl::event(QEvent *event)
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	QMainWindow *win = qobject_cast<QMainWindow *>(window());
 	if ((win) && (win->unifiedTitleAndToolBarOnMac())) {
 		if (event->type() == QEvent::ChildAdded) {

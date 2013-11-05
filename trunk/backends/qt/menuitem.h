@@ -14,7 +14,7 @@ class MenuItem_Impl : public QAction, public WidgetInterface
 	Q_OBJECT
 	
 public:
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	SL_DECLARE_OBJECT(MenuItem, {
 		QList<QWidget *> list = associatedWidgets();
 		if (!list.isEmpty()) {

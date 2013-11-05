@@ -102,7 +102,7 @@ public:
 		return false;
 	}
 	
-	virtual bool canModify()
+	virtual bool canModify(QWidget *widget)
 	{
 		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
 		DataModel_Impl *model = (DataModel_Impl *)view->model();
@@ -468,10 +468,10 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 		}
 		
 		style->drawComplexControl(QStyle::CC_ComboBox, &o, painter, NULL);
-#ifdef Q_WS_WIN32
+#ifdef Q_OS_WIN32
 		// Workaround for Windows as label needs a real QComboBox to exist to properly adjust margins; we do it manually here...
 		o.rect.adjust(3, 3, -19, -3);
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
 		if (!o.currentIcon.isNull())
 			o.rect.adjust(1, 0, 0, 0);
 #endif
@@ -533,7 +533,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 		alignment |= (fCurrentSpec->fAlignment & Qt::AlignVertical_Mask);
 	
 	QRect textRect = rect;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	textRect.adjust(2, 0, -2, 0);
 #else
 	textRect.adjust(3, 0, -3, 0);
@@ -1012,7 +1012,7 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 				return true;
 			case Qt::Key_Home:
 			case Qt::Key_End:
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 				if (qobject_cast<ComboBox_Editor *>(editor))
 					return false;
 				return true;

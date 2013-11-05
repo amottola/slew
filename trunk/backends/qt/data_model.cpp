@@ -662,7 +662,8 @@ DataModel_Impl::initModel(PyObject *model)
 void
 DataModel_Impl::resetAll()
 {
-	reset();
+	beginResetModel();
+	endResetModel();
 }
 
 

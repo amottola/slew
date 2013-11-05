@@ -14,7 +14,7 @@
 #include <QEventLoop>
 #include <QCache>
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 #define DPI		96.0
 #else
 #define DPI		72.0
@@ -416,7 +416,7 @@ public:
 	PageSetupDialog(QPrinter *printer, QWidget *parent)
 		: QPageSetupDialog(printer, parent), fEventLoop(NULL)
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		if (parent) {
 			setWindowModality(Qt::WindowModal);
 			fEventLoop = new QEventLoop();
@@ -428,7 +428,7 @@ public:
 	
 	virtual ~PageSetupDialog()
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		delete fEventLoop;
 #endif
 	}
@@ -437,7 +437,7 @@ public:
 	{
 		Py_BEGIN_ALLOW_THREADS
 	
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		if (fEventLoop)
 			fEventLoop->exec(QEventLoop::DialogExec);
 		else
@@ -451,7 +451,7 @@ public:
 	
 	virtual void setVisible(bool visible)
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		if ((!visible) && (fEventLoop))
 			fEventLoop->exit();
 #endif
@@ -470,7 +470,7 @@ public:
 	PrintDialog(QPrinter *printer, QWidget *parent)
 		: QPrintDialog(printer, parent), fEventLoop(NULL)
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		if (parent) {
 			setWindowModality(Qt::WindowModal);
 			fEventLoop = new QEventLoop();
@@ -482,7 +482,7 @@ public:
 	
 	virtual ~PrintDialog()
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		delete fEventLoop;
 #endif
 	}
@@ -493,7 +493,7 @@ public:
 		
 		Py_BEGIN_ALLOW_THREADS
 		
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		if (fEventLoop)
 			fEventLoop->exec(QEventLoop::DialogExec);
 		else
@@ -507,7 +507,7 @@ public:
 	
 	virtual void setVisible(bool visible)
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		if ((!visible) && (fEventLoop))
 			fEventLoop->exit();
 #endif
@@ -559,7 +559,7 @@ loadSettings(PyObject *settings, QPrinter *printer)
 	if (!name.trimmed().isEmpty())
 		printer->setPrinterName(name);
 	
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	for (i = 0; kBin[i].fSL >= 0; i++) {
 		if (kBin[i].fSL == bin) {
 			QPrinter::PaperSource source = kBin[i].fQT;
@@ -595,7 +595,7 @@ loadSettings(PyObject *settings, QPrinter *printer)
 			break;
 	}
 	if (kPaperSize[i].fSL == SL_PRINTER_PAPER_CUSTOM) {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 		if (((orientation == SL_PRINTER_ORIENTATION_VERTICAL) && (paperSize.height() < paperSize.width())) ||
 			((orientation == SL_PRINTER_ORIENTATION_HORIZONTAL) && (paperSize.height() > paperSize.width()))) {
 			paperSize = QSizeF(paperSize.height(), paperSize.width());
@@ -734,7 +734,7 @@ saveSettings(PyObject *settings, QPrinter *printer)
 		if (PyErr_Occurred())
 			break;
 		
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 		qreal top, right, bottom, left;
 		printer->getPageMargins(&left, &top, &right, &bottom, QPrinter::Millimeter);
 		value = PyInt_FromLong((int)(left * 10.0));
@@ -777,8 +777,10 @@ pageSetup(PyObject *settings, PyObject *parent, bool *accepted)
 	}
 	else if (isFrame(parent)) {
 		parentWidget = (QWidget *)getImpl(parent);
-		if (!parentWidget)
-			SL_RETURN_NO_IMPL;
+		if (!parentWidget) {
+			PyErr_SetString(PyExc_RuntimeError, "object has no attached implementation");
+			return false;
+		}
 	}
 	else {
 		PyErr_SetString(PyExc_ValueError, "expected Frame object or None");

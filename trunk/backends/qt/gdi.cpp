@@ -353,7 +353,7 @@ SL_DEFINE_DC_METHOD(text, {
 })
 
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 
 SL_DEFINE_DC_METHOD(text_extent, {
 	QString text;

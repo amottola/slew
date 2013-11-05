@@ -25,7 +25,7 @@ public:
 	virtual int dataType() { return FormattedLineEdit::dataType(); }
 	
 	virtual bool isModifyEvent(QEvent *event);
-	virtual bool canModify() { return WidgetInterface::canModify(this); }
+	virtual bool canModify(QWidget *widget) { return WidgetInterface::canModify(this); }
 	
 	virtual bool isFocusOutEvent(QEvent *event);
 	virtual bool canFocusOut(QWidget *oldFocus, QWidget *newFocus);

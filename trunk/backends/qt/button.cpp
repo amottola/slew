@@ -9,7 +9,7 @@
 Button_Impl::Button_Impl()
 	: QPushButton(), WidgetInterface()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
 #endif
 	

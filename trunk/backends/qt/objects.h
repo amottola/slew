@@ -8,7 +8,7 @@
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QItemDelegate>
-#include <QWindowsStyle>
+#include <QCommonStyle>
 #include <QKeyEvent>
 
 
@@ -181,12 +181,12 @@ protected:
 
 
 
-class HeaderStyle : public QWindowsStyle
+class HeaderStyle : public QCommonStyle
 {
 	Q_OBJECT
 	
 public:
-	HeaderStyle(QAbstractItemView *parent) : QWindowsStyle(), fMode(Qt::ElideRight) { setParent(parent); parent->setStyle(this); }
+	HeaderStyle(QAbstractItemView *parent) : QCommonStyle(), fMode(Qt::ElideRight) { setParent(parent); parent->setStyle(this); }
 	
 	void setMode(Qt::TextElideMode mode) { fMode = mode; }
 	

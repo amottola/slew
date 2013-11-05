@@ -71,7 +71,7 @@ public:
 	Notification(const QString& title, const QString& message, QSystemTrayIcon::MessageIcon icon)
 		: QWidget(NULL, Qt::SubWindow | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowStaysOnTopHint)
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		helper_init_notification(this);
 #endif
 		QPalette palette = this->palette();
@@ -207,7 +207,7 @@ public:
 	
 	static void showMessage(const QString& title, const QString& message, QSystemTrayIcon::MessageIcon icon)
 	{
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		if (helper_notify_center(title, message))
 			return;
 #endif
@@ -292,7 +292,7 @@ SL_DEFINE_METHOD(SystrayIcon, set_visible, {
 })
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #define SHOW_MESSAGE	Notification::showMessage
 #else
 #define SHOW_MESSAGE	impl->showMessage

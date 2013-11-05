@@ -11,7 +11,7 @@ Wizard_Impl::Wizard_Impl()
 	: QWizard(), WidgetInterface()
 {
 	setAttribute(Qt::WA_QuitOnClose);
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	setWizardStyle(ModernStyle);
 #endif
 }
