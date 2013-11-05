@@ -484,6 +484,9 @@ public:
 			if (editorPos.x() + pos.x() + size.width() + 15 > drect.right() - 10) {
 				where = SL_LEFT;
 				size = oldSize;
+				size.rheight() = qMax(50, size.height());
+				hotspot = QPoint(size.width() + 15, size.height() / 2);
+				pos = QPoint(-(size.width() + 15), -(size.height() / 2) + (editorSize.height() / 2));
 			}
 		}
 		
