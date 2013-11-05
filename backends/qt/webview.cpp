@@ -15,7 +15,7 @@ WebView_Impl::WebView_Impl()
 {
 	QWebSettings *settings = QWebSettings::globalSettings();
 	QFont font = QApplication::font();
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	font.setPointSizeF(ceil(font.pointSizeF() * 1.3333333333));
 #endif
 	settings->setFontFamily(QWebSettings::StandardFont, font.family());

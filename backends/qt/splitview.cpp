@@ -28,7 +28,7 @@ public:
 			QPainter painter(this);
 			QColor color = palette().windowText().color();
 			if (color == QApplication::palette(this).windowText().color()) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 				color = QColor(0x51, 0x51, 0x51);
 #else
 				color = QColor(0x80, 0x80, 0x80);

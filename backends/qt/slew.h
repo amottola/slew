@@ -15,6 +15,7 @@
 #include <QScrollBar>
 #include <QHeaderView>
 
+#include <QMimeData>
 #include <QMargins>
 #include <QPoint>
 #include <QSize>
@@ -38,14 +39,13 @@ class QWidget;
 class QAbstractButton;
 class QButtonGroup;
 class QMainWindow;
-class QMimeData;
 class QClipboard;
 class QRadioButton;
 class QAbstractItemView;
 class QAbstractItemModel;
 
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
 #endif
@@ -58,7 +58,7 @@ class QAbstractItemModel;
 #include "constants/__init__.h"
 #include "constants/widget.h"
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 	#define EXPORT									__attribute__((__visibility__("default")))
 #else
 	#define EXPORT
@@ -74,7 +74,7 @@ class QAbstractItemModel;
 #define SL_RETURN_NO_IMPL							{ PyErr_Format(PyExc_RuntimeError, "object has no attached implementation"); return NULL; }
 #define SL_RETURN_DUP_SIZER							{ PyErr_Format(PyExc_RuntimeError, "widget already has an attached sizer"); return NULL; }
 
-#define SL_ACCEL_KEY(k)								(QKeySequence(k).toString().isEmpty() ? QString() : QLatin1Char('\t') + QString(QKeySequence(k)))
+#define SL_ACCEL_KEY(k)								(QKeySequence(k).toString().isEmpty() ? QString() : QLatin1Char('\t') + QKeySequence(k).toString())
 
 
 struct Abstract_Proxy;
@@ -187,14 +187,15 @@ PyObject *printDocument(int type, const QString& title, PyObject *callback, bool
 
 void freeBitmapResources(QPainter *painter, QPaintDevice *device);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 
 void helper_set_resizeable(QWidget *widget, bool enabled);
 void helper_init_notification(QWidget *widget);
 void helper_clear_menu_previous_action(QMenu *menu);
 bool helper_notify_center(const QString &title, const QString &text);
+void helper_set_dock_menu(QMenu *menu);
 
-#elif defined(Q_WS_X11)
+#elif defined(Q_OS_LINUX)
 void helper_set_resizeable(QWidget *widget, bool enabled);
 
 #endif
@@ -464,7 +465,7 @@ public:
 	
 	bool canCut();
 	bool canPaste();
-	virtual bool canModify() { return true; }
+	virtual bool canModify(QWidget *widget) { return true; }
 	
 	void complete() { emit doComplete(); }
 	

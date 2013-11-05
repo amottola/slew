@@ -467,6 +467,11 @@ TreeView_Impl::reset()
 void
 TreeView_Impl::resetColumns()
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define SET_RESIZE_MODE		header->setSectionResizeMode
+#else
+#define SET_RESIZE_MODE		header->setResizeMode
+#endif
 	QHeaderView *header = this->header();
 	QAbstractItemModel *model = header->model();
 	if (model) {
@@ -477,15 +482,16 @@ TreeView_Impl::resetColumns()
 			
 			if (width != -1) {
 				if (width & 0x80000000)
-					header->setResizeMode(i, QHeaderView::Fixed);
+					SET_RESIZE_MODE(i, QHeaderView::Fixed);
 				else
-					header->setResizeMode(i, QHeaderView::Interactive);
+					SET_RESIZE_MODE(i, QHeaderView::Interactive);
 				header->resizeSection(i, width & 0x7FFFFFFF);
 			}
 			else
-				header->setResizeMode(i, QHeaderView::ResizeToContents);
+				SET_RESIZE_MODE(i, QHeaderView::ResizeToContents);
 		}
 	}
+#undef SET_RESIZE_MODE
 }
 
 

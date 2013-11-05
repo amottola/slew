@@ -231,9 +231,7 @@ Sizer_Impl::reinsert(QObject *child, bool reparent)
 		Window_Impl *widget_child = (Window_Impl *)child;
 		alignment = qvariant_cast<Qt::Alignment>(child->property("boxAlign"));
 		
-		int index = indexOf(widget_child);
-		if (index >= 0)
-			delete takeAt(index);
+		removeWidget(widget_child);
 		addItem(new WidgetItem(widget_child), cell.y(), cell.x(), span.height(), span.width(), alignment);
 	}
 	if (reparent)
@@ -246,10 +244,10 @@ Sizer_Impl::reparentChildren(QLayoutItem *item, Sizer_Impl *parent)
 {
 	if (Sizer_Impl *layout = (Sizer_Impl *)item->layout()) {
 		for (int i = 0; i < layout->count(); i++) {
-			item = layout->itemAt(i);
-			if (item->layout())
-				item->layout()->setParent(layout);
-			reparentChildren(item, layout);
+			QLayoutItem *child = layout->itemAt(i);
+			if (child->layout())
+				child->layout()->setParent(layout);
+			reparentChildren(child, layout);
 		}
 	}
 	else if (QWidget *widget = (QWidget *)item->widget()) {
@@ -431,7 +429,7 @@ SL_DEFINE_METHOD(Sizer, remove, {
 	if (isWindow(object)) {
 		Window_Impl *widget = (Window_Impl *)child;
 		
-		delete impl->takeAt(impl->indexOf(widget));
+		impl->removeWidget(widget);
 		widget->setProperty("parentLayout", QVariant());
 		widget->setParent(NULL);
 		

@@ -1,7 +1,38 @@
 #include "slew.h"
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define HAS_COCOA
+#include <QtGuiVersion>
+#include <QtGui/QGuiApplication>
+#include "qpa/qplatformmenu.h"
+#include "qpa/qplatformnativeinterface.h"
+#else
+extern void qt_mac_set_dock_menu(QMenu *);
 #ifdef QT_MAC_USE_COCOA
+#define HAS_COCOA
+#endif
+#endif
+
+
+#ifdef HAS_COCOA
 #include <Cocoa/Cocoa.h>
+
+#include <QTimer>
+
+class DelayedResizer : public QObject
+{
+	Q_OBJECT
+	
+public:
+	DelayedResizer(QWidget *widget, bool enabled) : QObject(NULL), fWidget(widget), fEnabled(enabled) {}
+
+public slots:
+	void resize() { helper_set_resizeable(fWidget, fEnabled); deleteLater(); }
+
+private:
+	QWidget		*fWidget;
+	bool		fEnabled;
+};
 
 
 #if !defined(MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_8)
@@ -69,7 +100,18 @@
 #include <QMenu>
 
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+static NSWindow *
+qt_mac_window_for(const QWidget *w)
+{
+	QWindow *window = w->window()->windowHandle();
+	if (!window)
+		return NULL;
+	return static_cast<NSWindow*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("nswindow", window));
+}
+#else
 extern OSWindowRef qt_mac_window_for(const QWidget *w);
+#endif
 
 
 bool
@@ -112,9 +154,14 @@ helper_notify_center(const QString &title, const QString &text)
 void
 helper_set_resizeable(QWidget *widget, bool enabled)
 {
-#ifdef QT_MAC_USE_COCOA
+#ifdef HAS_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSWindow *window = (NSWindow *)qt_mac_window_for(widget);
+	
+	if (!window) {
+		QTimer::singleShot(100, new DelayedResizer(widget, enabled), SLOT(resize()));
+		return;
+	}
 	
 	if ([window respondsToSelector: @selector(setStyleMask:)]) {
 		NSUInteger style = [window styleMask];
@@ -150,9 +197,12 @@ helper_set_resizeable(QWidget *widget, bool enabled)
 void
 helper_init_notification(QWidget *widget)
 {
-#ifdef QT_MAC_USE_COCOA
+#ifdef HAS_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSWindow *window = (NSWindow *)qt_mac_window_for(widget);
+	
+	if (!window)
+		return;
 	
 	[window setCanHide: FALSE];
 	[window setHasShadow: FALSE];
@@ -178,12 +228,37 @@ helper_init_notification(QWidget *widget)
 void
 helper_clear_menu_previous_action(QMenu *menu)
 {
-#ifdef QT_MAC_USE_COCOA
+#ifdef HAS_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	QPlatformNativeInterface::NativeResourceForIntegrationFunction function = QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration("qmenutonsmenu");
+	if (!function)
+		return;
+	typedef void* (*QMenuToNSMenuFunction)(QPlatformMenu *platformMenu);
+	NSMenu *nsmenu = reinterpret_cast<NSMenu *>(reinterpret_cast<QMenuToNSMenuFunction>(function)(menu->platformMenu()));
+#else
 	NSMenu *nsmenu = static_cast<NSMenu *>(menu->macMenu());
+#endif
 	
 	[[nsmenu delegate] menu: nsmenu willHighlightItem: nil];
 	[pool release];
 #endif
 }
 
+
+void
+helper_set_dock_menu(QMenu *menu)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	QPlatformNativeInterface::NativeResourceForIntegrationFunction function = QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration("setdockmenu");
+	if (!function)
+		return;
+	typedef void (*SetDockMenuFunction)(QPlatformMenu *platformMenu);
+	reinterpret_cast<SetDockMenuFunction>(function)(menu->platformMenu());
+#else
+	qt_mac_set_dock_menu(menu);
+#endif
+}
+
+
+#include "helper_mac.moc"

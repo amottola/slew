@@ -3,19 +3,19 @@
 #include "calendar.h"
 
 #include <QStyle>
-#include <QWindowsStyle>
+#include <QCommonStyle>
 #include <QToolButton>
 #include <QEvent>
 #include <QTextCharFormat>
 
 
 
-class Style : public QWindowsStyle
+class Style : public QCommonStyle
 {
 	Q_OBJECT
 	
 public:
-	Style(Calendar_Impl *calendar) : QWindowsStyle(), fCalendar(calendar)
+	Style(Calendar_Impl *calendar) : QCommonStyle(), fCalendar(calendar)
 	{
 		setParent(calendar);
 		calendar->setStyle(this);

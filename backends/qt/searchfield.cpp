@@ -303,7 +303,7 @@ SearchField_Impl::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 void
 SearchField_Impl::handleTextModified(const QString& text, int completion)
 {
-	if ((completion >= 0) && (!canModify()))
+	if ((completion >= 0) && (!canModify(this)))
 		return;
 	
 	updateGeometries();

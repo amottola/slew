@@ -50,7 +50,7 @@ class FoldPanel_Content : public QWidget
 
 public:
 	FoldPanel_Content(FoldPanel_Impl *parent)
-		: QWidget(parent), fParent(parent)
+		: QWidget(parent)
 	{
 	}
 
@@ -75,9 +75,6 @@ protected:
 		}
 		return result;
 	}
-	
-private:
-	FoldPanel_Impl	*fParent;
 };
 
 

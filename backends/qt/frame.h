@@ -40,7 +40,7 @@ protected:
 	virtual void resizeEvent(QResizeEvent *event);
 	virtual void closeEvent(QCloseEvent *event);
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	virtual bool winEvent(MSG *msg, long *result);
 #endif
 

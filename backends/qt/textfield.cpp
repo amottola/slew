@@ -97,7 +97,7 @@ TextField_Impl::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 void
 TextField_Impl::handleTextModified(const QString& text, int completion)
 {
-	if ((completion >= 0) && (!canModify()))
+	if ((completion >= 0) && (!canModify(this)))
 		return;
 	
 	EventRunner runner(this, "onChange");
@@ -265,7 +265,7 @@ _set_style(TextField_Impl *impl, int style)
 	
 	impl->setReadOnly(style & SL_TEXTFIELD_STYLE_READONLY ? true : false);
 	impl->setFocusPolicy(style & SL_TEXTFIELD_STYLE_READONLY ? Qt::NoFocus : Qt::StrongFocus);
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	impl->setFrame(style & SL_TEXTFIELD_STYLE_READONLY ? false : true);
 #endif
 	impl->setEchoMode(style & SL_TEXTFIELD_STYLE_PASSWORD ? QLineEdit::Password : QLineEdit::Normal);

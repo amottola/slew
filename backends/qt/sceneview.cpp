@@ -176,14 +176,14 @@ SceneItem_Impl::sceneEvent(QEvent *event)
 				runner.set("item_pos", e->pos());
 				runner.set("scene_pos", e->scenePos());
 				runner.set("pos", e->screenPos());
-				runner.set("buttons", e->buttons());
+				runner.set("buttons", (int)e->buttons());
 				runner.set("modifiers", getKeyModifiers(e->modifiers()));
 				
 				switch (e->type()) {
 				case QEvent::GraphicsSceneMousePress:
 					{
 						runner.setName("onMouseDown");
-						runner.set("down", e->button());
+						runner.set("down", (int)e->button());
 					}
 					break;
 				case QEvent::GraphicsSceneMouseRelease:
@@ -193,7 +193,7 @@ SceneItem_Impl::sceneEvent(QEvent *event)
 							runner.run();
 						}
 						runner.setName("onMouseUp");
-						runner.set("up", e->button());
+						runner.set("up", (int)e->button());
 					}
 					break;
 				case QEvent::GraphicsSceneMouseMove:
@@ -204,7 +204,7 @@ SceneItem_Impl::sceneEvent(QEvent *event)
 				case QEvent::GraphicsSceneMouseDoubleClick:
 					{
 						runner.setName("onDblClick");
-						runner.set("down", e->button());
+						runner.set("down", (int)e->button());
 					}
 					break;
 				default:
@@ -227,7 +227,7 @@ SceneItem_Impl::sceneEvent(QEvent *event)
 				runner.set("item_pos", e->pos());
 				runner.set("scene_pos", e->scenePos());
 				runner.set("pos", e->screenPos());
-				runner.set("buttons", QApplication::mouseButtons());
+				runner.set("buttons", (int)QApplication::mouseButtons());
 				runner.set("modifiers", getKeyModifiers(e->modifiers()));
 				switch (e->type()) {
 				case QEvent::GraphicsSceneHoverEnter:
@@ -263,7 +263,7 @@ SceneItem_Impl::sceneEvent(QEvent *event)
 				runner.set("item_pos", e->pos());
 				runner.set("scene_pos", e->scenePos());
 				runner.set("pos", e->screenPos());
-				runner.set("buttons", QApplication::mouseButtons());
+				runner.set("buttons", (int)QApplication::mouseButtons());
 				runner.set("modifiers", getKeyModifiers(e->modifiers()));
 				runner.set("delta", e->delta() / 100);
 				if (!runner.run())

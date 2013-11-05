@@ -34,7 +34,7 @@ protected:
 	virtual void moveEvent(QMoveEvent *event);
 	virtual void resizeEvent(QResizeEvent *event);
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	virtual bool winEvent(MSG *msg, long *result);
 #endif
 

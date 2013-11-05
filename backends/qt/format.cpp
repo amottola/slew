@@ -1652,7 +1652,7 @@ FormattedLineEdit::createContextMenu()
 void
 FormattedLineEdit::handleUndo()
 {
-	if (canModify()) {
+	if (canModify(this)) {
 		undo();
 		QString text = QLineEdit::text();
 		setInternalValueFromEditValue(text);
@@ -1664,7 +1664,7 @@ FormattedLineEdit::handleUndo()
 void
 FormattedLineEdit::handleRedo()
 {
-	if (canModify()) {
+	if (canModify(this)) {
 		redo();
 		QString text = QLineEdit::text();
 		setInternalValueFromEditValue(text);
@@ -1679,7 +1679,7 @@ FormattedLineEdit::handleCut()
 	if (!canCut()) {
 		QApplication::beep();
 	}
-	else if (canModify()) {
+	else if (canModify(this)) {
 		cut();
 		QString text = QLineEdit::text();
 		setInternalValueFromEditValue(text);
@@ -1694,7 +1694,7 @@ FormattedLineEdit::handlePaste()
 	if (!canPaste()) {
 		QApplication::beep();
 	}
-	else if (canModify()) {
+	else if (canModify(this)) {
 		paste();
 		QString text = QLineEdit::text();
 		setInternalValueFromEditValue(text);
@@ -1709,7 +1709,7 @@ FormattedLineEdit::handleDelete()
 	if (!canCut()) {
 		QApplication::beep();
 	}
-	else if (canModify()) {
+	else if (canModify(this)) {
 		del();
 		QString text = QLineEdit::text();
 		setInternalValueFromEditValue(text);

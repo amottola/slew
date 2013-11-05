@@ -354,7 +354,7 @@ SL_DEFINE_METHOD(Window, grab_mouse, {
 })
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 
 SL_DEFINE_METHOD(Window, set_opacity, {
 	double opacity;

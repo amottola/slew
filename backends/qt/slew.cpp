@@ -15,7 +15,7 @@
 #include "objects.h"
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	#include <CoreFoundation/CoreFoundation.h>
 	#include <CoreServices/CoreServices.h>
 	#include <ApplicationServices/ApplicationServices.h>
@@ -52,10 +52,9 @@
 			return false;
 	}
 	
-	extern void qt_mac_set_dock_menu(QMenu *);
 	static PyObject *sCurrentDockMenu = NULL;
 
-#elif defined(Q_WS_WIN)
+#elif defined(Q_OS_WIN)
 	#include <shlobj.h>
 	#include <shlwapi.h>
 	#include <direct.h>
@@ -116,6 +115,7 @@
 #include <QDialogButtonBox>
 #include <QEventLoop>
 #include <QNetworkProxyFactory>
+#include <QDrag>
 
 
 class ResourceReader;
@@ -606,7 +606,7 @@ public:
 		fPath.lineTo(hotspot);
 		fPath.closeSubpath();
 		
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 		QBitmap mask(size);
 		{
 			QPainter painter(&mask);
@@ -1066,7 +1066,7 @@ convertFont(PyObject *object, QFont *value)
 		font.setFamily(family);
 	
 	if (size != SL_FONT_SIZE_DEFAULT) {
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 		font.setPointSizeF(double(size) * 0.75);
 #else
 		font.setPointSize(size);
@@ -1480,7 +1480,7 @@ createFontObject(const QFont& font)
 	
 	int family = SL_FONT_FAMILY_DEFAULT, size, style = 0;
 	QString face = font.family();
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 	size = int(font.pointSizeF() * 1.33333333333);
 #else
 	size = font.pointSize();
@@ -1817,14 +1817,14 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 	
 	mb.setWindowModality(Qt::WindowModal);
 	mb.setWindowTitle(qApp->applicationName());
-#if defined(Q_WS_MAC) || defined(Q_WS_X11)
+#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
 	int diff = qMax(0, 40 - title.size());
 	QString _title;
 	if (diff > 0)
 		_title = title + QString(' ').repeated(diff);
 	else
 		_title = title;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 	_title = QString("<b>%1</b>").arg(_title);
 #endif
 	mb.setText(_title);
@@ -2098,7 +2098,7 @@ freeBitmapResources(QPainter *painter, QPaintDevice *device)
 
 
 Application::Application(int& argc, char **argv)
-	: QApplication(argc, argv)
+	: QApplication(argc, argv), fWID(0)
 {
 	fMutex = new QMutex(QMutex::Recursive);
 	fShadowWindow = new QMainWindow;
@@ -2537,21 +2537,21 @@ Application::eventFilter(QObject *obj, QEvent *event)
 					{
 						QMouseEvent *e = (QMouseEvent *)event;
 						runner.setName("onDblClick");
-						runner.set("down", e->button());
+						runner.set("down", (int)e->button());
 					}
 					break;
 				case QEvent::MouseButtonPress:
 					{
 						QMouseEvent *e = (QMouseEvent *)event;
 						runner.setName("onMouseDown");
-						runner.set("down", e->button());
+						runner.set("down", (int)e->button());
 					}
 					break;
 				case QEvent::MouseButtonRelease:
 					{
 						QMouseEvent *e = (QMouseEvent *)event;
 						runner.setName("onMouseUp");
-						runner.set("up", e->button());
+						runner.set("up", (int)e->button());
 					}
 					break;
 				case QEvent::MouseMove:
@@ -2608,7 +2608,7 @@ Application::eventFilter(QObject *obj, QEvent *event)
 						if (hover.isValid()) {
 							QModelIndex child = hover;
 							while (child.isValid()) {
-								if ((dragging.contains(child)) && ((view == e->source()) || (view->isAncestorOf(e->source())))) {
+								if ((dragging.contains(child)) && ((view == e->source()) || (view->isAncestorOf((QWidget *)e->source())))) {
 									break;
 								}
 								child = child.parent();
@@ -2735,7 +2735,7 @@ Application::eventFilter(QObject *obj, QEvent *event)
 					QModelIndexList dragging = view->selectionModel()->selectedIndexes();
 					QModelIndex child = hover;
 					while (child.isValid()) {
-						if ((dragging.contains(child)) && ((view == e->source()) || (view->isAncestorOf(e->source())))) {
+						if ((dragging.contains(child)) && ((view == e->source()) || (view->isAncestorOf((QWidget *)e->source())))) {
 							break;
 						}
 						child = child.parent();
@@ -3389,7 +3389,7 @@ SL_DEFINE_MODULE_METHOD(get_locale_info, {
 
 
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 
 
 SL_DEFINE_MODULE_METHOD(get_computer_info, {
@@ -3495,7 +3495,7 @@ SL_DEFINE_MODULE_METHOD(get_path, {
 })
 
 
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
 
 
 SL_DEFINE_MODULE_METHOD(get_computer_info, {
@@ -3859,7 +3859,7 @@ SL_DEFINE_MODULE_METHOD(run_color_dialog, {
 })
 
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 
 SL_DEFINE_MODULE_METHOD(run_font_dialog, {
 	static char *kwlist[] = { "font", "title", NULL };
@@ -4199,7 +4199,7 @@ SL_DEFINE_MODULE_METHOD(get_standard_bitmap, {
 })
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 
 SL_DEFINE_MODULE_METHOD(get_screen_dpi, {
 	QDesktopWidget *desktop = QApplication::desktop();
@@ -4209,7 +4209,7 @@ SL_DEFINE_MODULE_METHOD(get_screen_dpi, {
 	return createVectorObject(QSizeF(desktop->physicalDpiX(), desktop->physicalDpiY()));
 })
 
-#elif defined(Q_WS_WIN)
+#elif defined(Q_OS_WIN)
 
 SL_DEFINE_MODULE_METHOD(get_screen_dpi, {
 	QDesktopWidget *desktop = QApplication::desktop();
@@ -4318,7 +4318,7 @@ SL_DEFINE_MODULE_METHOD(get_font_text_extent, {
 })
 
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 
 SL_DEFINE_MODULE_METHOD(mac_set_dock_menu, {
 	PyObject *object;
@@ -4336,7 +4336,7 @@ SL_DEFINE_MODULE_METHOD(mac_set_dock_menu, {
 		menu = (QMenu *)getImpl(object);
 		Py_XDECREF(sCurrentDockMenu);
 		sCurrentDockMenu = object;
-		qt_mac_set_dock_menu(menu);
+		helper_set_dock_menu(menu);
 	}
 })
 
@@ -4389,7 +4389,7 @@ SL_METHOD(find_focus)
 SL_METHOD(beep)
 SL_METHOD(get_backend_info)
 SL_METHOD(get_font_text_extent)
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 SL_METHOD(mac_set_dock_menu)
 #endif
 SL_END_METHODS()
@@ -4407,7 +4407,7 @@ cleanup()
 }
 
 
-extern "C" PyMODINIT_FUNC EXPORT
+PyMODINIT_FUNC EXPORT
 init_slew()
 {
 	PyObject *module, *dict = NULL, *sysargv, *executable;
@@ -4506,7 +4506,7 @@ init_slew()
 	if (module)
 		dict = PyModule_GetDict(module);
 	
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	{
 		QString temp;
 		wchar_t buffer[32767];
@@ -4537,8 +4537,11 @@ init_slew()
 	if (gui) {
 		//QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 		QPixmapCache::setCacheLimit(32768);
+#ifdef Q_OS_MAC
+		QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
+#endif
 		new Application(sArgc, sArgv);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 		bool forceFront = true;
 		QString temp;
 		char *buffer;
