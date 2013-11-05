@@ -77,6 +77,19 @@ class QAbstractItemModel;
 #define SL_ACCEL_KEY(k)								(QKeySequence(k).toString().isEmpty() ? QString() : QLatin1Char('\t') + QKeySequence(k).toString())
 
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define QT_SET_SECTION_RESIZE_MODE		setSectionResizeMode
+#define QT_SECTION_RESIZE_MODE			sectionResizeMode
+#define QT_SET_SECTIONS_CLICKABLE		setSectionsClickable
+#define QT_SET_SECTIONS_MOVABLE			setSectionsMovable
+#else
+#define QT_SET_SECTION_RESIZE_MODE		setResizeMode
+#define QT_SECTION_RESIZE_MODE			resizeMode
+#define QT_SET_SECTIONS_CLICKABLE		setClickable
+#define QT_SET_SECTIONS_MOVABLE			setMovable
+#endif
+
+
 struct Abstract_Proxy;
 struct Widget_Proxy;
 struct Window_Proxy;
