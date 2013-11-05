@@ -471,7 +471,7 @@ public:
 			hotspot = QPoint(size.width() + 15, size.height() / 2);
 			pos = QPoint(-(size.width() + 15), -(size.height() / 2) + (editorSize.height() / 2));
 			if (editorPos.x() + pos.x() < drect.left() + 10) {
-				where = SL_BOTTOM;
+				where = SL_RIGHT;
 				size = oldSize;
 			}
 		}
@@ -482,7 +482,7 @@ public:
 			hotspot = QPoint(0, size.height() / 2);
 			pos = QPoint(editorSize.width(), -(size.height() / 2) + (editorSize.height() / 2));
 			if (editorPos.x() + pos.x() + size.width() + 15 > drect.right() - 10) {
-				where = SL_BOTTOM;
+				where = SL_LEFT;
 				size = oldSize;
 			}
 		}
