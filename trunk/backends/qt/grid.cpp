@@ -40,24 +40,17 @@ Grid_Impl::Grid_Impl()
 	verticalHeader()->setHighlightSections(true);
 	verticalHeader()->setVisible(false);
 	verticalHeader()->setMinimumWidth(style()->pixelMetric(QStyle::PM_HeaderMargin, NULL, verticalHeader()) + verticalHeader()->fontMetrics().maxWidth());
+	verticalHeader()->QT_SET_SECTION_RESIZE_MODE(QHeaderView::Fixed);
 	
 	horizontalHeader()->setStretchLastSection(true);
 	horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 	horizontalHeader()->setHighlightSections(false);
 	horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 	horizontalHeader()->setMinimumHeight(style()->pixelMetric(QStyle::PM_HeaderMargin, NULL, horizontalHeader()) + horizontalHeader()->fontMetrics().height());
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-	verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-	horizontalHeader()->setSectionsMovable(true);
-	horizontalHeader()->setSectionsClickable(false);
-	horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-#else
-	verticalHeader()->setResizeMode(QHeaderView::Fixed);
-	horizontalHeader()->setMovable(true);
-	horizontalHeader()->setClickable(false);
-	horizontalHeader()->setResizeMode(QHeaderView::Interactive);
-#endif
+	horizontalHeader()->QT_SET_SECTIONS_MOVABLE(true);
+	horizontalHeader()->QT_SET_SECTIONS_CLICKABLE(false);
+	horizontalHeader()->QT_SET_SECTION_RESIZE_MODE(QHeaderView::Interactive);
+	
 	new HeaderStyle(horizontalHeader());
 	
 	setAlternatingRowColors(true);
@@ -561,11 +554,6 @@ Grid_Impl::reset()
 void
 Grid_Impl::resetColumns()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-#define SET_RESIZE_MODE		header->setSectionResizeMode
-#else
-#define SET_RESIZE_MODE		header->setResizeMode
-#endif
 	QHeaderView *header = horizontalHeader();
 	QAbstractItemModel *model = header->model();
 	if (model) {
@@ -576,16 +564,15 @@ Grid_Impl::resetColumns()
 			
 			if (width != -1) {
 				if (width & 0x80000000)
-					SET_RESIZE_MODE(i, QHeaderView::Fixed);
+					header->QT_SET_SECTION_RESIZE_MODE(i, QHeaderView::Fixed);
 				else
-					SET_RESIZE_MODE(i, QHeaderView::Interactive);
+					header->QT_SET_SECTION_RESIZE_MODE(i, QHeaderView::Interactive);
 				header->resizeSection(i, width & 0x7FFFFFFF);
 			}
 			else
-				SET_RESIZE_MODE(i, QHeaderView::ResizeToContents);
+				header->QT_SET_SECTION_RESIZE_MODE(i, QHeaderView::ResizeToContents);
 		}
 	}
-#undef SET_RESIZE_MODE
 }
 
 
@@ -875,11 +862,7 @@ SL_DEFINE_METHOD(Grid, get_style, {
 		style |= SL_GRID_STYLE_HEADER;
 	if (impl->isHeaderEnabled(Qt::Vertical))
 		style |= SL_GRID_STYLE_VERTICAL_HEADER;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-	if (impl->verticalHeader()->sectionResizeMode(0) == QHeaderView::ResizeToContents)
-#else
-	if (impl->verticalHeader()->resizeMode(0) == QHeaderView::ResizeToContents)
-#endif
+	if (impl->verticalHeader()->QT_SECTION_RESIZE_MODE(0) == QHeaderView::ResizeToContents)
 		style |= SL_GRID_STYLE_AUTO_ROWS;
 	if (impl->alternatingRowColors())
 		style |= SL_GRID_STYLE_ALT_ROWS;
@@ -916,13 +899,8 @@ SL_DEFINE_METHOD(Grid, set_style, {
 	impl->setHeaderEnabled(Qt::Horizontal, style & SL_GRID_STYLE_HEADER ? true : false);
 	impl->verticalHeader()->setVisible(style & SL_GRID_STYLE_VERTICAL_HEADER ? true : false);
 	impl->setHeaderEnabled(Qt::Vertical, style & SL_GRID_STYLE_VERTICAL_HEADER ? true : false);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-	impl->verticalHeader()->setSectionResizeMode(style & SL_GRID_STYLE_AUTO_ROWS ? QHeaderView::ResizeToContents : QHeaderView::Fixed);
-	impl->horizontalHeader()->setSectionsClickable(style & SL_GRID_STYLE_SORTABLE ? true : false);
-#else
-	impl->verticalHeader()->setResizeMode(style & SL_GRID_STYLE_AUTO_ROWS ? QHeaderView::ResizeToContents : QHeaderView::Fixed);
-	impl->horizontalHeader()->setClickable(style & SL_GRID_STYLE_SORTABLE ? true : false);
-#endif
+	impl->verticalHeader()->QT_SET_SECTION_RESIZE_MODE(style & SL_GRID_STYLE_AUTO_ROWS ? QHeaderView::ResizeToContents : QHeaderView::Fixed);
+	impl->horizontalHeader()->QT_SET_SECTIONS_CLICKABLE(style & SL_GRID_STYLE_SORTABLE ? true : false);
 	impl->setAlternatingRowColors(style & SL_GRID_STYLE_ALT_ROWS ? true : false);
 	impl->setSortingEnabled(style & SL_GRID_STYLE_SORTABLE ? true : false);
 	impl->setShowGrid(style & SL_GRID_STYLE_RULES ? true : false);
