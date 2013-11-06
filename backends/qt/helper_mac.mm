@@ -24,7 +24,7 @@ class DelayedResizer : public QObject
 	Q_OBJECT
 	
 public:
-	DelayedResizer(QWidget *widget, bool enabled) : QObject(NULL), fWidget(widget), fEnabled(enabled) {}
+	DelayedResizer(QWidget *widget, bool enabled) : QObject(widget), fWidget(widget), fEnabled(enabled) {}
 
 public slots:
 	void resize() { helper_set_resizeable(fWidget, fEnabled); deleteLater(); }
