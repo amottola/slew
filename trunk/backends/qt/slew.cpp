@@ -166,6 +166,13 @@ public:
 		Py_XINCREF(func);
 		Py_XINCREF(args);
 		
+		if (parent) {
+			QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
+			if (old)
+				old->deleteLater();
+			parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)this));
+		}
+		
 		moveToThread(QApplication::instance()->thread());
 		
 		if (delay == 0) {
