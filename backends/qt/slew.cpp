@@ -4548,7 +4548,8 @@ init_slew()
 		//QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
 		QPixmapCache::setCacheLimit(32768);
 #ifdef Q_OS_MAC
-		QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
+		if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8)
+			QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
 #endif
 		new Application(sArgc, sArgv);
 #ifdef Q_OS_MAC
