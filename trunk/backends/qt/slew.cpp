@@ -163,6 +163,10 @@ public:
 	TimedCall(QObject *parent, int delay, PyObject *func, PyObject *args)
 		: QTimer(parent), fFunc(func), fArgs(args)
 	{
+		PyAutoLocker locker;
+		
+		connect(this, SIGNAL(destroyed()), this, SLOT(handleDestroyed()));
+		
 		Py_XINCREF(func);
 		Py_XINCREF(args);
 		
@@ -186,6 +190,16 @@ public:
 	}
 	
 public slots:
+	void handleDestroyed()
+	{
+		QObject *parent = QObject::parent();
+		if (parent) {
+			QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
+			if (old == this)
+				parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)NULL));
+		}
+	}
+	
 	void handleTimeout()
 	{
 		PyAutoLocker locker;
@@ -213,7 +227,8 @@ public slots:
 		}
 		Py_XDECREF(fArgs);
 		
-		deleteLater();
+		if (!QObject::parent())
+			deleteLater();
 	}
 
 private:
