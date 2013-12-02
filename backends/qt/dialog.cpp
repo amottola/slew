@@ -84,11 +84,15 @@ Dialog_Impl::done(int result)
 	if (runner.isValid()) {
 		runner.set("accepted", result == Accepted);
 		if (runner.run()) {
+			Py_BEGIN_ALLOW_THREADS
 			QDialog::done(result);
+			Py_END_ALLOW_THREADS
 		}
 	}
 	else {
+		Py_BEGIN_ALLOW_THREADS
 		QDialog::done(result);
+		Py_END_ALLOW_THREADS
 	}
 }
 
@@ -122,6 +126,8 @@ SL_DEFINE_METHOD(Dialog, set_visible, {
 	if (!PyArg_ParseTuple(args, "O&", convertBool, &visible))
 		return NULL;
 	
+	Py_BEGIN_ALLOW_THREADS
+	
 	if (visible) {
 		impl->setModal(false);
 		impl->show();
@@ -129,6 +135,8 @@ SL_DEFINE_METHOD(Dialog, set_visible, {
 	else {
 		impl->hide();
 	}
+	
+	Py_END_ALLOW_THREADS
 })
 
 
@@ -194,15 +202,23 @@ SL_DEFINE_METHOD(Dialog, end_modal, {
 	if (!PyArg_ParseTuple(args, "O", &value))
 		return NULL;
 	
+	Py_BEGIN_ALLOW_THREADS
+	
 	impl->setReturnValue(value);
 	impl->close();
 	impl->hide();
+	
+	Py_END_ALLOW_THREADS
 })
 
 
 SL_DEFINE_METHOD(Dialog, close, {
+	Py_BEGIN_ALLOW_THREADS
+	
 	impl->close();
 	impl->hide();
+	
+	Py_END_ALLOW_THREADS
 })
 
 
