@@ -22,6 +22,7 @@
 
 
 static QCache<QString, QStaticText> sTextCache(10000);
+static QPrinter *sPrinter = NULL;
 
 
 static const struct {
@@ -770,7 +771,8 @@ bool
 pageSetup(PyObject *settings, PyObject *parent, bool *accepted)
 {
 	QWidget *parentWidget;
-	QPrinter printer(QPrinter::HighResolution);
+	
+	*accepted = false;
 	
 	if (parent == Py_None) {
 		parentWidget = NULL;
@@ -787,15 +789,54 @@ pageSetup(PyObject *settings, PyObject *parent, bool *accepted)
 		return false;
 	}
 	
-	if (!loadSettings(settings, &printer))
+	if (sPrinter)
+		delete sPrinter;
+	sPrinter = new QPrinter(QPrinter::HighResolution);
+	if (!loadSettings(settings, sPrinter))
 		return false;
 	
 	Py_INCREF(settings);
 	
-	PageSetupDialog dialog(&printer, parentWidget);
+	PageSetupDialog dialog(sPrinter, parentWidget);
 	*accepted = dialog.run();
 	
-	bool valid = saveSettings(settings, &printer);
+	bool valid = (!(*accepted)) || saveSettings(settings, sPrinter);
+	
+	Py_DECREF(settings);
+	return valid;
+}
+
+
+bool
+printSetup(PyObject *settings, PyObject *parent, bool *accepted)
+{
+	QWidget *parentWidget;
+	
+	*accepted = false;
+	
+	if (parent == Py_None) {
+		parentWidget = NULL;
+	}
+	else if (isFrame(parent)) {
+		parentWidget = (QWidget *)getImpl(parent);
+		if (!parentWidget) {
+			PyErr_SetString(PyExc_RuntimeError, "object has no attached implementation");
+			return false;
+		}
+	}
+	else {
+		PyErr_SetString(PyExc_ValueError, "expected Frame object or None");
+		return false;
+	}
+	
+	Py_INCREF(settings);
+	if (sPrinter)
+		delete sPrinter;
+	sPrinter = new QPrinter(QPrinter::HighResolution);
+	PrintDialog dialog(sPrinter, parentWidget);
+	*accepted = (dialog.run() == QDialog::Accepted);
+	
+	bool valid = (!(*accepted)) || (settings == Py_None) || saveSettings(settings, sPrinter);
 	
 	Py_DECREF(settings);
 	return valid;
@@ -805,13 +846,15 @@ pageSetup(PyObject *settings, PyObject *parent, bool *accepted)
 PyObject *
 printDocument(int type, const QString& title, PyObject *callback, bool prompt, PyObject *settings, PyObject *parent, QObject *handler)
 {
-	QPrinter printer(QPrinter::HighResolution);
 	QWidget *parentWidget;
+	PyObject *result = NULL;
 	
+	if (!sPrinter)
+		sPrinter = new QPrinter(QPrinter::HighResolution);
 	if (type == SL_PRINT_PDF)
-		printer.setOutputFormat(QPrinter::PdfFormat);
+		sPrinter->setOutputFormat(QPrinter::PdfFormat);
 	
-	if ((settings != Py_None) && (!loadSettings(settings, &printer)))
+	if ((settings != Py_None) && (!loadSettings(settings, sPrinter)))
 		return NULL;
 	
 	if (parent == Py_None) {
@@ -836,13 +879,13 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 	if (docName.isEmpty())
 		docName = "Untitled document";
 	
-	printer.setDocName(docName);
-	printer.setFullPage(true);
+	sPrinter->setDocName(docName);
+	sPrinter->setFullPage(true);
 	
 	switch (type) {
 	case SL_PRINT_PREVIEW:
 		{
-			QPrintPreviewDialog dialog(&printer, parentWidget);
+			QPrintPreviewDialog dialog(sPrinter, parentWidget);
 			dialog.setWindowTitle(docName);
 			if (parentWidget)
 				dialog.setWindowModality(Qt::WindowModal);
@@ -854,6 +897,9 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 			dialog.exec();
 			
 			Py_END_ALLOW_THREADS
+			
+			result = Py_None;
+			Py_INCREF(result);
 		}
 		break;
 	
@@ -866,15 +912,15 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 				fileName = tempFile.fileName();
 			else {
 				PyErr_SetString(PyExc_RuntimeError, "cannot create temporary file for PDF output");
-				return NULL;
+				break;
 			}
 			tempFile.close();
 			
-			printer.setOutputFileName(fileName);
+			sPrinter->setOutputFileName(fileName);
 			
-			QMetaObject::invokeMethod(handler, "print", Qt::DirectConnection, Q_ARG(QPrinter *, &printer));
+			QMetaObject::invokeMethod(handler, "print", Qt::DirectConnection, Q_ARG(QPrinter *, sPrinter));
 			
-			return createStringObject(fileName);
+			result = createStringObject(fileName);
 		}
 		break;
 	
@@ -882,26 +928,30 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 		{
 			if (prompt) {
 				Py_INCREF(settings);
-				PrintDialog dialog(&printer, parentWidget);
+				PrintDialog dialog(sPrinter, parentWidget);
 				if (dialog.run() == QDialog::Rejected)
 					Py_RETURN_FALSE;
-				printer.setFullPage(true);
-				bool valid = (settings == Py_None) || saveSettings(settings, &printer);
+				sPrinter->setFullPage(true);
+				bool valid = (settings == Py_None) || saveSettings(settings, sPrinter);
 				Py_DECREF(settings);
 				if (!valid)
-					return NULL;
+					break;
 			}
-			printer.setPageMargins(0, 0, 0, 0, QPrinter::Millimeter);
-			QMetaObject::invokeMethod(handler, "print", Qt::DirectConnection, Q_ARG(QPrinter *, &printer));
+			sPrinter->setPageMargins(0, 0, 0, 0, QPrinter::Millimeter);
+			QMetaObject::invokeMethod(handler, "print", Qt::DirectConnection, Q_ARG(QPrinter *, sPrinter));
 			
 			if (handler == &standard_handler)
-				return createBoolObject(!standard_handler.aborted());
-			Py_RETURN_TRUE;
+				result = createBoolObject(!standard_handler.aborted());
+			else
+				result = createBoolObject(true);
 		}
 		break;
 	}
 	
-	Py_RETURN_NONE;
+	delete sPrinter;
+	sPrinter = NULL;
+	
+	return result;
 }
 
 

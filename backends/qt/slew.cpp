@@ -3317,6 +3317,20 @@ SL_DEFINE_MODULE_METHOD(page_setup, {
 })
 
 
+SL_DEFINE_MODULE_METHOD(print_setup, {
+	PyObject *settings, *parent;
+	bool accepted;
+	
+	if (!PyArg_ParseTuple(args, "OO", &settings, &parent))
+		return NULL;
+	
+	if (!printSetup(settings, parent, &accepted))
+		return NULL;
+	
+	return createBoolObject(accepted);
+})
+
+
 SL_DEFINE_MODULE_METHOD(print_document, {
 	static char *kwlist[] = { "type", "title", "callback", "prompt", "settings", "parent", NULL };
 	int type;
@@ -4385,6 +4399,7 @@ SL_METHOD(load_resource)
 SL_METHOD(message_box)
 SL_METHOD(set_shortcut)
 SL_METHOD(page_setup)
+SL_METHOD(print_setup)
 SL_METHOD(print_document)
 SL_METHOD(set_locale)
 SL_METHOD(get_locale_info)
