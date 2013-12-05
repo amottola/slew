@@ -196,6 +196,7 @@ bool setViewSelection(QAbstractItemView *view, PyObject *selection);
 PyObject *getViewSelection(QAbstractItemView *view);
 
 bool pageSetup(PyObject *settings, PyObject *parent, bool *accepted);
+bool printSetup(PyObject *settings, PyObject *parent, bool *accepted);
 PyObject *printDocument(int type, const QString& title, PyObject *callback, bool prompt, PyObject *settings, PyObject *parent, QObject *handler = NULL);
 
 void freeBitmapResources(QPainter *painter, QPaintDevice *device);

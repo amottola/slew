@@ -716,6 +716,11 @@ def page_setup(settings, parent=None):
 
 
 
+def print_setup(settings, parent=None):
+	return _slew.print_setup(settings, parent)
+
+
+
 def print_document(type, name, callback, prompt=True, settings=None, parent=None):
 	return _slew.print_document(type, name, callback, prompt, settings, parent)
 
