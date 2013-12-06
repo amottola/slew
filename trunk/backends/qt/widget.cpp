@@ -239,7 +239,7 @@ PyTypeObject Abstract_Type =
 {
 	PyObject_HEAD_INIT(NULL)
 	0,											/* ob_size */
-	"_slew.Abstract",							/* tp_name */
+	"slew._slew.Abstract",						/* tp_name */
 	sizeof(Abstract_Proxy),						/* tp_basicsize */
 	0,											/* tp_itemsize */
 	0,											/* tp_dealloc */

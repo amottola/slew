@@ -238,7 +238,7 @@ PyTypeObject Bitmap_Type =
 {
 	PyObject_HEAD_INIT(NULL)
 	0,											/* ob_size */
-	"_slew.Bitmap",								/* tp_name */
+	"slew._slew.Bitmap",						/* tp_name */
 	sizeof(DC_Proxy),							/* tp_basicsize */
 	0,											/* tp_itemsize */
 	(destructor)_dealloc,						/* tp_dealloc */

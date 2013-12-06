@@ -132,7 +132,7 @@ SL_END_METHODS()									\
 PyTypeObject name##_Type = {						\
 	PyObject_HEAD_INIT(NULL)						\
 	0,						/* ob_size */			\
-	"_slew." #name,			/* tp_name */			\
+	"slew._slew." #name,	/* tp_name */			\
 	sizeof( name##_Proxy),	/* tp_basicsize */		\
 	0,						/* tp_itemsize */		\
 	0,						/* tp_dealloc */		\
@@ -181,7 +181,7 @@ SL_END_METHODS()									\
 PyTypeObject name##_Type = {						\
 	PyObject_HEAD_INIT(NULL)						\
 	0,						/* ob_size */			\
-	"_slew." #name,			/* tp_name */			\
+	"slew._slew." #name,	/* tp_name */			\
 	sizeof( name##_Proxy),	/* tp_basicsize */		\
 	0,						/* tp_itemsize */		\
 	0,						/* tp_dealloc */		\
@@ -274,7 +274,7 @@ SL_END_METHODS()									\
 PyTypeObject name##_Type = {						\
 	PyObject_HEAD_INIT(NULL)						\
 	0,						/* ob_size */			\
-	"_slew." #name,			/* tp_name */			\
+	"slew._slew." #name,	/* tp_name */			\
 	sizeof( name##_Proxy),	/* tp_basicsize */		\
 	0,						/* tp_itemsize */		\
 	(destructor) name##_dealloc, /* tp_dealloc */	\
@@ -323,7 +323,7 @@ SL_END_METHODS()									\
 PyTypeObject name##_Type = {						\
 	PyObject_HEAD_INIT(NULL)						\
 	0,						/* ob_size */			\
-	"_slew." #name,			/* tp_name */			\
+	"slew._slew." #name,	/* tp_name */			\
 	sizeof( name##_Proxy),	/* tp_basicsize */		\
 	0,						/* tp_itemsize */		\
 	(destructor) name##_dealloc, /* tp_dealloc */	\

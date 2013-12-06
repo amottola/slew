@@ -50,7 +50,7 @@ PyTypeObject SceneItemDC_Type =
 {
 	PyObject_HEAD_INIT(NULL)
 	0,											/* ob_size */
-	"_slew.SceneItemDC",						/* tp_name */
+	"slew._slew.SceneItemDC",					/* tp_name */
 	sizeof(DC_Proxy),							/* tp_basicsize */
 	0,											/* tp_itemsize */
 	0,											/* tp_dealloc */

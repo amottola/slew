@@ -1499,7 +1499,7 @@ PyTypeObject DataModel_Type =
 {
 	PyObject_HEAD_INIT(NULL)
 	0,											/* ob_size */
-	"_slew.DataModel",							/* tp_name */
+	"slew._slew.DataModel",						/* tp_name */
 	sizeof(DataModel_Proxy),					/* tp_basicsize */
 	0,											/* tp_itemsize */
 	(destructor)DataModel_dealloc,				/* tp_dealloc */
