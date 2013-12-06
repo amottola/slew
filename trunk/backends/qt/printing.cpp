@@ -61,37 +61,39 @@ static const struct {
 static const struct {
 	int						fSL;
 	QPrinter::PaperSize		fQT;
+	int						fWidth;
+	int						fHeight;
 } kPaperSize[] = {
-	{	SL_PRINTER_PAPER_A0,			QPrinter::A0			},
-	{	SL_PRINTER_PAPER_A1,			QPrinter::A1			},
-	{	SL_PRINTER_PAPER_A2,			QPrinter::A2			},
-	{	SL_PRINTER_PAPER_A3,			QPrinter::A3			},
-	{	SL_PRINTER_PAPER_A4,			QPrinter::A4			},
-	{	SL_PRINTER_PAPER_A5,			QPrinter::A5			},
-	{	SL_PRINTER_PAPER_A6,			QPrinter::A6			},
-	{	SL_PRINTER_PAPER_A7,			QPrinter::A7			},
-	{	SL_PRINTER_PAPER_A8,			QPrinter::A8			},
-	{	SL_PRINTER_PAPER_A9,			QPrinter::A9			},
-	{	SL_PRINTER_PAPER_B1,			QPrinter::B1			},
-	{	SL_PRINTER_PAPER_B2,			QPrinter::B2			},
-	{	SL_PRINTER_PAPER_B3,			QPrinter::B3			},
-	{	SL_PRINTER_PAPER_B4,			QPrinter::B4			},
-	{	SL_PRINTER_PAPER_B5,			QPrinter::B5			},
-	{	SL_PRINTER_PAPER_B6,			QPrinter::B6			},
-	{	SL_PRINTER_PAPER_B7,			QPrinter::B7			},
-	{	SL_PRINTER_PAPER_B8,			QPrinter::B8			},
-	{	SL_PRINTER_PAPER_B9,			QPrinter::B9			},
-	{	SL_PRINTER_PAPER_B10,			QPrinter::B10			},
-	{	SL_PRINTER_PAPER_C5E,			QPrinter::C5E			},
-	{	SL_PRINTER_PAPER_COMM10E,		QPrinter::Comm10E		},
-	{	SL_PRINTER_PAPER_DLE,			QPrinter::DLE			},
-	{	SL_PRINTER_PAPER_EXECUTIVE,		QPrinter::Executive		},
-	{	SL_PRINTER_PAPER_FOLIO,			QPrinter::Folio			},
-	{	SL_PRINTER_PAPER_LEDGER,		QPrinter::Ledger		},
-	{	SL_PRINTER_PAPER_LEGAL,			QPrinter::Legal			},
-	{	SL_PRINTER_PAPER_LETTER,		QPrinter::Letter		},
-	{	SL_PRINTER_PAPER_TABLOID,		QPrinter::Tabloid		},
-	{	SL_PRINTER_PAPER_CUSTOM,		QPrinter::Custom		},
+	{	SL_PRINTER_PAPER_A0,			QPrinter::A0,			8410,	11890	},
+	{	SL_PRINTER_PAPER_A1,			QPrinter::A1,			5940,	8410	},
+	{	SL_PRINTER_PAPER_A2,			QPrinter::A2,			4200,	5940	},
+	{	SL_PRINTER_PAPER_A3,			QPrinter::A3,			2970,	4200	},
+	{	SL_PRINTER_PAPER_A4,			QPrinter::A4,			2100,	2970	},
+	{	SL_PRINTER_PAPER_A5,			QPrinter::A5,			1480,	2100	},
+	{	SL_PRINTER_PAPER_A6,			QPrinter::A6,			1050,	1480	},
+	{	SL_PRINTER_PAPER_A7,			QPrinter::A7,			740,	1050	},
+	{	SL_PRINTER_PAPER_A8,			QPrinter::A8,			520,	740		},
+	{	SL_PRINTER_PAPER_A9,			QPrinter::A9,			370,	520		},
+	{	SL_PRINTER_PAPER_B1,			QPrinter::B1,			7070,	10000	},
+	{	SL_PRINTER_PAPER_B2,			QPrinter::B2,			5000,	7070	},
+	{	SL_PRINTER_PAPER_B3,			QPrinter::B3,			3530,	5000	},
+	{	SL_PRINTER_PAPER_B4,			QPrinter::B4,			2500,	3530	},
+	{	SL_PRINTER_PAPER_B5,			QPrinter::B5,			1760,	2500	},
+	{	SL_PRINTER_PAPER_B6,			QPrinter::B6,			1250,	1760	},
+	{	SL_PRINTER_PAPER_B7,			QPrinter::B7,			880,	1250	},
+	{	SL_PRINTER_PAPER_B8,			QPrinter::B8,			620,	880		},
+	{	SL_PRINTER_PAPER_B9,			QPrinter::B9,			330,	620		},
+	{	SL_PRINTER_PAPER_B10,			QPrinter::B10,			310,	440		},
+	{	SL_PRINTER_PAPER_C5E,			QPrinter::C5E,			1630,	2290	},
+	{	SL_PRINTER_PAPER_COMM10E,		QPrinter::Comm10E,		1050,	2410	},
+	{	SL_PRINTER_PAPER_DLE,			QPrinter::DLE,			1100,	2200	},
+	{	SL_PRINTER_PAPER_EXECUTIVE,		QPrinter::Executive,	1905,	2540	},
+	{	SL_PRINTER_PAPER_FOLIO,			QPrinter::Folio,		2100,	3300	},
+	{	SL_PRINTER_PAPER_LEDGER,		QPrinter::Ledger,		4318,	2794	},
+	{	SL_PRINTER_PAPER_LEGAL,			QPrinter::Legal,		2159,	3556	},
+	{	SL_PRINTER_PAPER_LETTER,		QPrinter::Letter,		2159,	2794	},
+	{	SL_PRINTER_PAPER_TABLOID,		QPrinter::Tabloid,		2794,	4318	},
+	{	SL_PRINTER_PAPER_CUSTOM,		QPrinter::Custom,		0,		0		},
 };
 
 
@@ -591,8 +593,11 @@ loadSettings(PyObject *settings, QPrinter *printer)
 		dpi = 300;
 	printer->setResolution(dpi);
 	
+	
 	for (i = 0; kPaperSize[i].fSL != SL_PRINTER_PAPER_CUSTOM; i++) {
-		if (kPaperSize[i].fSL == paperType)
+		if ((kPaperSize[i].fSL == paperType) ||
+			((kPaperSize[i].fWidth == paperSize.width()) && (kPaperSize[i].fHeight == paperSize.height())) ||
+			((kPaperSize[i].fWidth == paperSize.height()) && (kPaperSize[i].fHeight == paperSize.width())))
 			break;
 	}
 	if (kPaperSize[i].fSL == SL_PRINTER_PAPER_CUSTOM) {
