@@ -833,6 +833,9 @@ printSetup(PyObject *settings, PyObject *parent, bool *accepted)
 	if (sPrinter)
 		delete sPrinter;
 	sPrinter = new QPrinter(QPrinter::HighResolution);
+	if (!loadSettings(settings, sPrinter))
+		return false;
+	
 	PrintDialog dialog(sPrinter, parentWidget);
 	*accepted = (dialog.run() == QDialog::Accepted);
 	
