@@ -566,6 +566,13 @@ class Bitmap(DC):
 	def copy(self):
 		return self._impl.copy()
 	
+	def __getstate__(self):
+		return bytes(self._impl.save())
+	
+	def __setstate__(self, state):
+		self._impl = slew._slew.Bitmap(Vector(32,32))
+		self._impl.load(state)
+	
 	@deprecated
 	def resize(self, size):
 		return self.resized(size)
