@@ -2973,28 +2973,6 @@ Application::sendTabEvent(QObject *receiver)
 }
 
 
-SL_DEFINE_MODULE_METHOD(init, {
-	if (!PyEvent_Type) {
-		PyObject *module = PyImport_AddModule("slew");
-		if (module) {
-			PyObject *dict = PyModule_GetDict(module);
-			PyEvent_Type = PyDict_GetItemString(dict, "Event");
-			PyPaper_Type = PyDict_GetItemString(dict, "Paper");
-			sVectorType = PyDict_GetItemString(dict, "Vector");
-			sColorType = PyDict_GetItemString(dict, "Color");
-			sFontType = PyDict_GetItemString(dict, "Font");
-			PyDC_Type = PyDict_GetItemString(dict, "DC");
-			PyPrintDC_Type = PyDict_GetItemString(dict, "PrintDC");
-			sBitmapType = PyDict_GetItemString(dict, "Bitmap");
-			sIconType = PyDict_GetItemString(dict, "Icon");
-			PyDataIndex_Type = PyDict_GetItemString(dict, "DataIndex");
-			PyDataSpecifier_Type = PyDict_GetItemString(dict, "DataSpecifier");
-			PyDataModel_Type = PyDict_GetItemString(dict, "DataModel");
-		}
-	}
-})
-
-
 SL_DEFINE_MODULE_METHOD(report_exception, {
 	static char *kwlist[] = { "message", NULL };
 	QString message;
@@ -4375,7 +4353,6 @@ SL_DEFINE_MODULE_METHOD(mac_set_dock_menu, {
 
 
 SL_START_METHODS(slew)
-SL_METHOD(init)
 SL_METHOD(exit)
 SL_METHOD(report_exception)
 SL_METHOD(set_application_name)
@@ -4448,7 +4425,7 @@ init_slew()
 	PyDateTime_IMPORT;
 	PyEval_InitThreads();
 	
-	module = Py_InitModule3("_slew", slew::methods, "Slew Qt implementation module.\n");
+	module = Py_InitModule3("slew._slew", slew::methods, "Slew Qt implementation module.\n");
 	
 	if ((!Abstract_type_setup(module)) ||
 		(!Widget_type_setup(module)) ||
@@ -4504,6 +4481,23 @@ init_slew()
 		
 		(!SystrayIcon_type_setup(module)))
 		return;
+	
+	module = PyImport_AddModule("slew");
+	if (module) {
+		dict = PyModule_GetDict(module);
+		PyEvent_Type = PyDict_GetItemString(dict, "Event");
+		PyPaper_Type = PyDict_GetItemString(dict, "Paper");
+		sVectorType = PyDict_GetItemString(dict, "Vector");
+		sColorType = PyDict_GetItemString(dict, "Color");
+		sFontType = PyDict_GetItemString(dict, "Font");
+		PyDC_Type = PyDict_GetItemString(dict, "DC");
+		PyPrintDC_Type = PyDict_GetItemString(dict, "PrintDC");
+		sBitmapType = PyDict_GetItemString(dict, "Bitmap");
+		sIconType = PyDict_GetItemString(dict, "Icon");
+		PyDataIndex_Type = PyDict_GetItemString(dict, "DataIndex");
+		PyDataSpecifier_Type = PyDict_GetItemString(dict, "DataSpecifier");
+		PyDataModel_Type = PyDict_GetItemString(dict, "DataModel");
+	}
 	
 	sysargv = PySys_GetObject("argv");
 	executable = PySys_GetObject("executable");
