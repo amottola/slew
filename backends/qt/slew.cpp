@@ -2974,32 +2974,24 @@ Application::sendTabEvent(QObject *receiver)
 
 
 SL_DEFINE_MODULE_METHOD(init, {
-	static char *kwlist[] = { "module", NULL };
-	PyObject *module, *dict;
-	
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyModule_Type, &module))
-		return NULL;
-	
-	dict = PyModule_GetDict(module);
-	PyEvent_Type = PyDict_GetItemString(dict, "Event");
-	PyPaper_Type = PyDict_GetItemString(dict, "Paper");
-	sVectorType = PyDict_GetItemString(dict, "Vector");
-	sColorType = PyDict_GetItemString(dict, "Color");
-	sFontType = PyDict_GetItemString(dict, "Font");
-	PyDC_Type = PyDict_GetItemString(dict, "DC");
-	PyPrintDC_Type = PyDict_GetItemString(dict, "PrintDC");
-	sBitmapType = PyDict_GetItemString(dict, "Bitmap");
-	sIconType = PyDict_GetItemString(dict, "Icon");
-	PyDataIndex_Type = PyDict_GetItemString(dict, "DataIndex");
-	PyDataSpecifier_Type = PyDict_GetItemString(dict, "DataSpecifier");
-	PyDataModel_Type = PyDict_GetItemString(dict, "DataModel");
-})
-
-
-SL_DEFINE_MODULE_METHOD(is_initialized, {
-	if (!PyEvent_Type)
-		Py_RETURN_FALSE;
-	Py_RETURN_TRUE;
+	if (!PyEvent_Type) {
+		PyObject *module = PyImport_AddModule("slew");
+		if (module) {
+			PyObject *dict = PyModule_GetDict(module);
+			PyEvent_Type = PyDict_GetItemString(dict, "Event");
+			PyPaper_Type = PyDict_GetItemString(dict, "Paper");
+			sVectorType = PyDict_GetItemString(dict, "Vector");
+			sColorType = PyDict_GetItemString(dict, "Color");
+			sFontType = PyDict_GetItemString(dict, "Font");
+			PyDC_Type = PyDict_GetItemString(dict, "DC");
+			PyPrintDC_Type = PyDict_GetItemString(dict, "PrintDC");
+			sBitmapType = PyDict_GetItemString(dict, "Bitmap");
+			sIconType = PyDict_GetItemString(dict, "Icon");
+			PyDataIndex_Type = PyDict_GetItemString(dict, "DataIndex");
+			PyDataSpecifier_Type = PyDict_GetItemString(dict, "DataSpecifier");
+			PyDataModel_Type = PyDict_GetItemString(dict, "DataModel");
+		}
+	}
 })
 
 
@@ -4385,7 +4377,6 @@ SL_DEFINE_MODULE_METHOD(mac_set_dock_menu, {
 SL_START_METHODS(slew)
 SL_METHOD(init)
 SL_METHOD(exit)
-SL_METHOD(is_initialized)
 SL_METHOD(report_exception)
 SL_METHOD(set_application_name)
 SL_METHOD(set_application_flags)

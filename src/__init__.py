@@ -995,7 +995,5 @@ from wizardpage import WizardPage
 from webview import WebView
 
 
-if not _slew.is_initialized():
-	_slew.init(sys.modules[__name__])
-	_slew.set_application_name(os.path.basename(_slew.get_path(EXECUTABLE_NAME)))
+_slew.init()
 
