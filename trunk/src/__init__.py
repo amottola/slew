@@ -8,8 +8,6 @@ import os.path
 from utils import *
 from gdi import *
 
-import _slew
-
 
 class version_info(object):
 	def __init__(self, major, minor, revision):
@@ -995,5 +993,4 @@ from wizardpage import WizardPage
 from webview import WebView
 
 
-_slew.init()
-
+import _slew
