@@ -14,6 +14,18 @@ extern void qt_mac_set_dock_menu(QMenu *);
 #endif
 
 
+struct CPSProcessSerNum
+{
+	UInt32 lo;
+	UInt32 hi;
+};
+extern "C" {
+	OSErr CPSGetCurrentProcess(struct CPSProcessSerNum *psn);
+	OSErr CPSEnableForegroundOperation(struct CPSProcessSerNum *psn, UInt32 _arg2, UInt32 _arg3, UInt32 _arg4, UInt32 _arg5);
+	OSErr CPSSetFrontProcess(struct CPSProcessSerNum *psn);
+}
+
+
 #ifdef HAS_COCOA
 #include <Cocoa/Cocoa.h>
 
@@ -114,6 +126,17 @@ extern OSWindowRef qt_mac_window_for(const QWidget *w);
 #endif
 
 
+void
+helper_bring_application_to_front()
+{
+	struct CPSProcessSerNum psn;
+	if ((!CPSGetCurrentProcess(&psn)) && (!CPSEnableForegroundOperation(&psn, 0x03, 0x3C, 0x2C, 0x1103))) {
+		if (!CPSSetFrontProcess(&psn))
+			[NSApplication sharedApplication];
+	}
+}
+
+
 bool
 helper_notify_center(const QString &title, const QString &text)
 {
@@ -154,6 +177,9 @@ helper_notify_center(const QString &title, const QString &text)
 void
 helper_set_resizeable(QWidget *widget, bool enabled)
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+	widget->winId();
+#endif
 #ifdef HAS_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSWindow *window = (NSWindow *)qt_mac_window_for(widget);
