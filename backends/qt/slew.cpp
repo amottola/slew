@@ -4567,7 +4567,7 @@ init_slew()
 				forceFront = false;
 		}
 		if (forceFront)
-			helper_bring_application_to_front(in_bundle());
+			helper_bring_application_to_front();
 #endif
 	}
 	else
