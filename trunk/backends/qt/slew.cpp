@@ -27,17 +27,6 @@
 	#include <crt_externs.h>
 	#include <dlfcn.h>
 	
-	struct CPSProcessSerNum
-	{
-		UInt32 lo;
-		UInt32 hi;
-	};
-	extern "C" {
-		OSErr CPSGetCurrentProcess(struct CPSProcessSerNum *psn);
-		OSErr CPSEnableForegroundOperation(struct CPSProcessSerNum *psn, UInt32 _arg2, UInt32 _arg3, UInt32 _arg4, UInt32 _arg5);
-		OSErr CPSSetFrontProcess(struct CPSProcessSerNum *psn);
-	}
-	
 	static bool in_bundle(void)
 	{
 		/* This comes from the ADC tips & tricks section: how to detect if the app lives inside a bundle */
@@ -4577,11 +4566,8 @@ init_slew()
 			if ((temp == "0") || (temp.toLower() == "false"))
 				forceFront = false;
 		}
-		if (forceFront) {
-			struct CPSProcessSerNum psn;
-			if ((!CPSGetCurrentProcess(&psn)) && (!CPSEnableForegroundOperation(&psn, 0x03, 0x3C, 0x2C, 0x1103)))
-				CPSSetFrontProcess(&psn);
-		}
+		if (forceFront)
+			helper_bring_application_to_front(in_bundle());
 #endif
 	}
 	else

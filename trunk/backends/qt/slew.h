@@ -203,6 +203,7 @@ void freeBitmapResources(QPainter *painter, QPaintDevice *device);
 
 #ifdef Q_OS_MAC
 
+void helper_bring_application_to_front();
 void helper_set_resizeable(QWidget *widget, bool enabled);
 void helper_init_notification(QWidget *widget);
 void helper_clear_menu_previous_action(QMenu *menu);
