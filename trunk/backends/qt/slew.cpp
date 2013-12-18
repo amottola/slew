@@ -839,11 +839,20 @@ convertBuffer(PyObject *object, QByteArray *value)
 {
 	if (!object)
 		return 0;
-	const void *source;
-	Py_ssize_t size;
-	if (PyObject_AsReadBuffer(object, &source, &size))
-		return 0;
-	*value = QByteArray((const char *)source, size);
+	if (PyBuffer_Check(object)) {
+		const void *source;
+		Py_ssize_t size;
+		if (PyObject_AsReadBuffer(object, &source, &size))
+			return 0;
+		*value = QByteArray((const char *)source, size);
+	}
+	else {
+		Py_buffer view;
+		if (PyObject_GetBuffer(object, &view, PyBUF_CONTIG_RO))
+			return 0;
+		*value = QByteArray((const char *)view.buf, view.len);
+		PyBuffer_Release(&view);
+	}
 	return 1;
 }
 
