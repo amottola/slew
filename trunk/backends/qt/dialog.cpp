@@ -205,8 +205,7 @@ SL_DEFINE_METHOD(Dialog, end_modal, {
 	Py_BEGIN_ALLOW_THREADS
 	
 	impl->setReturnValue(value);
-	impl->close();
-	impl->hide();
+	impl->done(0);
 	
 	Py_END_ALLOW_THREADS
 })
@@ -215,8 +214,14 @@ SL_DEFINE_METHOD(Dialog, end_modal, {
 SL_DEFINE_METHOD(Dialog, close, {
 	Py_BEGIN_ALLOW_THREADS
 	
-	impl->close();
-	impl->hide();
+	if ((impl->isModal()) && (impl->isVisible())) {
+		impl->setReturnValue(Py_None);
+		impl->done(0);
+	}
+	else {
+		impl->close();
+		impl->hide();
+	}
 	
 	Py_END_ALLOW_THREADS
 })
