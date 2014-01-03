@@ -1258,7 +1258,7 @@ SL_DEFINE_METHOD(SceneView, set_bgcolor, {
 		impl->setAutoFillBackground(false);
 		color = QApplication::palette(impl).color(QPalette::Base);
 	}
-	else {
+	else if (!qobject_cast<QGLWidget *>(impl->viewport())) {
 		impl->setAutoFillBackground(true);
 	}
 	
@@ -1298,18 +1298,18 @@ SL_DEFINE_METHOD(SceneView, set_style, {
 	
 	QWidget *viewport = impl->viewport();
 	if ((style & SL_SCENEVIEW_STYLE_OPENGL) && !(qobject_cast<QGLWidget *>(impl->viewport()))) {
-		QGLFormat format(QGL::DirectRendering);
-		QGLWidget *widget = new QGLWidget(format);
+		QGLWidget *widget = new QGLWidget();
 		if (widget->isValid()) {
-			widget->setAutoFillBackground(false);
 			viewport = widget;
 		}
 	}
 	if ((!(style & SL_SCENEVIEW_STYLE_OPENGL) && (qobject_cast<QGLWidget *>(impl->viewport()))) || (!viewport)) {
 		viewport = new QWidget();
 	}
+	
 	impl->setViewport(viewport);
 	impl->setViewportUpdateMode(qobject_cast<QGLWidget *>(viewport) ? QGraphicsView::FullViewportUpdate : QGraphicsView::SmartViewportUpdate);
+	impl->setAutoFillBackground((impl->palette().color(QPalette::Base) != QApplication::palette(impl).color(QPalette::Base)) && (!qobject_cast<QGLWidget *>(viewport)));
 	impl->setHorizontalScrollBarPolicy(style & SL_SCENEVIEW_STYLE_SCROLLBARS ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAsNeeded);
 	impl->setVerticalScrollBarPolicy(style & SL_SCENEVIEW_STYLE_SCROLLBARS ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAsNeeded);
 	if (style & SL_SCENEVIEW_STYLE_DRAG_SCROLL)
