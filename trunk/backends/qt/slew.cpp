@@ -1844,7 +1844,11 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 	int diff = qMax(0, 40 - title.size());
 	QString _title;
 	if (diff > 0)
+#ifdef Q_OS_LINUX
+		_title = title + QString("&nbsp;&nbsp;").repeated(diff);
+#else
 		_title = title + QString(' ').repeated(diff);
+#endif
 	else
 		_title = title;
 #ifdef Q_OS_LINUX
