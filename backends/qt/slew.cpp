@@ -4166,7 +4166,7 @@ SL_DEFINE_MODULE_METHOD(get_mouse_pos, {
 
 
 SL_DEFINE_MODULE_METHOD(get_keyboard_modifiers, {
-	return PyInt_FromLong((long)getKeyModifiers(QApplication::keyboardModifiers()));
+	return PyInt_FromLong((long)getKeyModifiers(QApplication::queryKeyboardModifiers()));
 })
 
 
