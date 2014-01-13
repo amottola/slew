@@ -282,11 +282,14 @@ SL_DECLARE_PROXY(WebView)
 class PyAutoLocker
 {
 public:
-	PyAutoLocker() { fState = PyGILState_Ensure(); PyErr_Clear(); }
-	~PyAutoLocker() { PyGILState_Release(fState); }
-
+	PyAutoLocker() { fIsValid = Py_IsInitialized(); if (fIsValid) { fState = PyGILState_Ensure(); PyErr_Clear(); } }
+	~PyAutoLocker() { if (fIsValid) PyGILState_Release(fState); }
+	
+	bool isValid() { return fIsValid; }
+	
 private:
 	PyGILState_STATE	fState;
+	bool				fIsValid;
 };
 
 
@@ -295,16 +298,16 @@ class EventRunner
 {
 public:
 	EventRunner(Widget_Proxy *proxy, const QString& name = "")
-		: fProxy(proxy), fName(name), fEvent(NULL) { fParams = PyDict_New(); }
+		: fProxy(proxy), fName(name), fEvent(NULL), fParams(NULL) { if (fLocker.isValid()) fParams = PyDict_New(); }
 	EventRunner(QObject *object, const QString& name = "")
-		: fName(name), fEvent(NULL) { fProxy = getSafeProxy(object); fParams = PyDict_New(); }
-	~EventRunner() { Py_DECREF(fParams); Py_XDECREF(fEvent); }
+		: fProxy(NULL), fName(name), fEvent(NULL), fParams(NULL) { if (fLocker.isValid()) { fProxy = getSafeProxy(object); fParams = PyDict_New(); } }
+	~EventRunner() { Py_XDECREF(fParams); Py_XDECREF(fEvent); }
 	
 	void setName(const QString& name) { fName = name; }
 	QString name() { return fName; }
 	
 	QWidget *widget() { return fProxy ? (QWidget *)fProxy->fImpl : NULL; }
-	bool isValid() { return fProxy != NULL; }
+	bool isValid() { return (fLocker.isValid()) && (fProxy != NULL); }
 	
 	void set(const char *param, PyObject *value, bool decref=true) { PyDict_SetItemString(fParams, param, value); if (decref) Py_DECREF(value); }
 	void set(const char *param, bool value) { set(param, createBoolObject(value)); }
