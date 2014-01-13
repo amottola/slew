@@ -1078,9 +1078,11 @@ void
 SceneView_Impl::handleSelectionChanged()
 {
 	EventRunner runner(this, "onSelect");
-	runner.set("selection", selection());
-	runner.set("modifiers", getKeyModifiers(QApplication::keyboardModifiers()));
-	runner.run();
+	if (runner.isValid()) {
+		runner.set("selection", selection());
+		runner.set("modifiers", getKeyModifiers(QApplication::keyboardModifiers()));
+		runner.run();
+	}
 }
 
 
