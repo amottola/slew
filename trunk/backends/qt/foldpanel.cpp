@@ -105,8 +105,10 @@ public:
 			fParent->setupLayout();
 			
 			EventRunner runner(fParent, "onResize");
-			runner.set("size", size);
-			runner.run();
+			if (runner.isValid()) {
+				runner.set("size", size);
+				runner.run();
+			}
 		}
 	}
 	
@@ -244,8 +246,10 @@ FoldPanel_Impl::handleFrameChanged(int frame)
 {
 	if (fTimeLine) {
 		EventRunner runner(this, "onFolding");
-		runner.set("value", fTimeLine->currentValue());
-		runner.run();
+		if (runner.isValid()) {
+			runner.set("value", fTimeLine->currentValue());
+			runner.run();
+		}
 	}
 	fContent->show();
 	setupLayout();

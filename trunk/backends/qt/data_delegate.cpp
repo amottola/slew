@@ -498,9 +498,11 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 	
 	PyAutoLocker locker;
 	EventRunner runner(view, "onPaintItem");
-	runner.set("dc", createDCObject(painter));
-	runner.set("index", model->getDataIndex(index), false);
-	runner.run();
+	if (runner.isValid()) {
+		runner.set("dc", createDCObject(painter));
+		runner.set("index", model->getDataIndex(index), false);
+		runner.run();
+	}
 	
 	painter->restore();
 }

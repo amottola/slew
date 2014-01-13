@@ -2302,21 +2302,23 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			QWidget *w = qobject_cast<QWidget *>(obj);
 			if ((w) && (getSafeProxy(w)) && (!qobject_cast<SceneView_Impl *>(obj->parent()))) {
 				EventRunner runner(obj, "onPaint");
-				QScrollArea *area = qobject_cast<QScrollArea *>(runner.widget());
-				if ((area) && (area->widget() != obj)) {
-					break;
-				}
-				else {
-					QAbstractScrollArea *area = qobject_cast<QAbstractScrollArea *>(runner.widget());
-					if ((area) && (area->viewport() != obj))
+				if (runner.isValid()) {
+					QScrollArea *area = qobject_cast<QScrollArea *>(runner.widget());
+					if ((area) && (area->widget() != obj)) {
 						break;
+					}
+					else {
+						QAbstractScrollArea *area = qobject_cast<QAbstractScrollArea *>(runner.widget());
+						if ((area) && (area->viewport() != obj))
+							break;
+					}
+					QPainter painter(w);
+					painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::NonCosmeticDefaultPen);
+	// 				painter.setPen(QPen(QColor(rand() % 256, rand() % 256, rand() % 256)));
+	// 				painter.drawRect(0, 0, w->width() - 1, w->height() - 1);
+					runner.set("dc", createDCObject(&painter));
+					runner.run();
 				}
-				QPainter painter(w);
-				painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::NonCosmeticDefaultPen);
-// 				painter.setPen(QPen(QColor(rand() % 256, rand() % 256, rand() % 256)));
-// 				painter.drawRect(0, 0, w->width() - 1, w->height() - 1);
-				runner.set("dc", createDCObject(&painter));
-				runner.run();
 			}
 		}
 		break;

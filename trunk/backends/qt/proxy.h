@@ -405,9 +405,11 @@ virtual void paintEvent(QPaintEvent *event) {									\
 										viewport()->height() - 1));				\
 		DataModel_Impl *model = (DataModel_Impl *)this->model();				\
 		EventRunner runner(this, "onPaintView");								\
-		runner.set("tl", model->getDataIndex(tl), false);						\
-		runner.set("br", model->getDataIndex(br), false);						\
-		runner.run();															\
+		if (runner.isValid()) {													\
+			runner.set("tl", model->getDataIndex(tl), false);					\
+			runner.set("br", model->getDataIndex(br), false);					\
+			runner.run();														\
+		}																		\
 	}																			\
 	_type::paintEvent(event);													\
 	QPainter painter(viewport());												\
