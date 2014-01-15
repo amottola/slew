@@ -167,7 +167,7 @@ public:
 		connect(this, SIGNAL(activated(QModelIndex)), completer, SLOT(completionActivated()));
 		connect(selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), completer, SLOT(completionSelected(QItemSelection)));
 		
-		if ((!isVisible()) && (rowCount > 0)) {
+		if ((!isVisible()) && (rowCount > 0) && (!isPopupMessageShown())) {
 			connect(completer, SIGNAL(complete(int)), completer->lineEdit(), SLOT(handleComplete(int)));
 			show();
 		}

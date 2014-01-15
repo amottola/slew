@@ -659,6 +659,8 @@ public:
 	{
 		int result;
 		
+		Completer::hide();
+		
 		if (fButtonBox) {
 			setWindowModality(Qt::ApplicationModal);
 			setAttribute(Qt::WA_ShowModal, true);
@@ -1906,6 +1908,12 @@ void hidePopupMessage(QEvent *event)
 	else {
 		InfoBalloon::fade();
 	}
+}
+
+
+bool isPopupMessageShown()
+{
+	return sInfoBalloon != NULL;
 }
 
 
