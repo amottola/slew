@@ -37,6 +37,8 @@ public:
 	void setShowRules(bool enabled) { fShowRules = enabled; }
 	bool showRules() { return fShowRules; }
 	
+	void redrawBranches(QPainter *painter, const QModelIndex& index) { drawBranches(painter, fLastBranchesRect, index); }
+	
 	virtual void setModel(QAbstractItemModel *model);
 	
 	virtual bool isFocusOutEvent(QEvent *event);
@@ -77,6 +79,7 @@ private:
 	QPersistentModelIndex	fExpandIndex;
 	int						fExpandFrame;
 	QPersistentModelIndex	fEditIndex;
+	QRect					fLastBranchesRect;
 };
 
 
