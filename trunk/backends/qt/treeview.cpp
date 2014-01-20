@@ -47,14 +47,15 @@ public:
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const
 	{
 		if (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) {
+			backOpt->rect.setLeft(0);
 			backOpt->rect.setRight(1000000);
 		}
 	}
 	
 	virtual void finishPaint(QPainter *painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 	{
+		painter->save();
 		if ((fTreeView->showRules()) && (!(option.state & QStyle::State_Selected))) {
-			painter->save();
 			
 			QRect rect = fTreeView->visualRect(index);
 			QColor color = qvariant_cast<QColor>(fTreeView->model()->data(index, Qt::BackgroundRole));
@@ -71,9 +72,11 @@ public:
 			painter->drawLine(left, rect.bottom(), rect.right(), rect.bottom());
 			if (index.column() > 0)
 				painter->drawLine(left, rect.top(), left, rect.bottom());
-			
-			painter->restore();
 		}
+		
+		painter->setClipping(false);
+		fTreeView->redrawBranches(painter, index);
+		painter->restore();
 	}
 	
 private:
@@ -612,6 +615,7 @@ TreeView_Impl::paintDropTarget(QPainter *painter, const QModelIndex& index, int 
 void
 TreeView_Impl::drawBranches(QPainter *painter, const QRect& rect, const QModelIndex& index) const
 {
+	((TreeView_Impl *)this)->fLastBranchesRect = rect;
 	if (fShowExpanders)
 		QTreeView::drawBranches(painter, rect, index);
 }
