@@ -1014,6 +1014,10 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 				return true;
 			case Qt::Key_Home:
 			case Qt::Key_End:
+#ifdef Q_OS_WIN
+			case Qt::Key_Up:
+			case Qt::Key_Down:
+#endif
 #ifdef Q_OS_MAC
 				if (qobject_cast<ComboBox_Editor *>(editor))
 					return false;
