@@ -1840,7 +1840,10 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 	default:				qicon = QMessageBox::Information; break;
 	}
 	
-	mb.setWindowModality(Qt::WindowModal);
+	if (window)
+		mb.setWindowModality(Qt::WindowModal);
+	else
+		mb.setWindowModality(Qt::ApplicationModal);
 	mb.setWindowTitle(qApp->applicationName());
 #if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
 	int diff = qMax(0, 40 - title.size());
