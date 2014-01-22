@@ -128,7 +128,7 @@ SceneItem_Impl::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 		fPicture = picture;
 		fRepaint = false;
 	}
-	painter->setClipRect(boundingRect() & option->exposedRect);
+	painter->setClipRect(option->exposedRect);
 	painter->drawPicture(0, 0, fPicture);
 	
 	if ((!toPlainText().isEmpty()) || (hasFocus())) {
