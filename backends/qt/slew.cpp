@@ -4664,21 +4664,20 @@ init_slew()
 			Py_INCREF(sPickle_dumps);
 		else {
 			PyErr_Clear();
+			Py_DECREF(module);
 			module = NULL;
 		}
-		sPickle_loads = PyDict_GetItemString(dict, "loads");
-		if (sPickle_loads)
-			Py_INCREF(sPickle_loads);
-		else {
-			PyErr_Clear();
-			module = NULL;
+		if (module) {
+			sPickle_loads = PyDict_GetItemString(dict, "loads");
+			if (sPickle_loads)
+				Py_INCREF(sPickle_loads);
+			else {
+				PyErr_Clear();
+				Py_DECREF(sPickle_dumps);
+				sPickle_dumps = NULL;
+			}
+			Py_DECREF(module);
 		}
-	}
-	
-	if (!module) {
-		PyErr_Clear();
-		sPickle_dumps = NULL;
-		sPickle_loads = NULL;
 	}
 	
 	Py_AtExit(cleanup);
