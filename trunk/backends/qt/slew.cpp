@@ -129,8 +129,8 @@ static PyObject *sColorType;
 static PyObject *sFontType;
 static PyObject *sBitmapType;
 static PyObject *sIconType;
-static PyObject *pickle_dumps;
-static PyObject *pickle_loads;
+static PyObject *sPickle_dumps = NULL;
+static PyObject *sPickle_loads = NULL;
 
 PyObject *PyDC_Type;
 PyObject *PyPrintDC_Type;
@@ -1959,9 +1959,9 @@ mimeDataToObject(const QMimeData *mimeData, const QString& mimeType)
 		}
 		else if (mimeData->hasFormat(SL_PYOBJECT_MIME_TYPE)) {
 			QByteArray array = mimeData->data(SL_PYOBJECT_MIME_TYPE);
-			if (pickle_loads) {
+			if (sPickle_loads) {
 				PyObject *data = PyString_FromStringAndSize(array.data(), array.size());
-				object = PyObject_CallFunctionObjArgs(pickle_loads, data, NULL);
+				object = PyObject_CallFunctionObjArgs(sPickle_loads, data, NULL);
 				Py_DECREF(data);
 			}
 			else
@@ -2007,9 +2007,9 @@ objectToMimeData(PyObject *object, QMimeData *mimeData)
 		PyErr_Clear();
 		QByteArray data;
 		PyObject *buffer;
-		if (pickle_dumps) {
+		if (sPickle_dumps) {
 			PyObject *protocol = PyInt_FromLong(-1);
-			buffer = PyObject_CallFunctionObjArgs(pickle_dumps, object, protocol, NULL);
+			buffer = PyObject_CallFunctionObjArgs(sPickle_dumps, object, protocol, NULL);
 			Py_DECREF(protocol);
 		}
 		else
@@ -4659,19 +4659,26 @@ init_slew()
 	}
 	if (module) {
 		dict = PyModule_GetDict(module);
-		pickle_dumps = PyDict_GetItemString(dict, "dumps");
-		if (pickle_dumps)
-			pickle_loads = PyDict_GetItemString(dict, "loads");
-		if ((!pickle_dumps) || (!pickle_loads)) {
-			Py_DECREF(module);
+		sPickle_dumps = PyDict_GetItemString(dict, "dumps");
+		if (sPickle_dumps)
+			Py_INCREF(sPickle_dumps);
+		else {
+			PyErr_Clear();
+			module = NULL;
+		}
+		sPickle_loads = PyDict_GetItemString(dict, "loads");
+		if (sPickle_loads)
+			Py_INCREF(sPickle_loads);
+		else {
+			PyErr_Clear();
 			module = NULL;
 		}
 	}
 	
 	if (!module) {
 		PyErr_Clear();
-		pickle_dumps = NULL;
-		pickle_loads = NULL;
+		sPickle_dumps = NULL;
+		sPickle_loads = NULL;
 	}
 	
 	Py_AtExit(cleanup);
