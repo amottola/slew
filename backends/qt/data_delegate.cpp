@@ -1024,7 +1024,7 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 #ifdef Q_OS_WIN
 			case Qt::Key_Up:
 			case Qt::Key_Down:
-				if (qobject_cast<ComboBox_Editor *>(editor))
+				if ((qobject_cast<ComboBox_Editor *>(editor)) || (Completer::isRunningOn(editor)))
 					return false;
 				return true;
 #endif
