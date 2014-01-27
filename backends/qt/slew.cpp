@@ -4439,8 +4439,13 @@ SL_END_METHODS()
 static void
 cleanup()
 {
+	if (qApp) {
+		Application::exit(0);
+		QApplication::sendPostedEvents();
+		QApplication::processEvents();
+		delete qApp;
+	}
 	delete sResourceReader;
-	delete qApp;
 	for (int i = 0; i < sArgc; i++)
 		free(sArgv[i]);
 	free(sArgv);
