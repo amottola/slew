@@ -129,6 +129,8 @@ static PyObject *sColorType;
 static PyObject *sFontType;
 static PyObject *sBitmapType;
 static PyObject *sIconType;
+static PyObject *pickle_dumps;
+static PyObject *pickle_loads;
 
 PyObject *PyDC_Type;
 PyObject *PyPrintDC_Type;
@@ -1955,7 +1957,13 @@ mimeDataToObject(const QMimeData *mimeData, const QString& mimeType)
 		}
 		else if (mimeData->hasFormat(SL_PYOBJECT_MIME_TYPE)) {
 			QByteArray array = mimeData->data(SL_PYOBJECT_MIME_TYPE);
-			object = PyMarshal_ReadObjectFromString(array.data(), array.size());
+			if (pickle_loads) {
+				PyObject *data = PyString_FromStringAndSize(array.data(), array.size());
+				object = PyObject_CallFunctionObjArgs(pickle_loads, data, NULL);
+				Py_DECREF(data);
+			}
+			else
+				object = PyMarshal_ReadObjectFromString(array.data(), array.size());
 			if (!object) {
 				PyErr_Print();
 				PyErr_Clear();
@@ -1996,7 +2004,14 @@ objectToMimeData(PyObject *object, QMimeData *mimeData)
 	else {
 		PyErr_Clear();
 		QByteArray data;
-		PyObject *buffer = PyMarshal_WriteObjectToString(object, Py_MARSHAL_VERSION);
+		PyObject *buffer;
+		if (pickle_dumps) {
+			PyObject *protocol = PyInt_FromLong(-1);
+			buffer = PyObject_CallFunctionObjArgs(pickle_dumps, object, protocol, NULL);
+			Py_DECREF(protocol);
+		}
+		else
+			buffer = PyMarshal_WriteObjectToString(object, Py_MARSHAL_VERSION);
 		if (buffer) {
 			if (convertBuffer(buffer, &data)) {
 				mimeData->setData(SL_PYOBJECT_MIME_TYPE, data);
@@ -4629,6 +4644,28 @@ init_slew()
 	
 	sTranslator.load(kQT_IT_QM_data, sizeof(kQT_IT_QM_data));
 	qApp->installTranslator(&sTranslator);
+	
+	module = PyImport_ImportModule("cPickle");
+	if (!module) {
+		PyErr_Clear();
+		module = PyImport_ImportModule("pickle");
+	}
+	if (module) {
+		dict = PyModule_GetDict(module);
+		pickle_dumps = PyDict_GetItemString(dict, "dumps");
+		if (pickle_dumps)
+			pickle_loads = PyDict_GetItemString(dict, "loads");
+		if ((!pickle_dumps) || (!pickle_loads)) {
+			Py_DECREF(module);
+			module = NULL;
+		}
+	}
+	
+	if (!module) {
+		PyErr_Clear();
+		pickle_dumps = NULL;
+		pickle_loads = NULL;
+	}
 	
 	Py_AtExit(cleanup);
 }
