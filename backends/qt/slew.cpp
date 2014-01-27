@@ -183,6 +183,8 @@ public:
 public slots:
 	void handleDestroyed()
 	{
+		PyAutoLocker locker;
+		
 		QObject *parent = QObject::parent();
 		if (parent) {
 			QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
