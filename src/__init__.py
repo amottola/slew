@@ -4,6 +4,10 @@
 
 import sys
 import os.path
+try:
+	import cPickle as pickle
+except:
+	import pickle
 
 from utils import *
 from gdi import *
@@ -622,6 +626,16 @@ class PrinterSettings(object):
 	
 	def copy(self):
 		return self.__copy__()
+
+
+
+def _serialize_data(object):
+	return pickle.dumps(object, -1)
+
+
+
+def _unserialize_data(object):
+	return pickle.loads(object)
 
 
 
