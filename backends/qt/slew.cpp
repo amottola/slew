@@ -4116,16 +4116,9 @@ SL_DEFINE_MODULE_METHOD(set_clipboard_data, {
 		}
 	}
 	else {
-		data = PyObject_CallFunctionObjArgs(sSerializeData, data, NULL);
-		if (!data)
-			return NULL;
-		
 		QByteArray buffer;
-		if (!convertBuffer(data, &buffer)) {
-			Py_DECREF(data);
+		if (!convertBuffer(data, &buffer))
 			return NULL;
-		}
-		Py_DECREF(data);
 		mimeData->setData(mimeType, buffer);
 		clipboard->setMimeData(mimeData);
 		Py_RETURN_NONE;
@@ -4148,16 +4141,9 @@ SL_DEFINE_MODULE_METHOD(add_clipboard_data, {
 	QClipboard *clipboard = QApplication::clipboard();
 	QMimeData *mimeData = (QMimeData *)clipboard->mimeData();
 	
-	data = PyObject_CallFunctionObjArgs(sSerializeData, data, NULL);
-	if (!data)
-		return NULL;
-	
 	QByteArray buffer;
-	if (!convertBuffer(data, &buffer)) {
-		Py_DECREF(data);
+	if (!convertBuffer(data, &buffer))
 		return NULL;
-	}
-	Py_DECREF(data);
 	
 	if (!mimeData) {
 		mimeData = new QMimeData();
