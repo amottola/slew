@@ -154,71 +154,77 @@ public:
 	TimedCall(QObject *parent, int delay, PyObject *func, PyObject *args)
 		: QTimer(parent), fFunc(func), fArgs(args)
 	{
-		PyAutoLocker locker;
-		
-		connect(this, SIGNAL(destroyed()), this, SLOT(handleDestroyed()));
-		
-		Py_XINCREF(func);
-		Py_XINCREF(args);
-		
-		if (parent) {
-			QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
-			if (old)
-				old->deleteLater();
-			parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)this));
-		}
-		
-		moveToThread(QApplication::instance()->thread());
-		
-		if (delay == 0) {
-			QMetaObject::invokeMethod(this, "handleTimeout", Qt::QueuedConnection);
-		}
-		else {
-			connect(this, SIGNAL(timeout()), this, SLOT(handleTimeout()), Qt::QueuedConnection);
-			setSingleShot(true);
-			start(delay);
+		if (Py_IsInitialized()) {
+			PyAutoLocker locker;
+			
+			connect(this, SIGNAL(destroyed()), this, SLOT(handleDestroyed()));
+			
+			Py_XINCREF(func);
+			Py_XINCREF(args);
+			
+			if (parent) {
+				QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
+				if (old)
+					old->deleteLater();
+				parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)this));
+			}
+			
+			moveToThread(QApplication::instance()->thread());
+			
+			if (delay == 0) {
+				QMetaObject::invokeMethod(this, "handleTimeout", Qt::QueuedConnection);
+			}
+			else {
+				connect(this, SIGNAL(timeout()), this, SLOT(handleTimeout()), Qt::QueuedConnection);
+				setSingleShot(true);
+				start(delay);
+			}
 		}
 	}
 	
 public slots:
 	void handleDestroyed()
 	{
-		PyAutoLocker locker;
-		
-		QObject *parent = QObject::parent();
-		if (parent) {
-			QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
-			if (old == this)
-				parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)NULL));
+		if (Py_IsInitialized()) {
+			PyAutoLocker locker;
+			
+			QObject *parent = QObject::parent();
+			if (parent) {
+				QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
+				if (old == this)
+					parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)NULL));
+			}
 		}
 	}
 	
 	void handleTimeout()
 	{
-		PyAutoLocker locker;
-		
-		if (!fFunc) {
-			EventRunner runner(parent(), "onTimer");
-			if (runner.isValid()) {
-				if (fArgs)
-					runner.set("args", fArgs, false);
-				else
-					runner.set("args", PyTuple_New(0));
-				runner.run();
-			}
-		}
-		else {
-			PyObject *result = PyObject_CallObject(fFunc, fArgs);
-			if (!result) {
-				PyErr_Print();
-				PyErr_Clear();
+		if (Py_IsInitialized()) {
+			PyAutoLocker locker;
+			
+			if (!fFunc) {
+				EventRunner runner(parent(), "onTimer");
+				if (runner.isValid()) {
+					if (fArgs)
+						runner.set("args", fArgs, false);
+					else
+						runner.set("args", PyTuple_New(0));
+					runner.run();
+				}
 			}
 			else {
-				Py_DECREF(result);
+				PyObject *result = PyObject_CallObject(fFunc, fArgs);
+				if (!result) {
+					PyErr_Print();
+					PyErr_Clear();
+				}
+				else {
+					Py_DECREF(result);
+				}
+				Py_DECREF(fFunc);
 			}
-			Py_DECREF(fFunc);
+			Py_XDECREF(fArgs);
 		}
-		Py_XDECREF(fArgs);
 		
 		if (!QObject::parent())
 			deleteLater();
