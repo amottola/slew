@@ -939,7 +939,12 @@ ItemDelegate::setEditorData(QWidget *editor, const QModelIndex& index) const
 		}
 		else {
 			comboBox->clear();
-			comboBox->addItems(spec->fChoices);
+			foreach (QString choice, spec->fChoices) {
+				if (choice.isEmpty())
+					comboBox->insertSeparator(comboBox->count());
+				else
+					comboBox->addItem(choice);
+			}
 		}
 		comboBox->setCurrentIndex(spec->fSelection);
 		comboBox->setEnabled(!spec->isReadOnly());
