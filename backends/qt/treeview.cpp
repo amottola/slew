@@ -47,8 +47,10 @@ public:
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const
 	{
 		if (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) {
-			backOpt->rect.setLeft(0);
-			backOpt->rect.setRight(1000000);
+			if (index.column() == 0)
+				backOpt->rect.setLeft(0);
+			else if (index.column() == fTreeView->model()->columnCount(index.parent()) - 1)
+				backOpt->rect.setRight(1000000);
 		}
 	}
 	
@@ -619,6 +621,7 @@ TreeView_Impl::drawBranches(QPainter *painter, const QRect& rect, const QModelIn
 	if (fShowExpanders)
 		QTreeView::drawBranches(painter, rect, index);
 }
+
 
 
 SL_DEFINE_METHOD(TreeView, edit, {
