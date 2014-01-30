@@ -49,7 +49,7 @@ public:
 		if (fTreeView->selectionBehavior() == QAbstractItemView::SelectRows) {
 			if (index.column() == 0)
 				backOpt->rect.setLeft(0);
-			else if (index.column() == fTreeView->model()->columnCount(index.parent()) - 1)
+			if (index.column() == fTreeView->model()->columnCount() - 1)
 				backOpt->rect.setRight(1000000);
 		}
 	}
