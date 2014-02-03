@@ -4436,6 +4436,7 @@ static void
 cleanup()
 {
 	if (qApp) {
+		QApplication::flush();
 		Application::exit(0);
 		QApplication::sendPostedEvents();
 		QApplication::processEvents();
