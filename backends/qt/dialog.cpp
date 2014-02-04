@@ -202,28 +202,22 @@ SL_DEFINE_METHOD(Dialog, end_modal, {
 	if (!PyArg_ParseTuple(args, "O", &value))
 		return NULL;
 	
-	Py_BEGIN_ALLOW_THREADS
-	
 	impl->setReturnValue(value);
 	impl->done(0);
-	
-	Py_END_ALLOW_THREADS
 })
 
 
 SL_DEFINE_METHOD(Dialog, close, {
-	Py_BEGIN_ALLOW_THREADS
-	
-	if ((impl->isModal()) && (impl->isVisible())) {
-		impl->setReturnValue(Py_None);
-		impl->done(0);
+	if (impl->isVisible()) {
+		if (impl->isModal()) {
+			impl->setReturnValue(Py_None);
+			impl->done(0);
+		}
+		else {
+			impl->close();
+			impl->hide();
+		}
 	}
-	else {
-		impl->close();
-		impl->hide();
-	}
-	
-	Py_END_ALLOW_THREADS
 })
 
 
