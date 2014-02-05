@@ -40,6 +40,8 @@ public:
 	void redrawBranches(QPainter *painter, const QModelIndex& index) { drawBranches(painter, fLastBranchesRect, index); }
 	
 	virtual void setModel(QAbstractItemModel *model);
+	virtual QModelIndex indexAt(const QPoint& point) const;
+	virtual QRect visualRect(const QModelIndex& index) const;
 	
 	virtual bool isFocusOutEvent(QEvent *event);
 	virtual bool canFocusOut(QWidget *oldFocus, QWidget *newFocus);

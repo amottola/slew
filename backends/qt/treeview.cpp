@@ -308,6 +308,35 @@ TreeView_Impl::setModel(QAbstractItemModel *model)
 }
 
 
+QModelIndex
+TreeView_Impl::indexAt(const QPoint& point) const
+{
+	QModelIndex index;
+	
+	if (selectionBehavior() == QAbstractItemView::SelectRows) {
+		index = QTreeView::indexAt(QPoint(0, point.y()));
+		if (index.isValid())
+			index = model()->index(index.row(), model()->columnCount() - 1, index.parent());
+	}
+	if (!index.isValid())
+		index = QTreeView::indexAt(point);
+	return index;
+}
+
+
+QRect
+TreeView_Impl::visualRect(const QModelIndex& index) const
+{
+	QRect rect = QTreeView::visualRect(index);
+	if ((rect.isValid()) && (selectionBehavior() == QAbstractItemView::SelectRows)) {
+		QRect viewportRect = viewport()->rect();
+		if (index.column() == model()->columnCount() - 1)
+			rect.setRight(viewportRect.right());
+	}
+	return rect;
+}
+
+
 bool
 TreeView_Impl::isFocusOutEvent(QEvent *event)
 {
