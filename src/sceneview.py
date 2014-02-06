@@ -237,6 +237,16 @@ class SceneItem(slew.EventHandler):
 	def set_color(self, color):
 		self._impl.set_color(Color.ensure(color))
 
+	def get_padding(self):
+		return self._impl.get_padding()
+	
+	def set_padding(self, padding):
+		if padding is None:
+			padding = ()
+		elif not isinstance(padding, (list, tuple)):
+			padding = (str(padding) or '').replace('px', '').split(' ')
+		self._impl.set_padding(padding)
+
 
 
 @factory

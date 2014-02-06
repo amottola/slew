@@ -20,6 +20,7 @@
 #include <QGraphicsOpacityEffect>
 #include <QScrollBar>
 #include <QTextDocument>
+#include <QTextFrame>
 #include <QTextOption>
 #include <QTextCursor>
 
@@ -913,6 +914,50 @@ SL_DEFINE_METHOD(SceneItem, set_color, {
 })
 
 
+SL_DEFINE_METHOD(SceneItem, get_padding, {
+	QTextFrame *frame = impl->document()->rootFrame();
+	QTextFrameFormat format = frame->frameFormat(); 
+	
+	return Py_BuildValue("(iiii)", (int)format.topMargin(), (int)format.rightMargin(), (int)format.bottomMargin(), (int)format.leftMargin());
+})
+
+
+SL_DEFINE_METHOD(SceneItem, set_padding, {
+	QTextFrame *frame = impl->document()->rootFrame();
+	QTextFrameFormat format = frame->frameFormat(); 
+	QList<int> margins;
+	int top = 0, right = 0, bottom = 0, left = 0;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertIntList, &margins))
+		return NULL;
+	
+	if (margins.size() == 1) {
+		right = bottom = left = top = margins[0];
+	}
+	else if (margins.size() == 2) {
+		top = bottom = margins[0];
+		left = right = margins[1];
+	}
+	else if (margins.size() == 3) {
+		top = margins[0];
+		left = right = margins[1];
+		bottom = margins[2];
+	}
+	else if (margins.size() >= 4) {
+		top = margins[0];
+		right = margins[1];
+		bottom = margins[2];
+		left = margins[3];
+	}
+	format.setTopMargin(top);
+	format.setRightMargin(right);
+	format.setBottomMargin(bottom);
+	format.setLeftMargin(left);
+	
+	frame->setFrameFormat(format);
+})
+
+
 SL_START_PROXY(SceneItem)
 SL_METHOD(insert)
 SL_METHOD(remove)
@@ -939,6 +984,7 @@ SL_PROPERTY(font)
 SL_PROPERTY(text)
 SL_PROPERTY(align)
 SL_PROPERTY(color)
+SL_PROPERTY(padding)
 SL_END_PROXY(SceneItem)
 
 
