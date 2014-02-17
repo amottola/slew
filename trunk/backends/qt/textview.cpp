@@ -32,16 +32,16 @@ public:
 		QTextCharFormat commentStyle;
 		QTextCharFormat specialCommentStyle;
 		
-		keywordStyle.setForeground(QColor("blue"));
-		operatorStyle.setForeground(QColor("red"));
-		braceStyle.setForeground(QColor("darkGray"));
-		defclassStyle.setForeground(QColor("black"));
+		keywordStyle.setForeground(Qt::blue);
+		operatorStyle.setForeground(Qt::red);
+		braceStyle.setForeground(Qt::darkGray);
+		defclassStyle.setForeground(Qt::black);
 		defclassStyle.setFontWeight(QFont::Bold);
-		stringStyle.setForeground(QColor("magenta"));
-		stringMultilineStyle.setForeground(QColor("darkMagenta"));
-		commentStyle.setForeground(QColor("darkGreen"));
+		stringStyle.setForeground(Qt::magenta);
+		stringMultilineStyle.setForeground(Qt::darkMagenta);
+		commentStyle.setForeground(Qt::darkGreen);
 		commentStyle.setFontItalic(true);
-		specialCommentStyle.setForeground(QColor("darkGreen"));
+		specialCommentStyle.setForeground(Qt::darkGreen);
 		specialCommentStyle.setFontItalic(true);
 		specialCommentStyle.setFontWeight(QFont::Bold);
 		
@@ -121,6 +121,277 @@ private:
 	
 	QList<Rule>				fRules;
 	Rule					fMultiline[2];
+};
+
+
+
+class SyntaxHighlighter_XML : public QSyntaxHighlighter
+{
+	Q_OBJECT
+	
+	enum HighlightType
+	{
+		SyntaxChar,
+        ElementName,
+		Comment,
+		AttributeName,
+		AttributeValue,
+		Error,
+		Other
+	};
+	enum ParsingState
+	{
+		NoState = 0,
+		ExpectElementNameOrSlash,
+		ExpectElementName,
+		ExpectAttributeOrEndOfElement,
+		ExpectEqual,
+		ExpectAttributeValue
+	};
+	enum BlockState
+	{
+		NoBlock = -1,
+		InComment,
+		InElement,
+		InCDATA,
+	};
+	
+public:
+	SyntaxHighlighter_XML(QTextDocument *document)
+		: QSyntaxHighlighter(document)
+	{
+		fmtSyntaxChar.setForeground(Qt::blue);
+		fmtElementName.setForeground(Qt::blue);
+		fmtElementName.setFontWeight(QFont::Bold);
+		fmtComment.setForeground(Qt::darkGreen);
+		fmtComment.setFontItalic(true);
+		fmtAttributeName.setForeground(Qt::darkMagenta);
+		fmtAttributeValue.setForeground(Qt::darkRed);
+		fmtCDATA.setForeground(Qt::gray);
+		fmtError.setForeground(Qt::red);
+		fmtOther.setForeground(Qt::black);
+
+	}
+	
+	void highlightBlock(const QString& text)
+	{
+		int i = 0;
+		int pos = 0;
+		int brackets = 0;
+		
+		state = (previousBlockState() == InElement ? ExpectAttributeOrEndOfElement : NoState);
+		
+		if (previousBlockState() == InComment) {
+			QRegExp expression("[^-]*-([^-][^-]*-)*->");
+			pos = expression.indexIn(text, i);
+			if (pos >= 0) {
+				const int iLength = expression.matchedLength();
+				setFormat(0, iLength - 3, fmtComment);
+				setFormat(iLength - 3, 3, fmtSyntaxChar);
+				i += iLength;
+			}
+			else {
+				setFormat(0, text.length(), fmtComment);
+				setCurrentBlockState(InComment);
+				return;
+			}
+		}
+		else if (previousBlockState() == InCDATA) {
+			QRegExp expression("[^\\]]*\\]([^\\]][^\\]]*\\])*\\]>");
+			pos = expression.indexIn(text, i);
+			if (pos >= 0) {
+				const int iLength = expression.matchedLength();
+				setFormat(0, iLength - 3, fmtCDATA);
+				setFormat(iLength - 3, 3, fmtSyntaxChar);
+				i += iLength;
+			}
+			else {
+				setFormat(0, text.length(), fmtCDATA);
+				setCurrentBlockState(InCDATA);
+				return;
+			}
+		}
+		
+		for (; i < text.length(); i++) {
+			switch (text.at(i).toAscii()) {
+			case '<':
+				brackets++;
+				if (brackets == 1) {
+					setFormat(i, 1, fmtSyntaxChar);
+					state = ExpectElementNameOrSlash;
+				}
+				else
+					setFormat(i, 1, fmtError);
+				break;
+		
+			case '>':
+				brackets--;
+				if (brackets == 0)
+					setFormat(i, 1, fmtSyntaxChar);
+				else
+					setFormat( i, 1, fmtError);
+				state = NoState;
+				break;
+		
+			case '/':
+				if (state == ExpectElementNameOrSlash) {
+					state = ExpectElementName;
+					setFormat(i, 1, fmtSyntaxChar);
+				}
+				else {
+					if (state == ExpectAttributeOrEndOfElement)
+						setFormat(i, 1, fmtSyntaxChar);
+					else
+						processDefaultText(i, text);
+				}
+				break;
+		
+			case '=':
+				if (state == ExpectEqual) {
+					state = ExpectAttributeValue;
+					setFormat(i, 1, fmtOther);
+				}
+				else
+					processDefaultText(i, text);  
+				break;
+		
+			case '\'':
+			case '\"':
+				if (state == ExpectAttributeValue) {
+					QRegExp expression("\"[^<\"]*\"|'[^<']*'");
+					pos = expression.indexIn(text, i);
+					if (pos == i) {
+						const int iLength = expression.matchedLength();
+						setFormat(i, 1, fmtOther);
+						setFormat(i + 1, iLength - 2, fmtAttributeValue);
+						setFormat(i + iLength - 1, 1, fmtOther);
+						i += iLength - 1;
+						state = ExpectAttributeOrEndOfElement;
+					}
+					else
+						processDefaultText(i, text);
+				}
+				else
+					processDefaultText(i, text);
+				break;
+		
+			case '!':
+				if (state == ExpectElementNameOrSlash) {
+					QRegExp expression("<!--[^-]*-([^-][^-]*-)*->");
+					pos = expression.indexIn(text, i - 1);
+					if (pos == i - 1) {
+						const int iLength = expression.matchedLength();
+						setFormat(pos, 4, fmtSyntaxChar);
+						setFormat(pos + 4, iLength - 7, fmtComment);
+						setFormat(iLength - 3, 3, fmtSyntaxChar);
+						i += iLength - 2;
+						state = NoState;
+						brackets--;
+					}
+					else {
+						QRegExp expression("<!--");
+						pos = expression.indexIn(text, i - 1);
+						if (pos >= i - 1) {
+							setFormat(i, 3, fmtSyntaxChar);
+							setFormat(i + 3, text.length() - i - 3, fmtComment);
+							setCurrentBlockState(InComment);
+							return;
+						}
+						else {
+							QRegExp expression("<!\\[CDATA\\[[^\\]]*\\]([^\\]][^\\]]*\\])*\\]>");
+							pos = expression.indexIn(text, i - 1);
+							if (pos == i - 1) {
+								const int iLength = expression.matchedLength();
+								setFormat(pos, 8, fmtSyntaxChar);
+								setFormat(pos + 8, iLength - 11, fmtCDATA);
+								setFormat(iLength - 3, 3, fmtSyntaxChar);
+								i += iLength - 2;
+								state = NoState;
+								brackets--;
+							}
+							else {
+								QRegExp expression("<!\\[CDATA\\[");
+								pos = expression.indexIn(text, i - 1);
+								if (pos >= i - 1) {
+									setFormat(i, 8, fmtSyntaxChar);
+									setFormat(i + 8, text.length() - i - 8, fmtCDATA);
+									setCurrentBlockState(InCDATA);
+									return;
+								}
+								else
+									processDefaultText(i, text);
+							}
+						}
+					}
+				}
+				else
+					processDefaultText(i, text);
+				break;  
+		
+			default:
+				const int iLength = processDefaultText(i, text);
+				if (iLength > 0)
+					i += iLength - 1;
+				break;
+			}
+		}
+		if (state == ExpectAttributeOrEndOfElement)
+			setCurrentBlockState(InElement);
+		
+	}
+	
+	int processDefaultText(int i, const QString& text)
+	{
+		int iLength = 0;
+		switch(state) {
+		case ExpectElementNameOrSlash:
+		case ExpectElementName:
+			{
+				QRegExp expression("([A-Za-z_:]|[^\\x00-\\x7F])([A-Za-z0-9_:.-]|[^\\x00-\\x7F])*");
+				const int pos = expression.indexIn(text, i);
+				if (pos == i) {
+					iLength = expression.matchedLength();
+					setFormat(pos, iLength, fmtElementName);
+					state = ExpectAttributeOrEndOfElement;
+				}
+				else
+					setFormat(i, 1, fmtOther);
+			}  
+			break;
+	
+		case ExpectAttributeOrEndOfElement:
+			{
+				QRegExp expression("([A-Za-z_:]|[^\\x00-\\x7F])([A-Za-z0-9_:.-]|[^\\x00-\\x7F])*");
+				const int pos = expression.indexIn(text, i);
+	
+				if (pos == i) {
+					iLength = expression.matchedLength();
+					setFormat(pos, iLength, fmtAttributeName);
+					state = ExpectEqual;
+				}
+				else
+					setFormat(i, 1, fmtOther);
+			}
+			break;
+	
+		default:
+			setFormat(i, 1, fmtOther);
+			break;
+		}
+		return iLength;
+	}
+
+private:
+	QTextCharFormat fmtSyntaxChar;
+    QTextCharFormat fmtElementName;
+	QTextCharFormat fmtComment;
+	QTextCharFormat fmtAttributeName;
+	QTextCharFormat fmtAttributeValue;
+	QTextCharFormat fmtCDATA;
+	QTextCharFormat fmtError;
+	QTextCharFormat fmtOther;
+	
+	ParsingState state;
 };
 
 
@@ -658,12 +929,13 @@ SL_DEFINE_METHOD(TextView, set_syntax, {
 	if (!PyArg_ParseTuple(args, "O&", convertString, &syntax))
 		return NULL;
 	
-	if (syntax.isEmpty()) {
-		impl->setHighlighter(NULL);
-	}
-	else if (syntax == "python") {
+	syntax = syntax.toLower();
+	if (syntax == "python")
 		impl->setHighlighter(new SyntaxHighlighter_Python(impl->document()));
-	}
+	else if (syntax == "xml")
+		impl->setHighlighter(new SyntaxHighlighter_XML(impl->document()));
+	else
+		impl->setHighlighter(NULL);
 })
 
 
