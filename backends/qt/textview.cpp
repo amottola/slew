@@ -150,7 +150,7 @@ class SyntaxHighlighter_XML : public QSyntaxHighlighter
 	};
 	enum BlockState
 	{
-		NoBlock = -1,
+		NoBlock = 0,
 		InComment,
 		InElement,
 		InCDATA,
@@ -160,6 +160,15 @@ public:
 	SyntaxHighlighter_XML(QTextDocument *document)
 		: QSyntaxHighlighter(document)
 	{
+		fNameExp = QRegExp("([A-Za-z_:]|[^\\x00-\\x7F])([A-Za-z0-9_:.-]|[^\\x00-\\x7F])*");
+		fCommentExp = QRegExp("<!--[^-]*-([^-][^-]*-)*->");
+		fCommentBeginExp = QRegExp("<!--");
+		fCommentEndExp = QRegExp("[^-]*-([^-][^-]*-)*->");
+		fCDATAExp = QRegExp("<!\\[CDATA\\[[^\\]]*\\]([^\\]][^\\]]*\\])*\\]>");
+		fCDATABeginExp = QRegExp("<!\\[CDATA\\[");
+		fCDATAEndExp = QRegExp("[^\\]]*\\]([^\\]][^\\]]*\\])*\\]>");
+		fAttribExp = QRegExp("\"[^<\"]*\"|'[^<']*'");
+
 		fmtSyntaxChar.setForeground(Qt::blue);
 		fmtElementName.setForeground(Qt::blue);
 		fmtElementName.setFontWeight(QFont::Bold);
@@ -179,16 +188,16 @@ public:
 		int pos = 0;
 		int brackets = 0;
 		
-		state = (previousBlockState() == InElement ? ExpectAttributeOrEndOfElement : NoState);
+		fState = (previousBlockState() == InElement ? ExpectAttributeOrEndOfElement : NoState);
 		
 		if (previousBlockState() == InComment) {
-			QRegExp expression("[^-]*-([^-][^-]*-)*->");
-			pos = expression.indexIn(text, i);
+			pos = fCommentEndExp.indexIn(text, i);
 			if (pos >= 0) {
-				const int iLength = expression.matchedLength();
+				const int iLength = fCommentEndExp.matchedLength();
 				setFormat(0, iLength - 3, fmtComment);
 				setFormat(iLength - 3, 3, fmtSyntaxChar);
-				i += iLength;
+				i = pos + iLength;
+				setCurrentBlockState(NoState);
 			}
 			else {
 				setFormat(0, text.length(), fmtComment);
@@ -197,13 +206,13 @@ public:
 			}
 		}
 		else if (previousBlockState() == InCDATA) {
-			QRegExp expression("[^\\]]*\\]([^\\]][^\\]]*\\])*\\]>");
-			pos = expression.indexIn(text, i);
+			pos = fCDATAEndExp.indexIn(text, i);
 			if (pos >= 0) {
-				const int iLength = expression.matchedLength();
+				const int iLength = fCDATAEndExp.matchedLength();
 				setFormat(0, iLength - 3, fmtCDATA);
 				setFormat(iLength - 3, 3, fmtSyntaxChar);
-				i += iLength;
+				i = pos + iLength;
+				setCurrentBlockState(NoState);
 			}
 			else {
 				setFormat(0, text.length(), fmtCDATA);
@@ -218,7 +227,7 @@ public:
 				brackets++;
 				if (brackets == 1) {
 					setFormat(i, 1, fmtSyntaxChar);
-					state = ExpectElementNameOrSlash;
+					fState = ExpectElementNameOrSlash;
 				}
 				else
 					setFormat(i, 1, fmtError);
@@ -230,16 +239,16 @@ public:
 					setFormat(i, 1, fmtSyntaxChar);
 				else
 					setFormat( i, 1, fmtError);
-				state = NoState;
+				fState = NoState;
 				break;
 		
 			case '/':
-				if (state == ExpectElementNameOrSlash) {
-					state = ExpectElementName;
+				if (fState == ExpectElementNameOrSlash) {
+					fState = ExpectElementName;
 					setFormat(i, 1, fmtSyntaxChar);
 				}
 				else {
-					if (state == ExpectAttributeOrEndOfElement)
+					if (fState == ExpectAttributeOrEndOfElement)
 						setFormat(i, 1, fmtSyntaxChar);
 					else
 						processDefaultText(i, text);
@@ -247,8 +256,8 @@ public:
 				break;
 		
 			case '=':
-				if (state == ExpectEqual) {
-					state = ExpectAttributeValue;
+				if (fState == ExpectEqual) {
+					fState = ExpectAttributeValue;
 					setFormat(i, 1, fmtOther);
 				}
 				else
@@ -257,16 +266,15 @@ public:
 		
 			case '\'':
 			case '\"':
-				if (state == ExpectAttributeValue) {
-					QRegExp expression("\"[^<\"]*\"|'[^<']*'");
-					pos = expression.indexIn(text, i);
+				if (fState == ExpectAttributeValue) {
+					pos = fAttribExp.indexIn(text, i);
 					if (pos == i) {
-						const int iLength = expression.matchedLength();
+						const int iLength = fAttribExp.matchedLength();
 						setFormat(i, 1, fmtOther);
 						setFormat(i + 1, iLength - 2, fmtAttributeValue);
 						setFormat(i + iLength - 1, 1, fmtOther);
 						i += iLength - 1;
-						state = ExpectAttributeOrEndOfElement;
+						fState = ExpectAttributeOrEndOfElement;
 					}
 					else
 						processDefaultText(i, text);
@@ -276,21 +284,19 @@ public:
 				break;
 		
 			case '!':
-				if (state == ExpectElementNameOrSlash) {
-					QRegExp expression("<!--[^-]*-([^-][^-]*-)*->");
-					pos = expression.indexIn(text, i - 1);
+				if (fState == ExpectElementNameOrSlash) {
+					pos = fCommentExp.indexIn(text, i - 1);
 					if (pos == i - 1) {
-						const int iLength = expression.matchedLength();
+						const int iLength = fCommentExp.matchedLength();
 						setFormat(pos, 4, fmtSyntaxChar);
 						setFormat(pos + 4, iLength - 7, fmtComment);
-						setFormat(iLength - 3, 3, fmtSyntaxChar);
+						setFormat(pos + iLength - 3, 3, fmtSyntaxChar);
 						i += iLength - 2;
-						state = NoState;
+						fState = NoState;
 						brackets--;
 					}
 					else {
-						QRegExp expression("<!--");
-						pos = expression.indexIn(text, i - 1);
+						pos = fCommentBeginExp.indexIn(text, i - 1);
 						if (pos >= i - 1) {
 							setFormat(i, 3, fmtSyntaxChar);
 							setFormat(i + 3, text.length() - i - 3, fmtComment);
@@ -298,23 +304,21 @@ public:
 							return;
 						}
 						else {
-							QRegExp expression("<!\\[CDATA\\[[^\\]]*\\]([^\\]][^\\]]*\\])*\\]>");
-							pos = expression.indexIn(text, i - 1);
+							pos = fCDATAExp.indexIn(text, i - 1);
 							if (pos == i - 1) {
-								const int iLength = expression.matchedLength();
-								setFormat(pos, 8, fmtSyntaxChar);
-								setFormat(pos + 8, iLength - 11, fmtCDATA);
-								setFormat(iLength - 3, 3, fmtSyntaxChar);
+								const int iLength = fCDATAExp.matchedLength();
+								setFormat(pos, 9, fmtSyntaxChar);
+								setFormat(pos + 9, iLength - 12, fmtCDATA);
+								setFormat(pos + iLength - 3, 3, fmtSyntaxChar);
 								i += iLength - 2;
-								state = NoState;
+								fState = NoState;
 								brackets--;
 							}
 							else {
-								QRegExp expression("<!\\[CDATA\\[");
-								pos = expression.indexIn(text, i - 1);
+								pos = fCDATABeginExp.indexIn(text, i - 1);
 								if (pos >= i - 1) {
 									setFormat(i, 8, fmtSyntaxChar);
-									setFormat(i + 8, text.length() - i - 8, fmtCDATA);
+									setFormat(i + 8, text.length() - i - 9, fmtCDATA);
 									setCurrentBlockState(InCDATA);
 									return;
 								}
@@ -335,24 +339,24 @@ public:
 				break;
 			}
 		}
-		if (state == ExpectAttributeOrEndOfElement)
+		if (fState == ExpectAttributeOrEndOfElement)
 			setCurrentBlockState(InElement);
-		
+		else
+			setCurrentBlockState(NoState);
 	}
 	
 	int processDefaultText(int i, const QString& text)
 	{
 		int iLength = 0;
-		switch(state) {
+		switch(fState) {
 		case ExpectElementNameOrSlash:
 		case ExpectElementName:
 			{
-				QRegExp expression("([A-Za-z_:]|[^\\x00-\\x7F])([A-Za-z0-9_:.-]|[^\\x00-\\x7F])*");
-				const int pos = expression.indexIn(text, i);
+				const int pos = fNameExp.indexIn(text, i);
 				if (pos == i) {
-					iLength = expression.matchedLength();
+					iLength = fNameExp.matchedLength();
 					setFormat(pos, iLength, fmtElementName);
-					state = ExpectAttributeOrEndOfElement;
+					fState = ExpectAttributeOrEndOfElement;
 				}
 				else
 					setFormat(i, 1, fmtOther);
@@ -361,13 +365,11 @@ public:
 	
 		case ExpectAttributeOrEndOfElement:
 			{
-				QRegExp expression("([A-Za-z_:]|[^\\x00-\\x7F])([A-Za-z0-9_:.-]|[^\\x00-\\x7F])*");
-				const int pos = expression.indexIn(text, i);
-	
+				const int pos = fNameExp.indexIn(text, i);
 				if (pos == i) {
-					iLength = expression.matchedLength();
+					iLength = fNameExp.matchedLength();
 					setFormat(pos, iLength, fmtAttributeName);
-					state = ExpectEqual;
+					fState = ExpectEqual;
 				}
 				else
 					setFormat(i, 1, fmtOther);
@@ -382,6 +384,14 @@ public:
 	}
 
 private:
+	QRegExp			fCommentExp;
+	QRegExp			fCommentBeginExp;
+	QRegExp			fCommentEndExp;
+	QRegExp			fCDATAExp;
+	QRegExp			fCDATABeginExp;
+	QRegExp			fCDATAEndExp;
+	QRegExp			fAttribExp;
+	QRegExp			fNameExp;
 	QTextCharFormat fmtSyntaxChar;
     QTextCharFormat fmtElementName;
 	QTextCharFormat fmtComment;
@@ -391,7 +401,7 @@ private:
 	QTextCharFormat fmtError;
 	QTextCharFormat fmtOther;
 	
-	ParsingState state;
+	ParsingState	fState;
 };
 
 
