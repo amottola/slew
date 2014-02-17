@@ -554,7 +554,7 @@ TextView_Impl::lineNumberAreaPaintEvent(QPaintEvent *event)
 	do {
 		bounds = layout->blockBoundingRect(block).translated(offset);
 		if (block.isVisible() && (bounds.top() <= event->rect().bottom())) {
-			painter.drawText(0, bounds.top(), fLineNumberArea->width() - 10, bounds.height(), Qt::AlignRight|Qt::AlignVCenter, QString::number(blockNumber + 1));
+			painter.drawText(0, bounds.top(), fLineNumberArea->width() - 10, bounds.height(), Qt::AlignRight|Qt::AlignTop, QString::number(blockNumber + 1));
 		}
 		block = block.next();
 		blockNumber++;
