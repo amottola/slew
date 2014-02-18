@@ -82,6 +82,8 @@ def _patch_etree():
 			if elem.text:
 				text = elem.text.encode(encoding)
 				write("<![CDATA[%s]]>" % text)
+			if elem.tail:
+				write(elem.tail)
 		else:
 			Original_serialize_xml(write, elem, encoding, qnames, namespaces)
 	
