@@ -179,7 +179,7 @@ public:
 			else {
 				connect(this, SIGNAL(timeout()), this, SLOT(handleTimeout()), Qt::QueuedConnection);
 				setSingleShot(true);
-				start(delay);
+				QMetaObject::invokeMethod(this, "start", Qt::QueuedConnection, Q_ARG(int, delay));
 			}
 		}
 	}
