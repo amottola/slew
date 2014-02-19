@@ -60,6 +60,7 @@
 #include <QThread>
 #include <QThreadPool>
 #include <QRunnable>
+#include <QSemaphore>
 #include <QPointer>
 #include <QMutexLocker>
 #include <QAbstractItemView>
@@ -154,7 +155,7 @@ class TimedCall : public QTimer
 public:
 	
 	TimedCall(QObject *parent, int delay, PyObject *func, PyObject *args)
-		: QTimer(parent), fFunc(func), fArgs(args)
+		: QTimer(), fFunc(func), fArgs(args)
 	{
 		if (Py_IsInitialized()) {
 			PyAutoLocker locker;
@@ -165,6 +166,7 @@ public:
 			Py_XINCREF(args);
 			
 			if (parent) {
+				connect(parent, SIGNAL(destroyed()), this, SLOT(handleDestroyed()));
 				QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
 				if (old)
 					old->deleteLater();
@@ -172,6 +174,7 @@ public:
 			}
 			
 			moveToThread(QApplication::instance()->thread());
+			setParent(parent);
 			
 			if (delay == 0) {
 				QMetaObject::invokeMethod(this, "handleTimeout", Qt::QueuedConnection);
@@ -227,7 +230,6 @@ public slots:
 			}
 			Py_XDECREF(fArgs);
 		}
-		
 		if (!QObject::parent())
 			deleteLater();
 	}
@@ -245,6 +247,7 @@ public:
 	TimedCallRunnable(QObject *parent, int delay, PyObject *func, PyObject *args)
 		: QRunnable(), fParent(parent), fDelay(delay), fFunc(func), fArgs(args)
 	{
+		setAutoDelete(false);
 		if (Py_IsInitialized()) {
 			PyAutoLocker locker;
 			
@@ -266,9 +269,16 @@ public:
 	void run()
 	{
 		new TimedCall(fParent, fDelay, fFunc, fArgs);
+		fSem.release();
+	}
+	
+	void wait()
+	{
+		fSem.acquire();
 	}
 	
 private:
+	QSemaphore		fSem;
 	QObject			*fParent;
 	int				fDelay;
 	PyObject		*fFunc;
@@ -1760,6 +1770,9 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 	pool->reserveThread();
 	pool->start(runnable);
 	pool->releaseThread();
+	
+	runnable->wait();
+	delete runnable;
 	
 	Py_END_ALLOW_THREADS
 }
