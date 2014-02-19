@@ -58,6 +58,8 @@
 #endif
 
 #include <QThread>
+#include <QThreadPool>
+#include <QRunnable>
 #include <QPointer>
 #include <QMutexLocker>
 #include <QAbstractItemView>
@@ -231,6 +233,44 @@ public slots:
 	}
 
 private:
+	PyObject		*fFunc;
+	PyObject		*fArgs;
+};
+
+
+
+class TimedCallRunnable : public QRunnable
+{
+public:
+	TimedCallRunnable(QObject *parent, int delay, PyObject *func, PyObject *args)
+		: QRunnable(), fParent(parent), fDelay(delay), fFunc(func), fArgs(args)
+	{
+		if (Py_IsInitialized()) {
+			PyAutoLocker locker;
+			
+			Py_XINCREF(func);
+			Py_XINCREF(args);
+		}
+	}
+	
+	virtual ~TimedCallRunnable()
+	{
+		if (Py_IsInitialized()) {
+			PyAutoLocker locker;
+			
+			Py_XDECREF(fFunc);
+			Py_XDECREF(fArgs);
+		}
+	}
+	
+	void run()
+	{
+		new TimedCall(fParent, fDelay, fFunc, fArgs);
+	}
+	
+private:
+	QObject			*fParent;
+	int				fDelay;
 	PyObject		*fFunc;
 	PyObject		*fArgs;
 };
@@ -1712,7 +1752,16 @@ setShortcut(QWidget *widget, const QString& sequence, Qt::ShortcutContext contex
 void
 setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 {
-	new TimedCall(object, delay, func, args);
+	TimedCallRunnable *runnable = new TimedCallRunnable(object, delay, func, args);
+	
+	Py_BEGIN_ALLOW_THREADS
+	
+	QThreadPool *pool = QThreadPool::globalInstance();
+	pool->reserveThread();
+	pool->start(runnable);
+	pool->releaseThread();
+	
+	Py_END_ALLOW_THREADS
 }
 
 
