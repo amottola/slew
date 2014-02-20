@@ -100,6 +100,7 @@ class Widget_Impl;
 class Sizer_Impl;
 class DataModel_Impl;
 class Completer;
+class TimedCall;
 
 
 int convertBuffer(PyObject *object, QByteArray *value);
@@ -411,6 +412,7 @@ public:
 	
 public slots:
 	void sendTabEvent(QObject *receiver);
+	void startTimedCall(QObject *parent, QObject *timedCall, int delay);
 
 private:
 	QMainWindow						*fShadowWindow;
