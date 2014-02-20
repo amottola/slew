@@ -1692,10 +1692,9 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 {
 	PyAutoLocker locker;
 	TimedCall *timedCall;
-	int id;
 	
 	if (object) {
-		id = qvariant_cast<int>(object->property("old_timed_call_id"));
+		int id = qvariant_cast<int>(object->property("old_timed_call_id"));
 		if (id) {
 			object->killTimer(id);
 			delete sTimers.take(id);
@@ -1709,13 +1708,7 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 		QMetaObject::invokeMethod(timedCall, "executeAndDelete", Qt::QueuedConnection);
 	}
 	else {
-		if (object) {
-			id = object->startTimer(delay);
-			object->setProperty("old_timed_call_id", QVariant::fromValue(id));
-		}
-		else
-			id = qApp->startTimer(delay);
-		sTimers[id] = timedCall;
+		QMetaObject::invokeMethod(qApp, "startTimedCall", Qt::AutoConnection, Q_ARG(QObject *, object), Q_ARG(QObject *, timedCall), Q_ARG(int, delay));
 	}
 }
 
@@ -3018,6 +3011,21 @@ Application::sendTabEvent(QObject *receiver)
 {
 	QKeyEvent *e = new QKeyEvent(QEvent::KeyPress, (keyboardModifiers() & Qt::ShiftModifier) ? Qt::Key_Backtab : Qt::Key_Tab, 0);
 	postEvent(receiver, e);
+}
+
+
+void
+Application::startTimedCall(QObject *parent, QObject *timedCall, int delay)
+{
+	int id;
+	
+	if (parent) {
+		id = parent->startTimer(delay);
+		parent->setProperty("old_timed_call_id", QVariant::fromValue(id));
+	}
+	else
+		id = qApp->startTimer(delay);
+	sTimers[id] = (TimedCall *)timedCall;
 }
 
 
