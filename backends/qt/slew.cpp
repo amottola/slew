@@ -2595,6 +2595,8 @@ Application::eventFilter(QObject *obj, QEvent *event)
 					if (area->horizontalScrollBar() && area->horizontalScrollBar()->isVisible() && (area->horizontalScrollBar()->rect().contains(area->horizontalScrollBar()->mapFromGlobal(QCursor::pos()))))
 						return false;
 				}
+				if (qobject_cast<SceneView_Impl *>(obj))
+					return false;
 				
 				switch ((int)event->type()) {
 // 				case QEvent::Enter:					runner.setName("onMouseEnter"); break;
