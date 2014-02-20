@@ -470,7 +470,7 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 		style->drawComplexControl(QStyle::CC_ComboBox, &o, painter, NULL);
 #ifdef Q_OS_WIN32
 		// Workaround for Windows as label needs a real QComboBox to exist to properly adjust margins; we do it manually here...
-		o.rect.adjust(3, 3, -19, -3);
+// 		o.rect.adjust(3, 3, -19, -3);
 #elif defined(Q_OS_MAC)
 		if (!o.currentIcon.isNull())
 			o.rect.adjust(1, 0, 0, 0);
