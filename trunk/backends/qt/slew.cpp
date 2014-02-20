@@ -112,6 +112,7 @@
 
 class ResourceReader;
 class InfoBalloon;
+class TimedCall;
 
 static PyObject *sApplication = NULL;
 static bool sIsRunning = false;
@@ -134,6 +135,7 @@ static PyObject *sBitmapType;
 static PyObject *sIconType;
 static PyObject *sSerializeData = NULL;
 static PyObject *sUnserializeData = NULL;
+static QHash<int, TimedCall *> sTimers;
 
 PyObject *PyDC_Type;
 PyObject *PyPrintDC_Type;
@@ -148,67 +150,36 @@ static int decodeButton(int button);
 
 
 
-class TimedCall : public QTimer
+class TimedCall : public QObject
 {
 	Q_OBJECT
 	
 public:
+	TimedCall(QObject *parent, PyObject *func, PyObject *args)
+		: QObject(), fFunc(func), fArgs(args)
+	{
+		Py_XINCREF(func);
+		Py_XINCREF(args);
+	}
 	
-	TimedCall(QObject *parent, int delay, PyObject *func, PyObject *args)
-		: QTimer(), fFunc(func), fArgs(args)
+	~TimedCall()
 	{
 		if (Py_IsInitialized()) {
 			PyAutoLocker locker;
 			
-			connect(this, SIGNAL(destroyed()), this, SLOT(handleDestroyed()));
-			
-			Py_XINCREF(func);
-			Py_XINCREF(args);
-			
-			if (parent) {
-				connect(parent, SIGNAL(destroyed()), this, SLOT(handleDestroyed()));
-				QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
-				if (old)
-					old->deleteLater();
-				parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)this));
-			}
-			
-			moveToThread(QApplication::instance()->thread());
-			setParent(parent);
-			
-			if (delay == 0) {
-				QMetaObject::invokeMethod(this, "handleTimeout", Qt::QueuedConnection);
-			}
-			else {
-				connect(this, SIGNAL(timeout()), this, SLOT(handleTimeout()), Qt::QueuedConnection);
-				setSingleShot(true);
-				QMetaObject::invokeMethod(this, "start", Qt::QueuedConnection, Q_ARG(int, delay));
-			}
+			Py_XDECREF(fFunc);
+			Py_XDECREF(fArgs);
 		}
 	}
 	
-public slots:
-	void handleDestroyed()
+	void execute()
 	{
 		if (Py_IsInitialized()) {
 			PyAutoLocker locker;
 			
 			QObject *parent = QObject::parent();
 			if (parent) {
-				QObject *old = qvariant_cast<QObject *>(parent->property("old_timed_call"));
-				if (old == this)
-					parent->setProperty("old_timed_call", QVariant::fromValue((QObject *)NULL));
-			}
-		}
-	}
-	
-	void handleTimeout()
-	{
-		if (Py_IsInitialized()) {
-			PyAutoLocker locker;
-			
-			if (!fFunc) {
-				EventRunner runner(parent(), "onTimer");
+				EventRunner runner(parent, "onTimer");
 				if (runner.isValid()) {
 					if (fArgs)
 						runner.set("args", fArgs, false);
@@ -226,61 +197,18 @@ public slots:
 				else {
 					Py_DECREF(result);
 				}
-				Py_DECREF(fFunc);
 			}
-			Py_XDECREF(fArgs);
 		}
-		if (!QObject::parent())
-			deleteLater();
+	}
+	
+public slots:
+	void executeAndDelete()
+	{
+		execute();
+		deleteLater();
 	}
 
 private:
-	PyObject		*fFunc;
-	PyObject		*fArgs;
-};
-
-
-
-class TimedCallRunnable : public QRunnable
-{
-public:
-	TimedCallRunnable(QObject *parent, int delay, PyObject *func, PyObject *args)
-		: QRunnable(), fParent(parent), fDelay(delay), fFunc(func), fArgs(args)
-	{
-		setAutoDelete(false);
-		if (Py_IsInitialized()) {
-			PyAutoLocker locker;
-			
-			Py_XINCREF(func);
-			Py_XINCREF(args);
-		}
-	}
-	
-	virtual ~TimedCallRunnable()
-	{
-		if (Py_IsInitialized()) {
-			PyAutoLocker locker;
-			
-			Py_XDECREF(fFunc);
-			Py_XDECREF(fArgs);
-		}
-	}
-	
-	void run()
-	{
-		new TimedCall(fParent, fDelay, fFunc, fArgs);
-		fSem.release();
-	}
-	
-	void wait()
-	{
-		fSem.acquire();
-	}
-	
-private:
-	QSemaphore		fSem;
-	QObject			*fParent;
-	int				fDelay;
 	PyObject		*fFunc;
 	PyObject		*fArgs;
 };
@@ -1762,19 +1690,33 @@ setShortcut(QWidget *widget, const QString& sequence, Qt::ShortcutContext contex
 void
 setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 {
-	TimedCallRunnable *runnable = new TimedCallRunnable(object, delay, func, args);
+	PyAutoLocker locker;
+	TimedCall *timedCall;
+	int id;
 	
-	Py_BEGIN_ALLOW_THREADS
+	if (object) {
+		id = qvariant_cast<int>(object->property("old_timed_call_id"));
+		if (id) {
+			object->killTimer(id);
+			delete sTimers.take(id);
+		}
+	}
 	
-	QThreadPool *pool = QThreadPool::globalInstance();
-	pool->reserveThread();
-	pool->start(runnable);
-	pool->releaseThread();
-	
-	runnable->wait();
-	delete runnable;
-	
-	Py_END_ALLOW_THREADS
+	timedCall = new TimedCall(object, func, args);
+	timedCall->moveToThread(QApplication::instance()->thread());
+	timedCall->setParent(object);
+	if (delay == 0) {
+		QMetaObject::invokeMethod(timedCall, "executeAndDelete", Qt::QueuedConnection);
+	}
+	else {
+		if (object) {
+			id = object->startTimer(delay);
+			object->setProperty("old_timed_call_id", QVariant::fromValue(id));
+		}
+		else
+			id = qApp->startTimer(delay);
+		sTimers[id] = timedCall;
+	}
 }
 
 
@@ -2382,6 +2324,22 @@ Application::eventFilter(QObject *obj, QEvent *event)
 	}
 	
 	switch ((int)event->type()) {
+	
+	case QEvent::Timer:
+		{
+			PyAutoLocker locker;
+			QTimerEvent *e = (QTimerEvent *)event;
+			TimedCall *timedCall = sTimers.take(e->timerId());
+			if (timedCall) {
+				timedCall->execute();
+				QObject *parent = timedCall->parent();
+				if (!parent)
+					parent = this;
+				parent->killTimer(e->timerId());
+				delete timedCall;
+			}
+		}
+		break;
 	
 	case QEvent::Paint:
 		{
