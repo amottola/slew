@@ -309,6 +309,9 @@ class DataIndex(object):
 	def __repr__(self):
 		return str(self)
 	
+	def __eq__(self, other):
+		return isinstance(other, DataIndex) and (self.row == other.row) and (self.column == other.column) and (self.parent == other.parent)
+	
 	@classmethod
 	def ensure(cls, value, allowNone=True):
 		if (value is None) and allowNone:

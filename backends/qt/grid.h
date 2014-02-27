@@ -50,6 +50,7 @@ public slots:
 	virtual void selectAll();
 	virtual void reset();
 	virtual void resetColumns();
+	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
 	void resizeColumns();
 	
 	QStyleOptionViewItem initOptionView() { return viewOptions(); }
