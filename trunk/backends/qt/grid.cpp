@@ -304,6 +304,19 @@ Grid_Impl::edit(const QModelIndex& index, EditTrigger trigger, QEvent *event)
 
 
 void
+Grid_Impl::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+	QAbstractItemView::dataChanged(topLeft, bottomRight);
+	if (fEditIndex.isValid()) {
+		ItemDelegate *delegate = qobject_cast<Grid_Delegate *>(itemDelegate());
+		QWidget *editor = indexWidget(fEditIndex);
+		if ((delegate) && (editor))
+			delegate->setEditorData(editor, fEditIndex);
+	}
+}
+
+
+void
 Grid_Impl::setModel(QAbstractItemModel *model)
 {
 	QAbstractItemModel *oldModel = this->model();

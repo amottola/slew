@@ -902,8 +902,9 @@ ItemDelegate::startEditing(const QModelIndex& index)
 		runner.set("index", model->getDataIndex(index), false);
 		if (runner.run()) {
 			QWidget *editor = view->indexWidget(index);
-			if (editor)
+			if (editor) {
 				setEditorData(editor, index);
+			}
 		}
 	}
 }
