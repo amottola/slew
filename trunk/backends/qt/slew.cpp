@@ -156,7 +156,7 @@ class TimedCall : public QObject
 	
 public:
 	TimedCall(QObject *parent, PyObject *func, PyObject *args)
-		: QObject(), fFunc(func), fArgs(args)
+		: QObject(), fFunc(func), fArgs(args), fID(-1)
 	{
 		Py_XINCREF(func);
 		Py_XINCREF(args);
@@ -201,16 +201,29 @@ public:
 		}
 	}
 	
+	void setId(int id) { fID = id; }
+	
 public slots:
 	void executeAndDelete()
 	{
 		execute();
 		deleteLater();
 	}
+	
+	void handleDestroyed()
+	{
+		QObject *parent = QObject::parent();
+		
+		if ((parent) && (fID >= 0)) {
+			parent->killTimer(fID);
+			delete sTimers.take(fID);
+		}
+	}
 
 private:
 	PyObject		*fFunc;
 	PyObject		*fArgs;
+	int				fID;
 };
 
 
@@ -1704,6 +1717,8 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 	timedCall = new TimedCall(object, func, args);
 	timedCall->moveToThread(QApplication::instance()->thread());
 	timedCall->setParent(object);
+	if (object)
+		QObject::connect(object, SIGNAL(destroyed()), timedCall, SLOT(handleDestroyed()));
 	if (delay == 0) {
 		QMetaObject::invokeMethod(timedCall, "executeAndDelete", Qt::QueuedConnection);
 	}
@@ -3017,9 +3032,10 @@ Application::sendTabEvent(QObject *receiver)
 
 
 void
-Application::startTimedCall(QObject *parent, QObject *timedCall, int delay)
+Application::startTimedCall(QObject *parent, QObject *object, int delay)
 {
 	int id;
+	TimedCall *timedCall = (TimedCall *)object;
 	
 	if (parent) {
 		id = parent->startTimer(delay);
@@ -3027,7 +3043,8 @@ Application::startTimedCall(QObject *parent, QObject *timedCall, int delay)
 	}
 	else
 		id = qApp->startTimer(delay);
-	sTimers[id] = (TimedCall *)timedCall;
+	timedCall->setId(id);
+	sTimers[id] = timedCall;
 }
 
 
