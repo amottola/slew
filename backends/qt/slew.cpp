@@ -2610,7 +2610,7 @@ Application::eventFilter(QObject *obj, QEvent *event)
 					if (area->horizontalScrollBar() && area->horizontalScrollBar()->isVisible() && (area->horizontalScrollBar()->rect().contains(area->horizontalScrollBar()->mapFromGlobal(QCursor::pos()))))
 						return false;
 				}
-				if (qobject_cast<SceneView_Impl *>(obj))
+				if ((qobject_cast<SceneView_Impl *>(obj)) && (QWidget::mouseGrabber() != obj))
 					return false;
 				
 				switch ((int)event->type()) {
