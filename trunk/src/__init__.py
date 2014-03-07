@@ -162,6 +162,7 @@ BUTTON_MAX							= 0x10000
 PRINT_PREVIEW						= 0
 PRINT_PAPER							= 1
 PRINT_PDF							= 2
+PRINT_PS							= 3
 
 LEFT								= 0
 RIGHT								= 1
