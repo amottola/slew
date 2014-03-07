@@ -861,6 +861,8 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 		sPrinter = new QPrinter(QPrinter::HighResolution);
 	if (type == SL_PRINT_PDF)
 		sPrinter->setOutputFormat(QPrinter::PdfFormat);
+	else if (type == SL_PRINT_PS)
+		sPrinter->setOutputFormat(QPrinter::PostScriptFormat);
 	
 	if ((settings != Py_None) && (!loadSettings(settings, sPrinter)))
 		return NULL;
@@ -912,6 +914,7 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 		break;
 	
 	case SL_PRINT_PDF:
+	case SL_PRINT_PS:
 		{
 			QString fileName;
 			QTemporaryFile tempFile;
@@ -925,6 +928,7 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 			tempFile.close();
 			
 			sPrinter->setOutputFileName(fileName);
+			sPrinter->setFontEmbeddingEnabled(true);
 			
 			QMetaObject::invokeMethod(handler, "print", Qt::DirectConnection, Q_ARG(QPrinter *, sPrinter));
 			
