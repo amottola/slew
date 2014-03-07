@@ -282,9 +282,6 @@ class Widget(EventHandler):
 		return self.insert(-1, child)
 	
 	def insert(self, index, child):
-		parent = child.get_parent()
-		if parent is not None:
-			parent.remove(child)
 		count = len(self.__children)
 		if index < 0:
 			index += count + 1
@@ -292,6 +289,11 @@ class Widget(EventHandler):
 			index = 0
 		elif index > count:
 			index = count
+		parent = child.get_parent()
+		if parent is not None:
+			if (parent is self) and (self.__children[index] is child):
+				return self
+			parent.remove(child)
 		self._impl.insert(index, child)
 		self.__children.insert(index, child)
 		child._set_parent(self)
@@ -309,9 +311,10 @@ class Widget(EventHandler):
 			self.__children.pop(child)
 			widget._set_parent(None)
 		else:
-			self._impl.remove(child)
-			self.__children.remove(child)
-			child._set_parent(None)
+			if child.get_parent() is self:
+				self._impl.remove(child)
+				self.__children.remove(child)
+				child._set_parent(None)
 	
 	def replace(self, index, child):
 		count = len(self.__children)
