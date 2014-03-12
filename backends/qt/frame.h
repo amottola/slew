@@ -43,13 +43,28 @@ public:
 	bool isResizeable() { return fResizeable; }
 	
 	QStatusBar *statusBar() { return fStatusBar; }
-	void setStatusBar(QStatusBar *statusBar) { fStatusBar = statusBar; QMainWindow::setStatusBar(statusBar); }
+	void setStatusBar(QStatusBar *statusBar) {
+		fStatusBar = statusBar;
+		QMainWindow::setStatusBar(statusBar);
+		connect(statusBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)));
+	}
 	
 	QMenuBar *menuBar() { return fMenuBar; }
-	void setMenuBar(QMenuBar *menuBar) { fMenuBar = menuBar; QMainWindow::setMenuBar(menuBar); }
+	void setMenuBar(QMenuBar *menuBar) {
+		fMenuBar = menuBar;
+		QMainWindow::setMenuBar(menuBar);
+		connect(menuBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)));
+	}
 	
 	virtual QMenu *createPopupMenu() { return NULL; }
 	
+public slots:
+	void handleOwnedDestroyed(QObject *object) {
+		if (object == fStatusBar)
+			fStatusBar = NULL;
+		else if (object == fMenuBar)
+			fMenuBar = NULL;
+	}
 protected:
 	virtual bool event(QEvent *event);
 	virtual void moveEvent(QMoveEvent *event);
