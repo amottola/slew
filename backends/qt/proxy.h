@@ -399,17 +399,16 @@ virtual QSize sizeHint() const						\
 protected:																		\
 QList<QPersistentModelIndex>		fHighlights;								\
 virtual void paintEvent(QPaintEvent *event) {									\
-	{																			\
-		QModelIndex tl = indexAt(QPoint(0,0));									\
-		QModelIndex br = indexAt(QPoint(viewport()->width() - 1,				\
-										viewport()->height() - 1));				\
-		DataModel_Impl *model = (DataModel_Impl *)this->model();				\
-		EventRunner runner(this, "onPaintView");								\
-		if (runner.isValid()) {													\
-			runner.set("tl", model->getDataIndex(tl), false);					\
-			runner.set("br", model->getDataIndex(br), false);					\
-			runner.run();														\
-		}																		\
+	PyAutoLocker locker;														\
+	QModelIndex tl = indexAt(QPoint(0,0));										\
+	QModelIndex br = indexAt(QPoint(viewport()->width() - 1,					\
+									viewport()->height() - 1));					\
+	DataModel_Impl *model = (DataModel_Impl *)this->model();					\
+	EventRunner runner(this, "onPaintView");									\
+	if (runner.isValid()) {														\
+		runner.set("tl", model->getDataIndex(tl), false);						\
+		runner.set("br", model->getDataIndex(br), false);						\
+		runner.run();															\
 	}																			\
 	_type::paintEvent(event);													\
 	QPainter painter(viewport());												\
