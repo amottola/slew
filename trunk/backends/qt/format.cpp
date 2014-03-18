@@ -60,6 +60,7 @@ typedef struct {
 
 
 static const QChar kLocalMonSymbol = 0x20AC;
+static QMutex sFormatCacheMutex;
 static QCache<QString, FORMAT_INFO> sFormatCache(1000);
 
 
@@ -185,6 +186,7 @@ private:
 void
 parseFormat(const QString& _format, int dataType, FormatInfo *formatInfo, QString *humanFormat, QRegExp *regExp)
 {
+	QMutexLocker locker(&sFormatCacheMutex);
 	QString key = QString("%1__%2").arg(dataType).arg(_format);
 	FORMAT_INFO *cached_info = sFormatCache[key];
 	if (!cached_info) {
