@@ -922,51 +922,57 @@ ItemDelegate::setEditorData(QWidget *editor, const QModelIndex& index) const
 		return;
 	
 	if (spec->isCheckBox()) {
-		QCheckBox *checkBox = (QCheckBox *)editor;
-		checkBox->blockSignals(true);
-		if (spec->fSelection < 0)
-			checkBox->setCheckState(Qt::PartiallyChecked);
-		else
-			checkBox->setChecked(spec->fSelection != 0);
-		checkBox->setEnabled(!spec->isReadOnly());
-		checkBox->blockSignals(false);
+		QCheckBox *checkBox = qobject_cast<QCheckBox *>(editor);
+		if (checkBox) {
+			checkBox->blockSignals(true);
+			if (spec->fSelection < 0)
+				checkBox->setCheckState(Qt::PartiallyChecked);
+			else
+				checkBox->setChecked(spec->fSelection != 0);
+			checkBox->setEnabled(!spec->isReadOnly());
+			checkBox->blockSignals(false);
+		}
 	}
 	else if (spec->isComboBox()) {
-		QComboBox *comboBox = (QComboBox *)editor;
-		DataModel_Impl *comboModel = (DataModel_Impl *)getImpl(spec->fModel);
-		
-		if (comboModel) {
-			comboBox->setModel(comboModel);
-		}
-		else {
-			comboBox->clear();
-			foreach (QString choice, spec->fChoices) {
-				if (choice.isEmpty())
-					comboBox->insertSeparator(comboBox->count());
-				else
-					comboBox->addItem(choice);
+		QComboBox *comboBox = qobject_cast<QComboBox *>(editor);
+		if (comboBox) {
+			DataModel_Impl *comboModel = (DataModel_Impl *)getImpl(spec->fModel);
+			
+			if (comboModel) {
+				comboBox->setModel(comboModel);
 			}
+			else {
+				comboBox->clear();
+				foreach (QString choice, spec->fChoices) {
+					if (choice.isEmpty())
+						comboBox->insertSeparator(comboBox->count());
+					else
+						comboBox->addItem(choice);
+				}
+			}
+			comboBox->setCurrentIndex(spec->fSelection);
+			comboBox->setEnabled(!spec->isReadOnly());
 		}
-		comboBox->setCurrentIndex(spec->fSelection);
-		comboBox->setEnabled(!spec->isReadOnly());
 	}
 	else if (spec->isText()) {
-		FormattedLineEdit *lineEdit = (FormattedLineEdit *)editor;
-		int pos = lineEdit->cursorPosition();
-		lineEdit->setDataType(spec->fDataType);
-		lineEdit->setAlignment(spec->fAlignment);
-		lineEdit->setMaxLength(spec->fLength ? spec->fLength : 32767);
-		lineEdit->setFormat(spec->fFormat);
-		lineEdit->setCapsOnly(spec->isCapsOnly());
-		lineEdit->setSelectedOnFocus(spec->isSelectedOnFocus());
-		lineEdit->setText(spec->fText);
-		lineEdit->setCursorPosition(pos);
-		lineEdit->internalValidator()->setRegExp(QRegExp(spec->fFilter));
-		if ((!spec->fIcon.isNull()) && (spec->isClickableIcon()))
-			lineEdit->setIcon(spec->fIcon);
-		lineEdit->setCompleter((DataModel_Impl *)getImpl(spec->fCompleter.fModel), spec->fCompleter.fColumn, spec->fCompleter.fColor, spec->fCompleter.fBGColor, spec->fCompleter.fHIColor, spec->fCompleter.fHIBGColor);
-		if ((spec->isSelectedOnFocus()) && (editor->hasFocus()))
-			lineEdit->selectAll();
+		FormattedLineEdit *lineEdit = qobject_cast<FormattedLineEdit *>(editor);
+		if (lineEdit) {
+			int pos = lineEdit->cursorPosition();
+			lineEdit->setDataType(spec->fDataType);
+			lineEdit->setAlignment(spec->fAlignment);
+			lineEdit->setMaxLength(spec->fLength ? spec->fLength : 32767);
+			lineEdit->setFormat(spec->fFormat);
+			lineEdit->setCapsOnly(spec->isCapsOnly());
+			lineEdit->setSelectedOnFocus(spec->isSelectedOnFocus());
+			lineEdit->setText(spec->fText);
+			lineEdit->setCursorPosition(pos);
+			lineEdit->internalValidator()->setRegExp(QRegExp(spec->fFilter));
+			if ((!spec->fIcon.isNull()) && (spec->isClickableIcon()))
+				lineEdit->setIcon(spec->fIcon);
+			lineEdit->setCompleter((DataModel_Impl *)getImpl(spec->fCompleter.fModel), spec->fCompleter.fColumn, spec->fCompleter.fColor, spec->fCompleter.fBGColor, spec->fCompleter.fHIColor, spec->fCompleter.fHIBGColor);
+			if ((spec->isSelectedOnFocus()) && (editor->hasFocus()))
+				lineEdit->selectAll();
+		}
 	}
 }
 
