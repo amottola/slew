@@ -511,7 +511,7 @@ void
 Grid_Impl::restartEdit(const QModelIndex& index, int position)
 {
 	setCurrentIndex(index);
-	QTableView::edit(index, AllEditTriggers, NULL);
+	edit(index, AllEditTriggers, NULL);
 	FormattedLineEdit *editor = qobject_cast<FormattedLineEdit *>(indexWidget(index));
 	if ((editor) && (position >= 0)) {
 		editor->setCursorPosition(position);
