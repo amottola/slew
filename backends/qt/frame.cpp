@@ -23,6 +23,11 @@ Frame_Impl::Frame_Impl()
 
 #ifdef Q_OS_WIN
 
+#define SET_FOCUS()													\
+impl->setWindowState(impl->windowState() & ~Qt::WindowMinimized);	\
+impl->show();														\
+
+
 #include "windows.h"
 
 bool
@@ -35,6 +40,9 @@ Frame_Impl::winEvent(MSG *msg, long *result)
 	}
 	return false;
 }
+
+#else
+#define SET_FOCUS()
 
 #endif
 
@@ -195,6 +203,7 @@ SL_DEFINE_METHOD(Frame, set_focus, {
 		return NULL;
 	
 	if (focus) {
+		SET_FOCUS()
 		impl->activateWindow();
 		impl->raise();
 	}
