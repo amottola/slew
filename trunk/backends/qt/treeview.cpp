@@ -475,6 +475,8 @@ TreeView_Impl::restartEdit(const QModelIndex& index, int position)
 	if ((editor) && (position >= 0)) {
 		editor->setCursorPosition(position);
 	}
+	else
+		QMetaObject::invokeMethod(editor, "selectAll", Qt::QueuedConnection);
 }
 
 
