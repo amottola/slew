@@ -1076,22 +1076,28 @@ FormattedLineEdit::setInternalValue(const QString& value)
 		}
 		break;
 	case SL_DATATYPE_DATE:
+		{
+			QDateTime dt(QDateTime::fromString(value, "yyyy-MM-dd"));
+			if (dt.isValid())
+				result = dt.toString("yyyy-MM-dd");
+			else
+				result = "";
+		}
+		break;
 	case SL_DATATYPE_TIME:
+		{
+			QDateTime dt(QDateTime::fromString(value, "HH:mm:ss"));
+			if (dt.isValid())
+				result = dt.toString("HH:mm:ss");
+			else
+				result = "";
+		}
+		break;
 	case SL_DATATYPE_TIMESTAMP:
 		{
-			QDateTime dt(QDateTime::fromString(value, Qt::ISODate));
-			if (!dt.isValid()) {
-				dt.setDate(QDate::currentDate());
-				dt.setTime(QTime::fromString(value));
-			}
-			
-			if (dt.isValid()) {
-				switch (fDataType) {
-				case SL_DATATYPE_DATE:		result = dt.toString("yyyy-MM-dd"); break;
-				case SL_DATATYPE_TIME:		result = dt.toString("HH:mm:ss"); break;
-				case SL_DATATYPE_TIMESTAMP:	result = dt.toString("yyyy-MM-dd HH:mm:ss"); break;
-				}
-			}
+			QDateTime dt(QDateTime::fromString(value, "yyyy-MM-dd HH:mm:ss"));
+			if (dt.isValid())
+				result = dt.toString("yyyy-MM-dd HH:mm:ss");
 			else
 				result = "";
 		}
