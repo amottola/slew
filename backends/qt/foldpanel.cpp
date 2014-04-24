@@ -145,7 +145,7 @@ FoldPanel_Impl::FoldPanel_Impl()
 	fShortcut = new QShortcut(QKeySequence("Ctrl+Alt+E"), this, NULL, NULL, Qt::WidgetWithChildrenShortcut);
 	connect(fShortcut, SIGNAL(activated()), this, SLOT(toggleExpand()));
 	connect(fExpander, SIGNAL(clicked()), this, SLOT(toggleExpand()));
-	connect(fContent, SIGNAL(layoutChanged()), this, SLOT(setupLayout()));//, Qt::QueuedConnection);
+	connect(fContent, SIGNAL(layoutChanged()), this, SLOT(setupLayout()), Qt::QueuedConnection);
 }
 
 
