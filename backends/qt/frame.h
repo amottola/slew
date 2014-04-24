@@ -44,16 +44,20 @@ public:
 	
 	QStatusBar *statusBar() { return fStatusBar; }
 	void setStatusBar(QStatusBar *statusBar) {
+		if (fStatusBar)
+			disconnect(fStatusBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)));
 		fStatusBar = statusBar;
 		QMainWindow::setStatusBar(statusBar);
-		connect(statusBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)));
+		connect(statusBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)), Qt::DirectConnection);
 	}
 	
 	QMenuBar *menuBar() { return fMenuBar; }
 	void setMenuBar(QMenuBar *menuBar) {
+		if (fMenuBar)
+			disconnect(fMenuBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)));
 		fMenuBar = menuBar;
 		QMainWindow::setMenuBar(menuBar);
-		connect(menuBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)));
+		connect(menuBar, SIGNAL(destroyed(QObject *)), this, SLOT(handleOwnedDestroyed(QObject *)), Qt::DirectConnection);
 	}
 	
 	virtual QMenu *createPopupMenu() { return NULL; }

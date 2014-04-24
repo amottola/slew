@@ -11,7 +11,7 @@
 
 
 Frame_Impl::Frame_Impl()
-	: QMainWindow(), WidgetInterface(), fResizeable(true), fStatusBar(NULL)
+	: QMainWindow(), WidgetInterface(), fResizeable(true), fStatusBar(NULL), fMenuBar(NULL)
 {
 	setCentralWidget(new QWidget);
 	centralWidget()->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);

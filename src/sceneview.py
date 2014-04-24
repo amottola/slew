@@ -316,6 +316,8 @@ class SceneView(slew.Window):
 	def ensure_visible(self, tl, br=None, margin=None):
 		if br is None:
 			br = tl
+		if isinstance(tl, SceneItem):
+			tl, br = tl.get_scene_rect()
 		if margin is None:
 			margin = Vector(50, 50)
 		self._impl.ensure_visible(Vector.ensure(tl, False), Vector.ensure(br, False), Vector.ensure(margin, False))
