@@ -312,10 +312,10 @@ SL_DEFINE_METHOD(Window, repaint, {
 
 SL_DEFINE_METHOD(Window, message_box, {
 	QString message, title;
-	int button, buttons = SL_BUTTON_OK, icon = SL_ICON_INFORMATION;
-	PyObject *callback = NULL, *userdata = NULL;
+	int button, icon = SL_ICON_INFORMATION;
+	PyObject *callback = NULL, *userdata = NULL, *buttons = NULL;
 	
-	if (!PyArg_ParseTuple(args, "O&O&iiOO", convertString, &message, convertString, &title, &buttons, &icon, &callback, &userdata))
+	if (!PyArg_ParseTuple(args, "O&O&OiOO", convertString, &message, convertString, &title, &buttons, &icon, &callback, &userdata))
 		return NULL;
 	
 	messageBox(impl, title, message, buttons, icon, callback, userdata, &button);

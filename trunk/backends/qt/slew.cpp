@@ -1848,12 +1848,44 @@ decodeButton(int qbutton)
 
 
 bool
-messageBox(QWidget *window, const QString& title, const QString& message, int buttons, int icon, PyObject *callback, PyObject *userdata, int *button)
+messageBox(QWidget *window, const QString& title, const QString& message, PyObject *buttons, int icon, PyObject *callback, PyObject *userdata, int *button)
 {
-	QMessageBox::StandardButtons qbuttons = (QMessageBox::StandardButtons)encodeButtons(buttons);
 	QMessageBox::Icon qicon = QMessageBox::NoIcon;
 	QMessageBox mb(window);
 	int result;
+	PyObject *seq = NULL;
+	
+	if ((seq = PySequence_Fast(buttons, ""))) {
+		Py_ssize_t i, size = PySequence_Fast_GET_SIZE(seq);
+		for (i = 0; i < size; i++) {
+			PyObject *labelObj = PySequence_Fast_GET_ITEM(seq, i);
+			QString label;
+			if (!convertString(labelObj, &label)) {
+				Py_DECREF(seq);
+				return false;
+			}
+			if (label.endsWith(" *")) {
+				label = label.left(label.size() - 2);
+				mb.addButton(label, QMessageBox::AcceptRole);
+				mb.setDefaultButton((QPushButton *)mb.buttons().last());
+			}
+			else if (label.endsWith(" -")) {
+				label = label.left(label.size() - 2);
+				mb.addButton(label, QMessageBox::RejectRole);
+				mb.setEscapeButton(mb.buttons().last());
+			}
+			else
+				mb.addButton(label, QMessageBox::AcceptRole);
+		}
+	}
+	else {
+		PyErr_Clear();
+		QMessageBox::StandardButtons qbuttons;
+		qbuttons = (QMessageBox::StandardButtons)encodeButtons(PyInt_AsLong(buttons));
+		if (PyErr_Occurred())
+			return false;
+		mb.setStandardButtons(qbuttons);
+	}
 	
 	switch (icon) {
 	case SL_ICON_ERROR:		qicon = QMessageBox::Critical; break;
@@ -1886,7 +1918,6 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 	mb.setText(title);
 #endif
 	mb.setInformativeText(message);
-	mb.setStandardButtons(qbuttons);
 	mb.setIcon(qicon);
 	
 	Py_BEGIN_ALLOW_THREADS
@@ -1895,7 +1926,16 @@ messageBox(QWidget *window, const QString& title, const QString& message, int bu
 	
 	Py_END_ALLOW_THREADS
 	
-	*button = decodeButton(result);
+	if (seq) {
+		QAbstractButton *clickedButton = mb.clickedButton();
+		if (!clickedButton)
+			*button = 0;
+		else
+			*button = mb.buttons().indexOf(clickedButton);
+		Py_DECREF(seq);
+	}
+	else
+		*button = decodeButton(result);
 	
 	if ((callback) && (PyCallable_Check(callback))) {
 		PyObject *id = PyInt_FromLong(*button);
@@ -3319,13 +3359,14 @@ SL_DEFINE_MODULE_METHOD(load_resource, {
 SL_DEFINE_MODULE_METHOD(message_box, {
 	static char *kwlist[] = { "message", "title", "buttons", "icon", "callback", "userdata", NULL };
 	QString message, title;
-	int button = SL_BUTTON_OK, buttons = SL_BUTTON_OK, icon = SL_ICON_INFORMATION;
-	PyObject *callback = NULL, *userdata = NULL;
+	int button = SL_BUTTON_OK, icon = SL_ICON_INFORMATION;
+	PyObject *callback = NULL, *userdata = NULL, *buttons = NULL;
 	
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&iiOO:message_box", kwlist, convertString, &message, convertString, &title, &buttons, &icon, &callback, &userdata))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&OiOO:message_box", kwlist, convertString, &message, convertString, &title, &buttons, &icon, &callback, &userdata))
 		return NULL;
 	
-	messageBox(NULL, title, message, buttons, icon, callback, userdata, &button);
+	if (!messageBox(NULL, title, message, buttons, icon, callback, userdata, &button))
+		return NULL;
 	
 	return PyInt_FromLong(button);
 })
