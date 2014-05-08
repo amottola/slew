@@ -363,7 +363,7 @@ SL_DEFINE_DC_METHOD(text_extent, {
 		return NULL;
 	
 	QSizeF size = QFontMetricsF(painter->fontMetrics()).boundingRect(QRect(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
-	size.rwidth()--;
+// 	size.rwidth()--;
 	return createVectorObject(size);
 })
 
