@@ -460,7 +460,7 @@ Node::dataSpecifier()
 		PyObject *dataSpecifier;
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
 		if (model == Py_None) {
-			fData->fFlags = -1;
+			fData->fFlags = SL_DATA_SPECIFIER_INVALID;
 			return fData;
 		}
 		
@@ -619,7 +619,7 @@ Node::dataSpecifier()
 			return fData;
 		}
 		
-		fData->fFlags = -1;
+		fData->fFlags = SL_DATA_SPECIFIER_INVALID;
 		PyErr_Print();
 		PyErr_Clear();
 		Py_XDECREF(dataSpecifier);
@@ -1052,18 +1052,20 @@ DataModel_Impl::flags(const QModelIndex &index) const
 	DataSpecifier *spec = getDataSpecifier(index);
 	Qt::ItemFlags flags = 0;
 	
-	if ((spec) && (!spec->isNone()) && (!spec->isSeparator())) {
-		flags |= Qt::ItemIsDropEnabled;
-		if (spec->isEnabled())
-			flags |= Qt::ItemIsEnabled;
+	if ((spec) && (!spec->isSeparator())) {
 		if (spec->isSelectable())
 			flags |= Qt::ItemIsSelectable;
-		if (!spec->isReadOnly())
-			flags |= Qt::ItemIsEditable;
-		if (spec->isDraggable())
-			flags |= Qt::ItemIsDragEnabled;
-		if (!spec->isDropTarget())
-			flags &= ~Qt::ItemIsDropEnabled;
+		if (spec->isEnabled())
+			flags |= Qt::ItemIsEnabled;
+		if (!spec->isNone()) {
+			flags |= Qt::ItemIsDropEnabled;
+			if (!spec->isReadOnly())
+				flags |= Qt::ItemIsEditable;
+			if (spec->isDraggable())
+				flags |= Qt::ItemIsDragEnabled;
+			if (!spec->isDropTarget())
+				flags &= ~Qt::ItemIsDropEnabled;
+		}
 	}
 	
 	return flags;

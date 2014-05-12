@@ -46,7 +46,7 @@ public:
 	bool isClickableIcon() { return (fFlags & SL_DATA_SPECIFIER_CLICKABLE_ICON) != 0; }
 	bool isHTML() { return (fFlags & SL_DATA_SPECIFIER_HTML) != 0; }
 	bool isSeparator() { return (fFlags & SL_DATA_SPECIFIER_SEPARATOR) != 0; }
-	bool isNone() { return fFlags == -1; }
+	bool isNone() { return (fFlags & SL_DATA_SPECIFIER_INVALID) != 0; }
 	
 	QString					fText;
 	int						fDataType;
