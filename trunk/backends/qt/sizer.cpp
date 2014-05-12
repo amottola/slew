@@ -242,7 +242,10 @@ Sizer_Impl::reinsert(QObject *child, bool reparent)
 void
 Sizer_Impl::reparentChildren(QLayoutItem *item, Sizer_Impl *parent)
 {
-	if (Sizer_Impl *layout = (Sizer_Impl *)item->layout()) {
+	Sizer_Impl *layout = qobject_cast<Sizer_Impl *>(item->layout());
+	QWidget *widget = qobject_cast<QWidget *>(item->widget());
+	
+	if (layout) {
 		for (int i = 0; i < layout->count(); i++) {
 			QLayoutItem *child = layout->itemAt(i);
 			if (child->layout())
@@ -250,7 +253,7 @@ Sizer_Impl::reparentChildren(QLayoutItem *item, Sizer_Impl *parent)
 			reparentChildren(child, layout);
 		}
 	}
-	else if (QWidget *widget = (QWidget *)item->widget()) {
+	else if (widget) {
 		QWidget *parentWidget = parent ? parent->parentWidget() : NULL;
 		bool needsShow = (parentWidget) && (parentWidget->isVisible()) && (!(widget->isHidden() && widget->testAttribute(Qt::WA_WState_ExplicitShowHide)));
 		
@@ -339,8 +342,8 @@ Sizer_Impl::takeAt(int index)
 {
 	QLayoutItem *item = QGridLayout::takeAt(index);
 	if (item->layout()) {
+		reparentChildren(item, NULL);
 		item->layout()->setParent(NULL);
-		reparentChildren(item->layout(), NULL);
 	}
 	else if (item->widget()) {
 		item->widget()->setProperty("parentLayout", QVariant());

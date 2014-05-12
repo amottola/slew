@@ -370,7 +370,8 @@ virtual ~ type##_Impl()								\
 	PyAutoLocker locker;							\
 	__VA_ARGS__										\
 	SL_QAPP()->unregisterObject(this);				\
-}
+}													\
+Q_DISABLE_COPY(type##_Impl)
 
 
 #define SL_DECLARE_SET_VISIBLE(type)				\
