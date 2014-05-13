@@ -1297,6 +1297,10 @@ getObjectAttr(PyObject *object, const char *name, int *value)
 	if (!attr)
 		return false;
 	*value = PyInt_AsLong(attr);
+	if (PyErr_Occurred()) {
+		PyErr_Clear();
+		*value = (signed)PyLong_AsUnsignedLong(attr);
+	}
 	Py_DECREF(attr);
 	return bool(!PyErr_Occurred());
 }
