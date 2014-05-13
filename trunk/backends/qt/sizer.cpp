@@ -242,7 +242,7 @@ Sizer_Impl::reinsert(QObject *child, bool reparent)
 void
 Sizer_Impl::reparentChildren(QLayoutItem *item, Sizer_Impl *parent)
 {
-	Sizer_Impl *layout = qobject_cast<Sizer_Impl *>(item->layout());
+	QLayout *layout = qobject_cast<QLayout *>(item->layout());
 	QWidget *widget = qobject_cast<QWidget *>(item->widget());
 	
 	if (layout) {
@@ -250,7 +250,7 @@ Sizer_Impl::reparentChildren(QLayoutItem *item, Sizer_Impl *parent)
 			QLayoutItem *child = layout->itemAt(i);
 			if (child->layout())
 				child->layout()->setParent(layout);
-			reparentChildren(child, layout);
+			reparentChildren(child, (Sizer_Impl *)layout);
 		}
 	}
 	else if (widget) {
