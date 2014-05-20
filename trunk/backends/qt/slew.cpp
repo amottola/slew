@@ -842,7 +842,7 @@ convertBuffer(PyObject *object, QByteArray *value)
 {
 	if (!object)
 		return 0;
-	if (PyBuffer_Check(object)) {
+	if PyBuffer_Check(object) {
 		const void *source;
 		Py_ssize_t size;
 		if (PyObject_AsReadBuffer(object, &source, &size))
