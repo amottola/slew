@@ -7,7 +7,7 @@
 
 
 MenuBar_Impl::MenuBar_Impl()
-	: QMenuBar(SL_QAPP()->shadowWindow()), WidgetInterface()
+	: QMenuBar(NULL), WidgetInterface()
 {
 }
 
