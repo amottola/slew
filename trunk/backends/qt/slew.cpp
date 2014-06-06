@@ -2396,18 +2396,19 @@ Application::eventFilter(QObject *obj, QEvent *event)
 	case QEvent::Paint:
 		{
 			QWidget *w = qobject_cast<QWidget *>(obj);
-			if ((w) && (getSafeProxy(w)) && (!qobject_cast<SceneView_Impl *>(obj->parent()))) {
+			Widget_Proxy *proxy;
+			if ((w) && (proxy = getSafeProxy(w)) && (!qobject_cast<SceneView_Impl *>(obj->parent()))) {
+				QScrollArea *area = qobject_cast<QScrollArea *>(proxy->fImpl);
+				if ((area) && (area->widget() != obj)) {
+					break;
+				}
+				else {
+					QAbstractScrollArea *area = qobject_cast<QAbstractScrollArea *>(proxy->fImpl);
+					if ((area) && (area->viewport() != obj))
+						break;
+				}
 				EventRunner runner(obj, "onPaint");
 				if (runner.isValid()) {
-					QScrollArea *area = qobject_cast<QScrollArea *>(runner.widget());
-					if ((area) && (area->widget() != obj)) {
-						break;
-					}
-					else {
-						QAbstractScrollArea *area = qobject_cast<QAbstractScrollArea *>(runner.widget());
-						if ((area) && (area->viewport() != obj))
-							break;
-					}
 					QPainter painter(w);
 					painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::NonCosmeticDefaultPen);
 	// 				painter.setPen(QPen(QColor(rand() % 256, rand() % 256, rand() % 256)));
