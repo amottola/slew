@@ -1055,6 +1055,7 @@ SceneView_Impl::drawForeground(QPainter *painter, const QRectF& rect)
 void
 SceneView_Impl::paintEvent(QPaintEvent *event)
 {
+	PyAutoLocker locker;
 	QGraphicsView::paintEvent(event);
 }
 
