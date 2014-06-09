@@ -272,7 +272,7 @@ _set_style(TextField_Impl *impl, int style)
 	impl->setSelectedOnFocus(style & SL_TEXTFIELD_STYLE_SELECT ? true : false);
 	impl->setCapsOnly(style & SL_TEXTFIELD_STYLE_CAPS ? true : false);
 	if (style & SL_TEXTFIELD_STYLE_CAPS)
-		impl->setText(impl->text().toUpper());
+		impl->setInternalValue(impl->value().toUpper());
 	impl->setEnterTabs(style & SL_TEXTFIELD_STYLE_ENTERTABS ? true : false);
 	impl->setAttribute(Qt::WA_MacShowFocusRect, style & SL_WINDOW_STYLE_NOFOCUS ? false : true);
 }
