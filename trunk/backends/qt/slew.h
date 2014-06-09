@@ -458,6 +458,7 @@ public:
 	QColor color() { return fColor; }
 	QString value() { return fIntValue; }
 	QString value(bool controlText) { return controlText ? QLineEdit::text() : fIntValue; }
+	void setInternalValue(const QString& value);
 	
 	State state() { return fState; }
 	
@@ -509,7 +510,6 @@ public slots:
 	
 protected:
 	void setState(State state);
-	void setInternalValue(const QString& value);
 	void setInternalValueFromEditValue(const QString& value);
 	void updateDisplay(bool editMode);
 	
