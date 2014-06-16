@@ -989,19 +989,25 @@ ItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *abstractModel, c
 	
 	if (spec->isCheckBox()) {
 		QCheckBox *checkBox = qobject_cast<QCheckBox *>(editor);
-		bool checked = checkBox->isChecked();
-		bool undefined = (checkBox->checkState() == Qt::PartiallyChecked);
-		model->setData(index, undefined ? -1 : (checked ? 1 : 0), Qt::UserRole);
+		if (checkBox) {
+			bool checked = checkBox->isChecked();
+			bool undefined = (checkBox->checkState() == Qt::PartiallyChecked);
+			model->setData(index, undefined ? -1 : (checked ? 1 : 0), Qt::UserRole);
+		}
 	}
 	else if (spec->isComboBox()) {
 		QComboBox *comboBox = qobject_cast<QComboBox *>(editor);
-		int selection = comboBox->currentIndex();
-		model->setData(index, selection, Qt::UserRole);
+		if (comboBox) {
+			int selection = comboBox->currentIndex();
+			model->setData(index, selection, Qt::UserRole);
+		}
 	}
 	else if (spec->isText()) {
 		LineEdit_Editor *lineEdit = qobject_cast<LineEdit_Editor *>(editor);
-		QString value = lineEdit->value();
-		model->setData(index, value, Qt::EditRole);
+		if (lineEdit) {
+			QString value = lineEdit->value();
+			model->setData(index, value, Qt::EditRole);
+		}
 	}
 }
 
