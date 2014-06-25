@@ -995,7 +995,7 @@ convertString(PyObject *object, QString *value)
 		else
 			buffer = malloced = (wchar_t *)malloc(sizeof(wchar_t) * size);
 		PyUnicode_AsWideChar((PyUnicodeObject *)object, buffer, (Py_ssize_t)size);
-		*value = QString::fromWCharArray(buffer, size);
+		*value = QString::fromWCharArray(buffer, (int)size);
 		if (malloced)
 			free(malloced);
 	}
