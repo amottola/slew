@@ -33,6 +33,9 @@ public:
 	
 	void invalidate() { fRepaint = true; prepareGeometryChange(); }
 	
+public slots:
+	void detach();
+	
 protected:
 	virtual bool sceneEvent(QEvent *event);
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);

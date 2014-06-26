@@ -395,6 +395,15 @@ SceneItem_Impl::itemChange(GraphicsItemChange change, const QVariant& value)
 }
 
 
+void
+SceneItem_Impl::detach()
+{
+	setParentItem(NULL);
+	if (scene())
+		scene()->removeItem(this);
+}
+
+
 SL_DEFINE_METHOD(SceneItem, insert, {
 	int index;
 	PyObject *object;
@@ -430,10 +439,7 @@ SL_DEFINE_METHOD(SceneItem, remove, {
 		SL_RETURN_CANNOT_DETACH;
 	
 	SceneItem_Impl *item = (SceneItem_Impl *)child;
-	
-	item->setParentItem(NULL);
-	if (item->scene())
-		item->scene()->removeItem(item);
+	QMetaObject::invokeMethod(item, "detach", Qt::QueuedConnection);
 })
 
 
@@ -1188,8 +1194,7 @@ SL_DEFINE_METHOD(SceneView, remove, {
 		SL_RETURN_CANNOT_DETACH;
 	
 	SceneItem_Impl *item = (SceneItem_Impl *)child;
-	
-	impl->scene()->removeItem(item);
+	QMetaObject::invokeMethod(item, "detach", Qt::QueuedConnection);
 })
 
 
