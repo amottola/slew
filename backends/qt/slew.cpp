@@ -1299,8 +1299,17 @@ getObjectAttr(PyObject *object, const char *name, int *value)
 	*value = PyInt_AsLong(attr);
 	if (PyErr_Occurred()) {
 		if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
-			PyErr_Clear();
+			PyObject *ptype, *pvalue, *ptraceback;
+			PyErr_Fetch(&ptype, &pvalue, &ptraceback);
 			*value = (signed)PyLong_AsUnsignedLong(attr);
+			if (PyErr_Occurred()) {
+				PyErr_Restore(ptype, pvalue, ptraceback);
+			}
+			else {
+				Py_XDECREF(ptype);
+				Py_XDECREF(pvalue);
+				Py_XDECREF(ptraceback);
+			}
 		}
 	}
 	Py_DECREF(attr);
