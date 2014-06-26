@@ -439,7 +439,7 @@ SL_DEFINE_METHOD(SceneItem, remove, {
 		SL_RETURN_CANNOT_DETACH;
 	
 	SceneItem_Impl *item = (SceneItem_Impl *)child;
-	QMetaObject::invokeMethod(item, "detach", Qt::QueuedConnection);
+	QMetaObject::invokeMethod(item, "detach", Qt::AutoConnection);
 })
 
 
@@ -1194,7 +1194,7 @@ SL_DEFINE_METHOD(SceneView, remove, {
 		SL_RETURN_CANNOT_DETACH;
 	
 	SceneItem_Impl *item = (SceneItem_Impl *)child;
-	QMetaObject::invokeMethod(item, "detach", Qt::QueuedConnection);
+	QMetaObject::invokeMethod(item, "detach", Qt::AutoConnection);
 })
 
 
