@@ -111,18 +111,20 @@ Node::Node(PyObject *model, int row, short column, Node *parent)
 
 Node::~Node()
 {
-	PyAutoLocker locker;
-// 	sCounter.dec(fModel);
-	invalidate();
-	Py_XDECREF(fModel);
+	if (Py_IsInitialized()) {
+		PyAutoLocker locker;
+// 		sCounter.dec(fModel);
+		invalidate();
+		Py_XDECREF(fModel);
+	}
+	else
+		invalidate();
 }
 
 
 void
 Node::invalidate(bool full)
 {
-	PyAutoLocker locker;
-	
 	if (full) {
 		foreach(QList<Node *> *row, fChildren) {
 			foreach (Node *node, *row) {
@@ -135,11 +137,15 @@ Node::invalidate(bool full)
 		fColumnCount = -1;
 	}
 	
-	delete fData;
-	fData = NULL;
-	
-	Py_XDECREF(fIndex);
-	fIndex = NULL;
+	if (Py_IsInitialized()) {
+		PyAutoLocker locker;
+		
+		delete fData;
+		fData = NULL;
+		
+		Py_XDECREF(fIndex);
+		fIndex = NULL;
+	}
 }
 
 
