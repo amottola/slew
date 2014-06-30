@@ -2286,7 +2286,7 @@ Application::notify(QObject *receiver, QEvent *event)
 		QWidget *widget = focusWidget();
 		while ((original) && (widget)) {
 			if (widget->isEnabled()) {
-				QWidget *oldFocus = widget;
+				QPointer<QWidget> oldFocus = widget;
 				impl = dynamic_cast<WidgetInterface *>(widget);
 				if (!impl) {
 					QWidget *proxy = widget;
@@ -2295,7 +2295,7 @@ Application::notify(QObject *receiver, QEvent *event)
 					oldFocus = proxy;
 					impl = dynamic_cast<WidgetInterface *>(proxy);
 				}
-				if ((impl) && (impl->isFocusOutEvent(event))) {
+				if ((impl) && (impl->isFocusOutEvent(event)) && (oldFocus)) {
 					if (Completer::eatFocus())
 						break;
 					
