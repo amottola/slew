@@ -139,7 +139,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
 	moc = '%(qt_dir)s\\bin\\moc.exe'
 	cflags = '/I"%(qt_dir)s\\include" /I"%(qt_dir)s\\include\\QtCore" /I"%(qt_dir)s\\include\\QtGui" /I"%(qt_dir)s\\include\\QtOpenGL" /I"%(qt_dir)s\\include\\QtWebKit" /I"%(qt_dir)s\\include\\QtNetwork" /Zc:wchar_t- /Z7'
-	ldflags = '/DEBUG /PDB:None /LIBPATH:"%(qt_dir)s\\lib" QtCore%(debug_prefix)s4.lib QtGui%(debug_prefix)s4.lib QtOpenGL%(debug_prefix)s4.lib QtNetwork%(debug_prefix)s4.lib QtWebKit%(debug_prefix)s4.lib user32.lib shell32.lib gdi32.lib advapi32.lib secur32.lib'
+	ldflags = '/DEBUG /LIBPATH:"%(qt_dir)s\\lib" QtCore%(debug_prefix)s4.lib QtGui%(debug_prefix)s4.lib QtOpenGL%(debug_prefix)s4.lib QtNetwork%(debug_prefix)s4.lib QtWebKit%(debug_prefix)s4.lib user32.lib shell32.lib gdi32.lib advapi32.lib secur32.lib'
 	dlls = [
 		'%(qt_dir)s\\bin\\QtCore%(debug_prefix)s4.dll',
 		'%(qt_dir)s\\bin\\QtGui%(debug_prefix)s4.dll',
