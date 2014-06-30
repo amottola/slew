@@ -2258,8 +2258,8 @@ bool
 Application::notify(QObject *receiver, QEvent *event)
 {
 	QPointer<QObject> original = receiver;
+	QPointer<QWidget> target = qobject_cast<QWidget *>(receiver);
 	
-	QWidget *target = qobject_cast<QWidget *>(receiver);
 	if (target) {
 		if ((sInfoBalloon) && (sInfoBalloon->isAncestorOf(target)))
 			return QApplication::notify(original, event);
@@ -2295,7 +2295,7 @@ Application::notify(QObject *receiver, QEvent *event)
 					oldFocus = proxy;
 					impl = dynamic_cast<WidgetInterface *>(proxy);
 				}
-				if ((impl) && (impl->isFocusOutEvent(event)) && (oldFocus)) {
+				if ((impl) && (impl->isFocusOutEvent(event)) && (target) && (oldFocus)) {
 					if (Completer::eatFocus())
 						break;
 					
