@@ -1521,6 +1521,7 @@ FormattedLineEdit::focusOutEvent(QFocusEvent *event)
 	QLineEdit::focusOutEvent(event);
 	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
+		setInternalValueFromEditValue(QLineEdit::text());
 		updateDisplay(false);
 	}
 }
