@@ -673,7 +673,7 @@ ItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *abstractModel, cons
 		else if (spec->isComboBox()) {
 			modified = true;
 		}
-		else if ((spec->isClickableIcon()) && (!spec->fIcon.isNull())) {
+		else if ((spec->isClickableIcon()) && (spec->isEnabled()) && (!spec->fIcon.isNull())) {
 			QStyleOptionFrameV2 o;
 			o.QStyleOption::operator=(option);
 			QRect rect = option.rect;
