@@ -431,7 +431,8 @@ virtual bool viewportEvent(QEvent *event) {										\
 			clearSelection();													\
 		DataModel_Impl *model = (DataModel_Impl *)this->model();				\
 		DataSpecifier *spec = model->getDataSpecifier(index);					\
-		if ((spec) && (!spec->fIcon.isNull()) && (spec->isClickableIcon())) {	\
+		if ((spec) && (!spec->fIcon.isNull()) &&								\
+				(spec->isEnabled()) && (spec->isClickableIcon())) {				\
 			QRect rect = visualRect(index);										\
 			rect.adjust(rect.width() - rect.height() + 1, 1, -1, -1);			\
 			QSize size = spec->fIcon.actualSize(rect.size());					\
