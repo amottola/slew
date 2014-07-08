@@ -3551,7 +3551,7 @@ SL_DEFINE_MODULE_METHOD(get_computer_info, {
 	if (!GetComputerNameExW(ComputerNameDnsDomain, buffer, &count))
 		domain_name = PyString_FromString("");
 	else {
-		PDOMAIN_CONTROLLER_INFO pinfo;
+		PDOMAIN_CONTROLLER_INFO cinfo;
 		if (!DsGetDcName(NULL, buffer, NULL, NULL, DS_RETURN_FLAT_NAME, &cinfo)) {
 			domain_name = PyUnicode_FromWideChar(cinfo->DomainName, wcslen(cinfo->DomainName));
 			NetApiBufferFree(cinfo);
