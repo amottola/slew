@@ -56,8 +56,9 @@ class SceneView_Impl : public QGraphicsView, public WidgetInterface
 	
 public:
 	SL_DECLARE_OBJECT(SceneView, {
-		foreach (QGraphicsItem *item, items())
-			QMetaObject::invokeMethod((QGraphicsObject *)item, "detach", Qt::AutoConnection);
+		QList<QGraphicsItem *> items = this->items();
+		foreach (QGraphicsItem *item, items)
+			((SceneItem_Impl *)item)->detach();
 	})
 	
 	SL_DECLARE_SET_VISIBLE(QGraphicsView)
