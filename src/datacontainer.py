@@ -50,10 +50,10 @@ class ListDataModel(slew.DataModel):
 			d.text = item.text
 			if not item.enabled:
 				d.flags &= ~d.ENABLED
-		if not d.text:
-			d.flags = d.SEPARATOR
-		else:
-			d.flags |= d.DROP_TARGET
+			if (not item.text) and (not item.value):
+				d.flags = d.SEPARATOR
+			else:
+				d.flags |= d.DROP_TARGET
 		return d
 	
 	def get_items(self):
