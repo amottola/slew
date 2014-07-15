@@ -300,10 +300,10 @@ class EventRunner
 {
 public:
 	EventRunner(Widget_Proxy *proxy, const QString& name = "")
-		: fProxy(proxy), fName(name), fEvent(NULL), fParams(NULL) { if (fLocker.isValid()) fParams = PyDict_New(); }
+		: fProxy(proxy), fName(name), fEvent(NULL), fParams(NULL) { if (fLocker.isValid()) { Py_XINCREF(proxy); fParams = PyDict_New(); } }
 	EventRunner(QObject *object, const QString& name = "")
-		: fProxy(NULL), fName(name), fEvent(NULL), fParams(NULL) { if (fLocker.isValid()) { fProxy = getSafeProxy(object); fParams = PyDict_New(); } }
-	~EventRunner() { Py_XDECREF(fParams); Py_XDECREF(fEvent); }
+		: fProxy(NULL), fName(name), fEvent(NULL), fParams(NULL) { if (fLocker.isValid()) { fProxy = getSafeProxy(object); Py_XINCREF(fProxy); fParams = PyDict_New(); } }
+	~EventRunner() { Py_XDECREF(fParams); Py_XDECREF(fEvent); Py_XDECREF(fProxy); }
 	
 	void setName(const QString& name) { fName = name; }
 	QString name() { return fName; }
