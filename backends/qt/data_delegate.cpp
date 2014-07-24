@@ -1087,6 +1087,7 @@ bool
 ItemDelegate::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 {
 	QPointer<QAbstractItemView> view(qobject_cast<QAbstractItemView *>(oldFocus));
+	QPointer<QWidget> _newFocus(newFocus);
 	DataModel_Impl *model = (DataModel_Impl *)view->model();
 	QModelIndex index = view->currentIndex();
 	QWidget *editor = view->indexWidget(index);
@@ -1133,7 +1134,7 @@ ItemDelegate::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 	runner.set("index", model->getDataIndex(index), false);
 	bool success = runner.run();
 	
-	if ((success) && (!oldFocus->isAncestorOf(newFocus)) && (view))
+	if ((success) && (view) && (_newFocus) && (!view->isAncestorOf(_newFocus)))
 		success = EventRunner(view, "onFocusOut").run();
 	
 	if ((success) && (fTabEvent) && (view))
