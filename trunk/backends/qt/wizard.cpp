@@ -17,6 +17,28 @@ Wizard_Impl::Wizard_Impl()
 }
 
 
+#ifdef Q_OS_WIN
+
+void
+Wizard_Impl::showEvent(QShowEvent *event)
+{
+	HWND hwnd = (HWND)winId();
+	HWND fg = GetForegroundWindow();
+	if (fg) {
+		DWORD pid, other = GetWindowThreadProcessId(fg, &pid);
+		if (GetCurrentProcessId() != pid) {
+			DWORD current = GetCurrentThreadId();
+			AttachThreadInput(current, other, TRUE);
+			SetForegroundWindow(hwnd);
+			BringWindowToTop(hwnd);
+			AttachThreadInput(current, other, FALSE);
+		}
+	}
+}
+
+#endif
+
+
 SL_DEFINE_METHOD(Wizard, insert, {
 	int index;
 	PyObject *object;
