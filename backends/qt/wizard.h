@@ -19,6 +19,10 @@ public:
 	SL_DECLARE_OBJECT(Wizard)
 	
 	SL_DECLARE_SIZE_HINT(QWizard)
+
+#ifdef Q_OS_WIN
+	virtual void showEvent(QShowEvent *event);
+#endif
 };
 
 
