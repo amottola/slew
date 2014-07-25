@@ -19,6 +19,8 @@ Wizard_Impl::Wizard_Impl()
 
 #ifdef Q_OS_WIN
 
+#include "windows.h"
+
 void
 Wizard_Impl::showEvent(QShowEvent *event)
 {
