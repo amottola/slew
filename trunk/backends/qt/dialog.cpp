@@ -31,6 +31,24 @@ Dialog_Impl::winEvent(MSG *msg, long *result)
 	return false;
 }
 
+
+void
+Dialog_Impl::showEvent(QShowEvent *event)
+{
+	HWND hwnd = (HWND)winId();
+	HWND fg = GetForegroundWindow();
+	if (fg) {
+		DWORD pid, other = GetWindowThreadProcessId(fg, &pid);
+		if (GetCurrentProcessId() != pid) {
+			DWORD current = GetCurrentThreadId();
+			AttachThreadInput(current, other, TRUE);
+			SetForegroundWindow(hwnd);
+			BringWindowToTop(hwnd);
+			AttachThreadInput(current, other, FALSE);
+		}
+	}
+}
+
 #endif
 
 
