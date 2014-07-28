@@ -25,6 +25,7 @@ public slots:
 	void handleAboutToShow();
 	
 protected:
+	virtual bool event(QEvent *e);
 	virtual void actionEvent(QActionEvent *event);
 	
 private:

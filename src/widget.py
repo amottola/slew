@@ -196,7 +196,7 @@ class Widget(EventHandler):
 					prop.set(self, name, kwargs[name])
 	
 	def create_impl(self, class_name):
-		return getattr(slew._slew, class_name)(self)
+		return getattr(slew.get_backend(), class_name)(self)
 	
 	def initialize(self):
 		self.__parent = None

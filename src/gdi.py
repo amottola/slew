@@ -338,7 +338,7 @@ class Font(object):
 		return Font(self.family, self.face, self.size, self.style, self.spacing)
 	
 	def text_extent(self, text, max_width=None):
-		return slew._slew.get_font_text_extent(self, text, max_width or 0)
+		return slew.get_backend().get_font_text_extent(self, text, max_width or 0)
 	
 	@classmethod
 	def ensure(cls, value, **kwargs):
@@ -537,7 +537,7 @@ class PrintDC(DC):
 
 class Bitmap(DC):
 	def __init__(self, data=None, resource=None, size=None, bits=None):
-		self._impl = slew._slew.Bitmap(Vector.ensure(size) or Vector(32,32))
+		self._impl = slew.get_backend().Bitmap(Vector.ensure(size) or Vector(32,32))
 		if resource is not None:
 			data = slew.load_resource(resource)
 		if data is not None:
@@ -570,7 +570,7 @@ class Bitmap(DC):
 		return bytes(self._impl.save())
 	
 	def __setstate__(self, state):
-		self._impl = slew._slew.Bitmap(Vector(32,32))
+		self._impl = slew.get_backend().Bitmap(Vector(32,32))
 		self._impl.load(state)
 	
 	@deprecated

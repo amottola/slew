@@ -23,7 +23,7 @@ class SceneItem(slew.EventHandler):
 	
 	def __new__(cls, *args, **kwargs):
 		self = slew.EventHandler.__new__(cls)
-		self._impl = slew._slew.SceneItem(self)
+		self._impl = slew.get_backend().SceneItem(self)
 		self.__parent = None
 		self.__children = []
 		if 'name' not in kwargs:

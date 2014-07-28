@@ -46,6 +46,16 @@ Menu_Impl::Menu_Impl()
 }
 
 
+bool
+Menu_Impl::event(QEvent *e)
+{
+	int t = (int)e->type();
+	(void)t;
+	
+	return QMenu::event(e);
+}
+
+
 void
 Menu_Impl::handleAboutToHide()
 {

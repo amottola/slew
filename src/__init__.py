@@ -13,6 +13,8 @@ from utils import *
 from gdi import *
 
 
+_backend = None
+
 class version_info(object):
 	def __init__(self, major, minor, revision):
 		self.version = ( major, minor, revision )
@@ -401,7 +403,7 @@ class DataModel(object):
 	
 	def __new__(cls, *args, **kwargs):
 		self = object.__new__(cls)
-		self._impl = _slew.DataModel(self)
+		self._impl = get_backend().DataModel(self)
 		return self
 	
 	def index(self, row, column=0, parent=None):
@@ -446,7 +448,7 @@ class FontDataModel(DataModel):
 	
 	def __init__(self):
 		if not self.FONTS:
-			self.FONTS = _slew.get_fonts_list()
+			self.FONTS = get_backend().get_fonts_list()
 	
 	def row_count(self, index=None):
 		if index is None:
@@ -649,12 +651,12 @@ def get_application():
 
 
 def set_application_name(name):
-	_slew.set_application_name(name)
+	get_backend().set_application_name(name)
 
 
 
 def set_application_flags(flags):
-	_slew.set_application_flags(flags)
+	get_backend().set_application_flags(flags)
 
 
 
@@ -664,16 +666,16 @@ def run(application):
 	global sApplication
 	sApplication = application
 	if application.NAME is not None:
-		_slew.set_application_name(application.NAME)
+		get_backend().set_application_name(application.NAME)
 	if application.init() is not False:
 		if application.run() is not False:
-			_slew.run(application)
+			get_backend().run(application)
 		application.exit()
 
 
 
 def exit():
-	_slew.exit()
+	get_backend().exit()
 
 
 
@@ -682,7 +684,7 @@ def load_resource(resource):
 	if sArchiveDict is None:
 		sArchiveDict = {}
 		try:
-			node = parse_xml(_slew.load_resource('index.xml'))
+			node = parse_xml(get_backend().load_resource('index.xml'))
 			if node.tag != 'index':
 				raise ValueError('bad archive index')
 			for child in node.getchildren():
@@ -697,7 +699,7 @@ def load_resource(resource):
 		resource = sArchiveDict[resource]
 	try:
 # 		print "attempting to load resource:", resource
-		return _slew.load_resource(resource)
+		return get_backend().load_resource(resource)
 	except IOError, e:
 		try:
 			with open(os.path.join(get_path(RESOURCE_PATH), os.path.normpath(resource)), 'rb') as file:
@@ -718,102 +720,102 @@ def load_interface(resource):
 
 
 def message_box(message, title='', buttons=BUTTON_OK, icon=ICON_INFORMATION, callback=None, userdata=None):
-	return _slew.message_box(message, title, buttons, icon, callback, userdata)
+	return get_backend().message_box(message, title, buttons, icon, callback, userdata)
 
 
 
 def set_shortcut(sequence, action):
-	_slew.set_shortcut(sequence, action)
+	get_backend().set_shortcut(sequence, action)
 
 
 
 def page_setup(settings, parent=None):
-	return _slew.page_setup(settings, parent)
+	return get_backend().page_setup(settings, parent)
 
 
 
 def print_setup(settings, parent=None):
-	return _slew.print_setup(settings, parent)
+	return get_backend().print_setup(settings, parent)
 
 
 
 def print_document(type, name, callback, prompt=True, settings=None, parent=None):
-	return _slew.print_document(type, name, callback, prompt, settings, parent)
+	return get_backend().print_document(type, name, callback, prompt, settings, parent)
 
 
 
 def set_locale(lang):
-	_slew.set_locale(lang)
+	get_backend().set_locale(lang)
 
 
 
 def get_locale_info(lang='it'):
-	return _slew.get_locale_info(lang)
+	return get_backend().get_locale_info(lang)
 
 
 
 def get_computer_info():
-	return _slew.get_computer_info()
+	return get_backend().get_computer_info()
 
 
 
 def get_path(type):
-	return _slew.get_path(type)
+	return get_backend().get_path(type)
 
 
 
 def get_available_desktop_rect():
-	return _slew.get_available_desktop_rect()
+	return get_backend().get_available_desktop_rect()
 
 
 
 def get_fonts_list():
-	return _slew.get_fonts_list()
+	return get_backend().get_fonts_list()
 
 
 
 def run_color_dialog(color, title='Select color'):
-	return _slew.run_color_dialog(Color.ensure(color), title)
+	return get_backend().run_color_dialog(Color.ensure(color), title)
 
 
 
 def run_font_dialog(font, title='Select font'):
-	return _slew.run_font_dialog(Font.ensure(font), title)
+	return get_backend().run_font_dialog(Font.ensure(font), title)
 
 
 
 def normalize_format(format, vars):
-	return _slew.normalize_format(format, vars)
+	return get_backend().normalize_format(format, vars)
 
 
 
 def format_datatype(datatype, format, value):
-	return _slew.format_datatype(datatype, format, value)
+	return get_backend().format_datatype(datatype, format, value)
 
 
 
 def open_uri(uri):
-	return _slew.open_uri(uri)
+	return get_backend().open_uri(uri)
 
 
 
 def get_clipboard_data(mimetype=''):
-	return _slew.get_clipboard_data(mimetype)
+	return get_backend().get_clipboard_data(mimetype)
 
 
 
 def has_clipboard_data(mimetype=''):
-	return _slew.has_clipboard_data(mimetype)
+	return get_backend().has_clipboard_data(mimetype)
 
 
 
 def set_clipboard_data(data, mimetype=''):
-	return _slew.set_clipboard_data(data, mimetype)
+	return get_backend().set_clipboard_data(data, mimetype)
 
 
 
 def add_clipboard_data(data, mimetype=''):
-	return _slew.add_clipboard_data(data, mimetype)
+	return get_backend().add_clipboard_data(data, mimetype)
 
 
 
@@ -823,74 +825,74 @@ def call_later(func, *args):
 
 
 def call_later_timeout(timeout, func, *args):
-	_slew.call_later_timeout(timeout, func, *args)
+	get_backend().call_later_timeout(timeout, func, *args)
 
 
 
 def get_mouse_buttons():
-	return _slew.get_mouse_buttons()
+	return get_backend().get_mouse_buttons()
 
 
 
 def get_mouse_pos():
-	return _slew.get_mouse_pos()
+	return get_backend().get_mouse_pos()
 
 
 
 def get_keyboard_modifiers():
-	return _slew.get_keyboard_modifiers()
+	return get_backend().get_keyboard_modifiers()
 
 
 
 def get_keyboard_repeat_rate():
-	return _slew.get_keyboard_repeat_rate()
+	return get_backend().get_keyboard_repeat_rate()
 
 
 
 def set_keyboard_repeat_rate(rate):
-	_slew.set_keyboard_repeat_rate(rate)
+	get_backend().set_keyboard_repeat_rate(rate)
 
 
 
 def process_events():
-	_slew.process_events()
+	get_backend().process_events()
 
 
 
 def flush_events():
-	_slew.flush_events()
+	get_backend().flush_events()
 
 
 
 def get_standard_bitmap(bitmap, size):
-	return _slew.get_standard_bitmap(bitmap, Vector.ensure(size))
+	return get_backend().get_standard_bitmap(bitmap, Vector.ensure(size))
 
 
 
 def get_screen_dpi():
-	return _slew.get_screen_dpi()
+	return get_backend().get_screen_dpi()
 
 
 
 def get_screen_bitmap():
-	return _slew.get_screen_bitmap()
+	return get_backend().get_screen_bitmap()
 
 
 
 def find_focus():
-	return _slew.find_focus()
+	return get_backend().find_focus()
 
 
 
 def beep():
-	_slew.beep()
+	get_backend().beep()
 
 
 
 def open_file(message=None, specs='*.*', path='', multi=False):
 	if message is None:
 		message = translate('Open file')
-	return _slew.open_file(message, specs, path, multi)
+	return get_backend().open_file(message, specs, path, multi)
 
 
 
@@ -899,14 +901,14 @@ def save_file(message=None, spec=None, path=''):
 		message = translate('Save file')
 	if spec is None:
 		spec = ('*', translate('All files'))
-	return _slew.save_file(message, spec, path)
+	return get_backend().save_file(message, spec, path)
 
 
 
 def choose_directory(message=None, path=''):
 	if message is None:
 		message = translate('Choose directory')
-	return _slew.choose_directory(message, path)
+	return get_backend().choose_directory(message, path)
 
 
 
@@ -945,8 +947,23 @@ def set_default_translation(dict, lang=None):
 
 
 
+def get_backend():
+	global _backend
+	if _backend is None:
+		import _slew
+		_backend = _slew
+	return _backend
+
+
+
 def get_backend_info():
-	return _slew.get_backend_info()
+	return get_backend().get_backend_info()
+
+
+
+def install_backend(backend):
+	global _backend
+	_backend = backend
 
 
 
@@ -955,7 +972,7 @@ def install_exception_handler():
 		import traceback
 		message = '\n'.join(traceback.format_exception(exc_type, exc_value, exc_traceback, 20))
 		sys.__excepthook__(exc_type, exc_value, exc_traceback)
-		_slew.report_exception(message)
+		get_backend().report_exception(message)
 	sys.excepthook = excepthook
 
 
@@ -1011,4 +1028,3 @@ from wizardpage import WizardPage
 from webview import WebView
 
 
-import _slew
