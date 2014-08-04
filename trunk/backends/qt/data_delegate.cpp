@@ -829,12 +829,7 @@ ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem& 
 		PyAutoLocker locker;
 		DataModel_Impl *model = (DataModel_Impl *)index.model();
 		DataSpecifier *spec = model->getDataSpecifier(index);
-		Qt::Alignment alignment;
-		if (spec->fText.isEmpty())
-			alignment = spec->fAlignment;
-		else
-			alignment = Qt::AlignLeft | Qt::AlignVCenter;
-		o.rect = QStyle::alignedRect(o.direction, alignment, QApplication::style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &o).size(), o.rect);
+		o.rect = QStyle::alignedRect(o.direction, (Qt::Alignment)spec->fAlignment, QApplication::style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &o).size(), o.rect);
 	}
 	QItemDelegate::updateEditorGeometry(editor, o, index);
 }
