@@ -219,8 +219,8 @@ SL_DEFINE_DC_METHOD(text, {
 		text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x(), qflags);
 	}
 	painter->drawText(QRectF(-QPointF(br) / 2.0, QPointF(br) / 2.0), qflags, text);
-	painter->setPen(Qt::red);
-	painter->drawRect(QRectF(-QPointF(br) / 2.0, QPointF(br) / 2.0));
+// 	painter->setPen(Qt::red);
+// 	painter->drawRect(QRectF(-QPointF(br) / 2.0, QPointF(br) / 2.0));
 	painter->setWorldTransform(orig_transform);
 })
 
