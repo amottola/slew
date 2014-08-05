@@ -421,120 +421,17 @@ SL_DEFINE_DC_METHOD(set_antialias, {
 
 
 SL_DEFINE_DC_METHOD(get_transform, {
-	PyObject *object = PyList_New(3);
-	PyObject *r0 = PyList_New(3);
-	PyObject *r1 = PyList_New(3);
-	PyObject *r2 = PyList_New(3);
-	
-	QTransform matrix = painter->worldTransform();
-	
-	PyList_SET_ITEM(r0, 0, PyFloat_FromDouble(matrix.m11()));
-	PyList_SET_ITEM(r0, 1, PyFloat_FromDouble(matrix.m12()));
-	PyList_SET_ITEM(r0, 2, PyFloat_FromDouble(matrix.m13()));
-	
-	PyList_SET_ITEM(r1, 0, PyFloat_FromDouble(matrix.m21()));
-	PyList_SET_ITEM(r1, 1, PyFloat_FromDouble(matrix.m22()));
-	PyList_SET_ITEM(r1, 2, PyFloat_FromDouble(matrix.m23()));
-	
-	PyList_SET_ITEM(r2, 0, PyFloat_FromDouble(matrix.m31()));
-	PyList_SET_ITEM(r2, 1, PyFloat_FromDouble(matrix.m32()));
-	PyList_SET_ITEM(r2, 2, PyFloat_FromDouble(matrix.m33()));
-	
-	PyList_SET_ITEM(object, 0, r0);
-	PyList_SET_ITEM(object, 1, r1);
-	PyList_SET_ITEM(object, 2, r2);
-	
-	return object;
+	return createTransformObject(painter->worldTransform());
 })
 
 
 SL_DEFINE_DC_METHOD(set_transform, {
-	PyObject *object, *seq, *r0 = NULL, *r1 = NULL, *r2 = NULL;
-	qreal m11 = 1.0, m12 = 0.0, m13 = 0.0;
-	qreal m21 = 0.0, m22 = 1.0, m23 = 0.0;
-	qreal m31 = 0.0, m32 = 0.0, m33 = 1.0;
+	QTransform transform;
 	
-	if (!PyArg_ParseTuple(args, "O", &object))
+	if (!PyArg_ParseTuple(args, "O&", convertTransform, &transform))
 		return NULL;
 	
-	if (object == Py_None) {
-		painter->resetTransform();
-		Py_RETURN_NONE;
-	}
-	
-	seq = PySequence_Fast(object, "Expected sequence object");
-	if (!seq)
-		return NULL;
-	do {
-		if (PySequence_Fast_GET_SIZE(seq) != 3) {
-			PyErr_SetString(PyExc_ValueError, "Sequence must have 3 elements");
-			break;
-		}
-		object = PySequence_Fast_GET_ITEM(seq, 0);
-		r0 = PySequence_Fast(object, "Expected sequence object");
-		if (!r0)
-			break;
-		if (PySequence_Fast_GET_SIZE(r0) != 3) {
-			PyErr_SetString(PyExc_ValueError, "Sequence must have 3 elements");
-			break;
-		}
-		m11 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r0, 0));
-		if (PyErr_Occurred())
-			break;
-		m12 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r0, 1));
-		if (PyErr_Occurred())
-			break;
-		m13 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r0, 2));
-		if (PyErr_Occurred())
-			break;
-		
-		object = PySequence_Fast_GET_ITEM(seq, 1);
-		r1 = PySequence_Fast(object, "Expected sequence object");
-		if (!r1)
-			break;
-		if (PySequence_Fast_GET_SIZE(r1) != 3) {
-			PyErr_SetString(PyExc_ValueError, "Sequence must have 3 elements");
-			break;
-		}
-		m21 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r1, 0));
-		if (PyErr_Occurred())
-			break;
-		m22 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r1, 1));
-		if (PyErr_Occurred())
-			break;
-		m23 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r1, 2));
-		if (PyErr_Occurred())
-			break;
-		
-		object = PySequence_Fast_GET_ITEM(seq, 2);
-		r2 = PySequence_Fast(object, "Expected sequence object");
-		if (!r2)
-			break;
-		if (PySequence_Fast_GET_SIZE(r2) != 3) {
-			PyErr_SetString(PyExc_ValueError, "Sequence must have 3 elements");
-			break;
-		}
-		m31 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r2, 0));
-		if (PyErr_Occurred())
-			break;
-		m32 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r2, 1));
-		if (PyErr_Occurred())
-			break;
-		m33 = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(r2, 2));
-		if (PyErr_Occurred())
-			break;
-		
-	} while (0);
-	
-	Py_DECREF(seq);
-	Py_XDECREF(r0);
-	Py_XDECREF(r1);
-	Py_XDECREF(r2);
-	
-	if (PyErr_Occurred())
-		return NULL;
-	else
-		painter->setWorldTransform(QTransform(m11, m12, m13, m21, m22, m23, m31, m32, m33));
+	painter->setWorldTransform(transform);
 })
 
 

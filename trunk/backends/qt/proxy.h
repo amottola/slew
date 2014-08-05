@@ -16,6 +16,7 @@ typedef struct DC_Proxy {
 	PyObject_HEAD
 	QPaintDevice	*fDevice;
 	QPainter		*fPainter;
+	QTransform		*fBaseTransform;
 } DC_Proxy;
 
 
@@ -46,8 +47,10 @@ name *impl = (name *)self->fImpl;					\
 #define SL_DC()										\
 QPainter *painter = self->fPainter;					\
 QPaintDevice *device = self->fDevice;				\
+QTransform *baseTransform = self->fBaseTransform;	\
 (void)painter;										\
-(void)device;
+(void)device;										\
+(void)baseTransform;
 
 
 #define SL_DEFINE_METHOD(type, name, ...)			\

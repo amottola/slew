@@ -348,6 +348,58 @@ class Font(object):
 
 
 
+class Transform(object):
+	def __init__(self, m11=1.0, m12=0.0, m13=0.0, m21=0.0, m22=1.0, m23=0.0, m31=0.0, m32=0.0, m33=1.0):
+		if isinstance(m11, (tuple, list)):
+			self.__data = m11
+		else:
+			self.__data = [ [ m11, m12, m13 ], [ m21, m22, m23 ], [ m31, m32, m33 ] ]
+	
+	def as_tuple(self):
+		return ( tuple(self.__data[0]), tuple(self.__data[1]), tuple(self.__data[2]) )
+	
+	def multiply(self, other):
+		if isinstance(other, Transform):
+			other = other.as_tuple()
+		def calc(y, x):
+			return self.__data[y][0] * other[0][x] + self.__data[y][1] * other[1][x] + self.__data[y][2] * other[2][x]
+		self.__data = [
+			[ calc(0,0), calc(0,1), calc(0,2) ],
+			[ calc(1,0), calc(1,1), calc(1,2) ],
+			[ calc(2,0), calc(2,1), calc(2,2) ]
+		]
+	
+	def translate(self, dx, dy):
+		matrix = (
+			( 1.0, 0.0, 0.0 ),
+			( 0.0, 1.0, 0.0 ),
+			( dx, dy, 1.0 )
+		)
+		self.multiply(matrix)
+	
+	def scale(self, dx, dy=None):
+		if dy is None:
+			dy = dx
+		matrix = (
+			( dx, 0.0, 0.0 ),
+			( 0.0, dy, 0.0 ),
+			( 0.0, 0.0, 1.0 )
+		)
+		self.multiply(matrix)
+	
+	def rotate(self, angle):
+		angle = (3.14159236 * angle) / 180.0
+		cos = math.cos(angle)
+		sin = math.sin(angle)
+		matrix = (
+			( cos, sin, 0.0 ),
+			( -sin, cos, 0.0 ),
+			( 0.0, 0.0, 1.0 )
+		)
+		self.multiply(matrix)
+
+
+
 class DC(object):
 	#defs{SL_DC_
 	TEXT_ELIDE_LEFT				= 0x100
@@ -469,14 +521,9 @@ class DC(object):
 	
 	def set_transform(self, matrix, replace=True):
 		if not replace:
-			m = self._impl.get_transform()
-			def calc(y, x):
-				return m[y][0] * matrix[0][x] + m[y][1] * matrix[1][x] + m[y][2] * matrix[2][x]
-			matrix = (
-				( calc(0,0), calc(0,1), calc(0,2) ),
-				( calc(1,0), calc(1,1), calc(1,2) ),
-				( calc(2,0), calc(2,1), calc(2,2) )
-			)
+			t = Transform(self._impl.get_transform())
+			t.multiply(matrix)
+			matrix = t.as_tuple()
 		self._impl.set_transform(matrix)
 	
 	def translate(self, dx, dy):

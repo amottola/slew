@@ -132,31 +132,29 @@ SceneItem_Impl::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 	painter->setClipRect(option->exposedRect);
 	painter->drawPicture(0, 0, fPicture);
 	
-	if ((!toPlainText().isEmpty()) || (hasFocus())) {
-		if (hasFocus()) {
-			painter->save();
-			int item_h = fSize.height();
-			int text_h = document()->size().height();
-			int offset = 0;
+	QStyleOptionGraphicsItem o(*option);
+	o.state &= ~(QStyle::State_Selected | QStyle::State_HasFocus);
+	
+	if ((!toPlainText().isEmpty()) || (option->state & (QStyle::State_Selected | QStyle::State_HasFocus))) {
+		painter->save();
+		int item_h = fSize.height();
+		int text_h = document()->size().height();
+		int offset = 0;
 // 			qDebug() << item_h << text_h;
-			switch (document()->defaultTextOption().alignment() & Qt::AlignVertical_Mask) {
-			case Qt::AlignBottom:		offset = item_h - text_h; break;
-			case Qt::AlignVCenter:		offset = (item_h - text_h) / 2; break;
-			}
-			QStyleOptionGraphicsItem o(*option);
-			o.state &= ~(QStyle::State_Selected | QStyle::State_HasFocus);
-			QRectF rect = painter->clipBoundingRect();
-			rect.adjust(0, 0, 0, offset);
-			o.exposedRect.adjust(0, 0, 0, offset);
-			o.rect.adjust(0, 0, 0, offset);
-			painter->setClipRect(rect);
-			painter->translate(0, offset);
-			QGraphicsTextItem::paint(painter, &o, widget);
-			painter->restore();
+		switch (document()->defaultTextOption().alignment() & Qt::AlignVertical_Mask) {
+		case Qt::AlignBottom:		offset = item_h - text_h; break;
+		case Qt::AlignVCenter:		offset = (item_h - text_h) / 2; break;
 		}
-		else {
-			QGraphicsTextItem::paint(painter, option, widget);
-		}
+		QRectF rect = painter->clipBoundingRect();
+		rect.adjust(0, 0, 0, offset);
+		o.exposedRect.adjust(0, 0, 0, offset);
+		o.rect.adjust(0, 0, 0, offset);
+		painter->setClipRect(rect);
+		
+		painter->setWorldTransform(fTextTransform, true);
+		painter->translate(0, offset);
+		QGraphicsTextItem::paint(painter, &o, widget);
+		painter->restore();
 	}
 }
 
@@ -964,6 +962,21 @@ SL_DEFINE_METHOD(SceneItem, set_padding, {
 })
 
 
+SL_DEFINE_METHOD(SceneItem, get_text_transform, {
+	return createTransformObject(impl->textTransform());
+})
+
+
+SL_DEFINE_METHOD(SceneItem, set_text_transform, {
+	QTransform transform;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertTransform, &transform))
+		return NULL;
+	
+	impl->setTextTransform(transform);
+})
+
+
 SL_START_PROXY(SceneItem)
 SL_METHOD(insert)
 SL_METHOD(remove)
@@ -991,6 +1004,7 @@ SL_PROPERTY(text)
 SL_PROPERTY(align)
 SL_PROPERTY(color)
 SL_PROPERTY(padding)
+SL_PROPERTY(text_transform)
 SL_END_PROXY(SceneItem)
 
 
