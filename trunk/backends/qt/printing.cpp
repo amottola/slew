@@ -186,7 +186,7 @@ SL_DEFINE_DC_METHOD(text, {
 	QTransform user_transform = orig_transform * baseTransform->inverted();
 	
 	transform = *baseTransform;
-	qDebug() << transform << user_transform << *baseTransform;
+// 	qDebug() << transform << user_transform << *baseTransform;
 	transform.translate((qreal)(tl.x() + br.x()) / 2.0, (qreal)(tl.y() + br.y()) / 2.0);
 	transform.scale(DPI / printer->logicalDpiX(), DPI / printer->logicalDpiY());
 	painter->setWorldTransform(transform, false);
