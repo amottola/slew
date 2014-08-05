@@ -246,6 +246,31 @@ class SceneItem(slew.EventHandler):
 		elif not isinstance(padding, (list, tuple)):
 			padding = (str(padding) or '').replace('px', '').split(' ')
 		self._impl.set_padding(padding)
+	
+	def get_text_transform(self):
+		return Transform(self._impl.get_text_transform())
+	
+	def set_text_transform(self, matrix):
+		if isinstance(matrix, Transform):
+			matrix = matrix.as_tuple()
+		self._impl.set_text_transform(matrix)
+	
+	def translate_text(self, dx, dy):
+		t = self.get_text_transform()
+		t.translate(dx, dy)
+		self.set_text_transform(t)
+	
+	def scale_text(self, dx, dy=None):
+		if dy is None:
+			dy = dx
+		t = self.get_text_transform()
+		t.scale(dx, dy)
+		self.set_text_transform(t)
+		
+	def rotate_text(self, angle):
+		t = self.get_text_transform()
+		t.rotate(angle)
+		self.set_text_transform(t)
 
 
 

@@ -118,6 +118,7 @@ int convertPixmap(PyObject *object, QPixmap *value);
 int convertIcon(PyObject *object, QIcon *value);
 int convertDate(PyObject *object, QDate *value);
 int convertDateTime(PyObject *object, QDateTime *value);
+int convertTransform(PyObject *object, QTransform *value);
 
 bool getObjectAttr(PyObject *object, const char *name, QByteArray *value);
 bool getObjectAttr(PyObject *object, const char *name, QPoint *value);
@@ -146,11 +147,12 @@ PyObject *createIntListObject(const QList<int>& list);
 PyObject *createStringObject(const QString& string);
 PyObject *createColorObject(const QColor& color);
 PyObject *createFontObject(const QFont& font);
-PyObject *createDCObject(QPainter *painter, PyObject *objectType=NULL, PyObject *proxyType=NULL, QPaintDevice *device=NULL);
+PyObject *createDCObject(QPainter *painter, PyObject *objectType=NULL, PyObject *proxyType=NULL, QPaintDevice *device=NULL, QTransform *baseTransform=NULL);
 PyObject *createBitmapObject(const QPixmap& pixmap);
 PyObject *createIconObject(const QIcon& icon);
 PyObject *createDateObject(const QDate& date);
 PyObject *createDateTimeObject(const QDateTime& dateTime);
+PyObject *createTransformObject(const QTransform& transform);
 
 
 Abstract_Proxy *getProxy(PyObject *object);

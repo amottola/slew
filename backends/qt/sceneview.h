@@ -31,6 +31,9 @@ public:
 	void setOrigin(const QPoint& origin) { fOrigin = origin; }
 	QPoint origin() { return fOrigin; }
 	
+	void setTextTransform(const QTransform& transform) { fTextTransform = transform; invalidate(); }
+	QTransform textTransform() { return fTextTransform; }
+	
 	void invalidate() { fRepaint = true; prepareGeometryChange(); }
 	
 public slots:
@@ -45,6 +48,7 @@ private:
 	QPicture	fPicture;
 	QPoint		fOrigin;
 	QSize		fSize;
+	QTransform	fTextTransform;
 	bool		fRepaint;
 };
 

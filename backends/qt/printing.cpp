@@ -133,6 +133,7 @@ SL_DEFINE_DC_METHOD(set_size, {
 	else
 		transform.scale(sy, sy);
 	painter->setWorldTransform(transform);
+	*self->fBaseTransform = transform;
 })
 
 
@@ -162,6 +163,7 @@ SL_DEFINE_DC_METHOD(set_dpi, {
 	else
 		transform.scale(sy, sy);
 	painter->setWorldTransform(transform);
+	*self->fBaseTransform = transform;
 })
 
 
@@ -181,10 +183,14 @@ SL_DEFINE_DC_METHOD(text, {
 		return NULL;
 	
 	QTransform transform, orig_transform = painter->worldTransform();
-	transform = orig_transform;
-	transform.translate((qreal)tl.x() + 0.5, (qreal)tl.y() + 0.5);
+	QTransform user_transform = orig_transform * baseTransform->inverted();
+	
+	transform = *baseTransform;
+	qDebug() << transform << user_transform << *baseTransform;
+	transform.translate((qreal)(tl.x() + br.x()) / 2.0, (qreal)(tl.y() + br.y()) / 2.0);
 	transform.scale(DPI / printer->logicalDpiX(), DPI / printer->logicalDpiY());
-	painter->setWorldTransform(transform);
+	painter->setWorldTransform(transform, false);
+	painter->setWorldTransform(user_transform, true);
 	
 	if (flags == -1) {
 		br = QPointF(1000000000, 1000000000);
@@ -212,7 +218,9 @@ SL_DEFINE_DC_METHOD(text, {
 		br = QPoint((br.x() - tl.x()) * printer->logicalDpiX() / DPI, (br.y() - tl.y()) * printer->logicalDpiY() / DPI);
 		text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x(), qflags);
 	}
-	painter->drawText(QRectF(QPointF(0,0), br), qflags, text);
+	painter->drawText(QRectF(-QPointF(br) / 2.0, QPointF(br) / 2.0), qflags, text);
+	painter->setPen(Qt::red);
+	painter->drawRect(QRectF(-QPointF(br) / 2.0, QPointF(br) / 2.0));
 	painter->setWorldTransform(orig_transform);
 })
 
@@ -355,8 +363,9 @@ public slots:
 		
 		do {
 			PyObject *result, *from, *to;
+			QTransform baseTransform;
 			
-			dc = (DC_Proxy *)createDCObject(&painter, PyPrintDC_Type, (PyObject *)&PrintDC_Type, printer);
+			dc = (DC_Proxy *)createDCObject(&painter, PyPrintDC_Type, (PyObject *)&PrintDC_Type, printer, &baseTransform);
 			if (!dc)
 				break;
 			from = PyInt_FromLong(fromPage);

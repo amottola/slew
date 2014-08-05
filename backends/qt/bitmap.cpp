@@ -14,6 +14,7 @@ _new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	if (self) {
 		self->fDevice = NULL;
 		self->fPainter = NULL;
+		self->fBaseTransform = NULL;
 	}
 	return (PyObject *)self;
 }
