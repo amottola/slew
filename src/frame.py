@@ -36,6 +36,8 @@ class Frame(slew.Window):
 									"resize":		STYLE_RESIZEABLE,
 									"modified":		STYLE_MODIFIED,
 									"sheet":		STYLE_SHEET,
+									"maximized":	STYLE_MAXIMIZED,
+									"minimized":	STYLE_MINIMIZED,
 									"modal":		STYLE_MODAL,
 									"default":		STYLE_DEFAULT
 								})),
