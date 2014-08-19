@@ -2478,7 +2478,7 @@ Application::notify(QObject *receiver, QEvent *event)
 			}
 		}
 	}
-	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 	
 	if (original)
 		return QApplication::notify(original, event);
