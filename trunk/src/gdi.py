@@ -516,6 +516,9 @@ class DC(object):
 	def set_antialias(self, enabled):
 		self._impl.set_antialias(enabled)
 	
+	def set_opacity(self, opacity):
+		return self._impl.set_opacity(opacity)
+	
 	def get_transform(self):
 		return self._impl.get_transform()
 	

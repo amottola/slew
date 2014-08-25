@@ -420,6 +420,16 @@ SL_DEFINE_DC_METHOD(set_antialias, {
 })
 
 
+SL_DEFINE_DC_METHOD(set_opacity, {
+	double opacity;
+	
+	if (!PyArg_ParseTuple(args, "d", &opacity))
+		return NULL;
+	
+	painter->setOpacity(opacity);
+})
+
+
 SL_DEFINE_DC_METHOD(get_transform, {
 	return createTransformObject(painter->worldTransform());
 })
@@ -457,6 +467,7 @@ SL_METHOD(text_extent)
 SL_METHOD(blit)
 SL_METHOD(set_clipping)
 SL_METHOD(set_antialias)
+SL_METHOD(set_opacity)
 SL_METHOD(get_transform)
 SL_METHOD(set_transform)
 SL_END_METHODS()
