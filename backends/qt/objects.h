@@ -36,6 +36,7 @@ public:
 	bool isCheckBox() { return type() == SL_DATA_SPECIFIER_CHECKBOX; }
 	bool isComboBox() { return type() == SL_DATA_SPECIFIER_COMBOBOX; }
 	bool isBrowser() { return type() == SL_DATA_SPECIFIER_BROWSER; }
+	bool isSpinField() { return type() == SL_DATA_SPECIFIER_SPINFIELD; }
 	bool isCapsOnly() { return (fFlags & SL_DATA_SPECIFIER_CAPS) != 0; }
 	bool isReadOnly() { return (fFlags & SL_DATA_SPECIFIER_READONLY) != 0; }
 	bool isSelectedOnFocus() { return (fFlags & SL_DATA_SPECIFIER_SELECT_ON_FOCUS) != 0; }

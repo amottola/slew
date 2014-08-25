@@ -5,6 +5,7 @@
 #include <QToolButton>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QSpinBox>
 #include <QStyle>
 #include <QStyleOptionViewItem>
 #include <QStyleOptionComboBox>
@@ -294,6 +295,63 @@ public slots:
 		if (runner.isValid()) {
 			runner.set("index", model->getDataIndex(fIndex), false);
 			runner.set("value", index);
+			runner.run();
+			
+			runner.setName("onCellDataChanged");
+			runner.run();
+		}
+	}
+};
+
+
+
+class SpinBox_Editor : public QSpinBox, public Base_Editor
+{
+	Q_OBJECT
+	
+public:
+	SpinBox_Editor(QWidget *parent, const QModelIndex& index)
+		: QSpinBox(parent), Base_Editor(index)
+	{
+		setRange(0, 100);
+		connect(this, SIGNAL(valueChanged(int)), this, SLOT(handleValueChanged(int)));
+	}
+	
+	bool isModifyEvent(QEvent *event)
+	{
+		if (event->type() == QEvent::KeyPress) {
+			QKeyEvent *e = (QKeyEvent *)event;
+			if ((e->key() == Qt::Key_Up) ||
+				(e->key() == Qt::Key_Down) ||
+				(e->key() == Qt::Key_PageUp) ||
+				(e->key() == Qt::Key_PageDown) ||
+				(e->key() == Qt::Key_Home) ||
+				(e->key() == Qt::Key_End) ||
+				(e->key() == Qt::Key_Backspace) ||
+				(e->key() == Qt::Key_Delete) ||
+				(!e->text().isEmpty()))
+				return true;
+		}
+		else if ((event->type() == QEvent::MouseButtonPress) || (event->type() == QEvent::MouseButtonRelease) || (event->type() == QEvent::MouseButtonDblClick)) {
+			return true;
+		}
+		return false;
+	}
+	
+public slots:
+	void handleStartEditingEvent(QEvent *event)
+	{
+	}
+	
+	void handleValueChanged(int value)
+	{
+		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
+		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		
+		EventRunner runner(view, "onChange");
+		if (runner.isValid()) {
+			runner.set("index", model->getDataIndex(fIndex), false);
+			runner.set("value", value);
 			runner.run();
 			
 			runner.setName("onCellDataChanged");
@@ -625,6 +683,9 @@ ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem& option, 
 	else if (spec->isBrowser()) {
 		editor = new Browser_Editor(parent, index);
 	}
+	else if (spec->isSpinField()) {
+		editor = new SpinBox_Editor(parent, index);
+	}
 	else {
 		editor = new LineEdit_Editor(parent, index);
 	}
@@ -717,7 +778,7 @@ ItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *abstractModel, cons
 			{
 				PyAutoLocker locker;
 				DataSpecifier *spec = model->getDataSpecifier(index);
-				if ((spec->isComboBox()) && (spec->isEnabled()) && (spec->isSelectable()) && (!spec->isReadOnly()))
+				if (((spec->isComboBox()) || (spec->isSpinField())) && (spec->isEnabled()) && (spec->isSelectable()) && (!spec->isReadOnly()))
 					break;
 				modified = true;
 			}
@@ -802,6 +863,10 @@ ItemDelegate::eventFilter(QObject *editor, QEvent *event)
 		ComboBox_Editor *comboBox = qobject_cast<ComboBox_Editor *>(editor);
 		if (comboBox)
 			modified = comboBox->isModifyEvent(event);
+		
+		SpinBox_Editor *spinBox = qobject_cast<SpinBox_Editor *>(editor);
+		if (spinBox)
+			modified = spinBox->isModifyEvent(event);
 		
 		Browser_Editor *browser = qobject_cast<Browser_Editor *>(editor);
 		if (browser)
@@ -888,6 +953,9 @@ ItemDelegate::startEditing(const QModelIndex& index)
 		else if (spec->isComboBox()) {
 			value = PyInt_FromLong(spec->fSelection);
 		}
+		else if (spec->isSpinField()) {
+			value = PyInt_FromLong(spec->fText.toLong());
+		}
 		else {
 			value = Py_None;
 			Py_INCREF(value);
@@ -949,6 +1017,14 @@ ItemDelegate::setEditorData(QWidget *editor, const QModelIndex& index) const
 			comboBox->setEnabled(!spec->isReadOnly());
 		}
 	}
+	else if (spec->isSpinField()) {
+		QSpinBox *spinBox = qobject_cast<QSpinBox *>(editor);
+		if (spinBox) {
+			spinBox->setRange(0, spec->fLength);
+			spinBox->setValue(spec->fText.toLong());
+			spinBox->setEnabled(!spec->isReadOnly());
+		}
+	}
 	else if (spec->isText()) {
 		FormattedLineEdit *lineEdit = qobject_cast<FormattedLineEdit *>(editor);
 		if (lineEdit) {
@@ -997,6 +1073,13 @@ ItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *abstractModel, c
 			model->setData(index, selection, Qt::UserRole);
 		}
 	}
+	else if (spec->isSpinField()) {
+		QSpinBox *spinBox = qobject_cast<QSpinBox *>(editor);
+		if (spinBox) {
+			QString value = QString::number(spinBox->value());
+			model->setData(index, value, Qt::EditRole);
+		}
+	}
 	else if (spec->isText()) {
 		LineEdit_Editor *lineEdit = qobject_cast<LineEdit_Editor *>(editor);
 		if (lineEdit) {
@@ -1022,7 +1105,7 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 			case Qt::Key_PageDown:
 				if (Completer::isRunningOn(editor))
 					return false;
-				if (qobject_cast<ComboBox_Editor *>(editor))
+				if ((qobject_cast<ComboBox_Editor *>(editor)) || (qobject_cast<SpinBox_Editor *>(editor)))
 					return false;
 				return true;
 			case Qt::Key_Home:
@@ -1037,7 +1120,7 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 #ifdef Q_OS_WIN
 			case Qt::Key_Up:
 			case Qt::Key_Down:
-				if ((qobject_cast<ComboBox_Editor *>(editor)) || (Completer::isRunningOn(editor)))
+				if ((qobject_cast<ComboBox_Editor *>(editor)) || (qobject_cast<SpinBox_Editor *>(editor)) || (Completer::isRunningOn(editor)))
 					return false;
 				return true;
 #endif
@@ -1088,6 +1171,7 @@ ItemDelegate::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 	QWidget *editor = view->indexWidget(index);
 	QCheckBox *checkBox = qobject_cast<QCheckBox *>(editor);
 	QComboBox *comboBox = qobject_cast<QComboBox *>(editor);
+	QSpinBox *spinBox = qobject_cast<QSpinBox *>(editor);
 	LineEdit_Editor *lineEdit = qobject_cast<LineEdit_Editor *>(editor);
 	int completion = -1;
 	
@@ -1121,6 +1205,9 @@ ItemDelegate::canFocusOut(QWidget *oldFocus, QWidget *newFocus)
 	}
 	else if (comboBox) {
 		runner.set("value", comboBox->currentIndex());
+	}
+	else if (spinBox) {
+		runner.set("value", spinBox->value());
 	}
 	else if (lineEdit) {
 		runner.set("value", lineEdit->value());
