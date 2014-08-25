@@ -54,6 +54,8 @@ class ListDataModel(slew.DataModel):
 				d.flags = d.SEPARATOR
 			else:
 				d.flags |= d.DROP_TARGET
+		else:
+			d.flags = 0
 		return d
 	
 	def get_items(self):
