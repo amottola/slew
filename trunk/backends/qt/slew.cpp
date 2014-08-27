@@ -3170,6 +3170,7 @@ Application::deallocProxy(Abstract_Proxy *proxy)
 {
 	QObject *object = proxy->fImpl;
 	if (object) {
+		QMutexLocker locker(fMutex);
 		if (fWidgets.remove(object->objectName())) {
 			proxy->fImpl = NULL;
 			object->deleteLater();

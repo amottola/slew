@@ -24,9 +24,11 @@
 class Base_Editor
 {
 public:
-	Base_Editor(const QModelIndex& index) : fIndex(index) {}
+	Base_Editor(QWidget *parent, const QModelIndex& index)
+		: fView((QAbstractItemView *)parent->parent()), fIndex(index) {}
 	
 protected:
+	QAbstractItemView			*fView;
 	QPersistentModelIndex		fIndex;
 };
 
@@ -38,7 +40,7 @@ class Custom_Editor : public QWidget, public Base_Editor
 	
 public:
 	Custom_Editor(QWidget *parent, const QModelIndex& index, PyObject *object)
-		: QWidget(parent), Base_Editor(index), fObject(object)
+		: QWidget(parent), Base_Editor(parent, index), fObject(object)
 	{
 		PyAutoLocker locker;
 		Py_INCREF(object);
@@ -79,7 +81,7 @@ class LineEdit_Editor : public FormattedLineEdit, public Base_Editor
 	
 public:
 	LineEdit_Editor(QWidget *parent, const QModelIndex& index)
-		: FormattedLineEdit(parent), Base_Editor(index), fCurrentCompletion(-1)
+		: FormattedLineEdit(parent), Base_Editor(parent, index), fCurrentCompletion(-1)
 	{
 		connect(this, SIGNAL(textModified(const QString&, int)), this, SLOT(handleTextModified(const QString&, int)));
 		connect(this, SIGNAL(iconClicked()), this, SLOT(handleStartEditingEvent()));
@@ -105,9 +107,8 @@ public:
 	
 	virtual bool canModify(QWidget *widget)
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
-		EventRunner runner(view, "onModify");
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
+		EventRunner runner(fView, "onModify");
 		if (!runner.isValid())
 			return true;
 		runner.set("index", model->getDataIndex(fIndex), false);
@@ -117,8 +118,7 @@ public:
 public slots:
 	void handleStartEditingEvent(QEvent *event = NULL)
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
 		DataSpecifier *spec = model->getDataSpecifier(fIndex);
 		
 		fCurrentCompletion = -1;
@@ -138,7 +138,7 @@ public slots:
 		}
 		
 		if (((!event) || (event->type() == QEvent::MouseButtonRelease)) && (spec) && (spec->isClickableIcon())) {
-			EventRunner runner(view, "onClick");
+			EventRunner runner(fView, "onClick");
 			if (runner.isValid()) {
 				runner.set("index", model->getDataIndex(fIndex), false);
 				runner.run();
@@ -148,12 +148,11 @@ public slots:
 	
 	void handleTextModified(const QString& text, int completion)
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
 		
 		fCurrentCompletion = completion;
 		
-		EventRunner runner(view, "onChange");
+		EventRunner runner(fView, "onChange");
 		if (runner.isValid()) {
 			runner.set("index", model->getDataIndex(fIndex), false);
 			runner.set("value", text);
@@ -168,9 +167,8 @@ public slots:
 
 	void handleContextMenu()
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
-		QPoint pos = view->viewport()->mapFromGlobal(QCursor::pos());
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
+		QPoint pos = fView->viewport()->mapFromGlobal(QCursor::pos());
 		
 		EventRunner runner(this, "onContextMenu");
 		if (runner.isValid()) {
@@ -198,7 +196,7 @@ class CheckBox_Editor : public QCheckBox, public Base_Editor
 	
 public:
 	CheckBox_Editor(QWidget *parent, const QModelIndex& index)
-		: QCheckBox(parent), Base_Editor(index)
+		: QCheckBox(parent), Base_Editor(parent, index)
 	{
 		setFocusProxy(parent);
 		connect(this, SIGNAL(toggled(bool)), this, SLOT(handleToggled(bool)));
@@ -232,10 +230,9 @@ public slots:
 	
 	void handleToggled(bool checked)
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
 		
-		EventRunner runner(view, "onChange");
+		EventRunner runner(fView, "onChange");
 		if (runner.isValid()) {
 			runner.set("index", model->getDataIndex(fIndex), false);
 			runner.set("value", checked);
@@ -255,7 +252,7 @@ class ComboBox_Editor : public QComboBox, public Base_Editor
 	
 public:
 	ComboBox_Editor(QWidget *parent, const QModelIndex& index)
-		: QComboBox(parent), Base_Editor(index)
+		: QComboBox(parent), Base_Editor(parent, index)
 	{
 		setEditable(false);
 		setDuplicatesEnabled(true);
@@ -288,10 +285,9 @@ public slots:
 	
 	void handleActivated(int index)
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
 		
-		EventRunner runner(view, "onChange");
+		EventRunner runner(fView, "onChange");
 		if (runner.isValid()) {
 			runner.set("index", model->getDataIndex(fIndex), false);
 			runner.set("value", index);
@@ -311,7 +307,7 @@ class SpinBox_Editor : public QSpinBox, public Base_Editor
 	
 public:
 	SpinBox_Editor(QWidget *parent, const QModelIndex& index)
-		: QSpinBox(parent), Base_Editor(index)
+		: QSpinBox(parent), Base_Editor(parent, index)
 	{
 		setRange(0, 100);
 		connect(this, SIGNAL(valueChanged(int)), this, SLOT(handleValueChanged(int)));
@@ -345,10 +341,9 @@ public slots:
 	
 	void handleValueChanged(int value)
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
 		
-		EventRunner runner(view, "onChange");
+		EventRunner runner(fView, "onChange");
 		if (runner.isValid()) {
 			runner.set("index", model->getDataIndex(fIndex), false);
 			runner.set("value", value);
@@ -368,7 +363,7 @@ class Browser_Editor : public QWidget, public Base_Editor
 	
 public:
 	Browser_Editor(QWidget *parent, const QModelIndex& index)
-		: QWidget(parent), Base_Editor(index)
+		: QWidget(parent), Base_Editor(parent, index)
 	{
 		fButton = new QToolButton(this);
 		fButton->setText("...");
@@ -401,12 +396,11 @@ public slots:
 	
 	void handleClicked()
 	{
-		QAbstractItemView *view = qobject_cast<QAbstractItemView *>(parent()->parent());
-		DataModel_Impl *model = (DataModel_Impl *)view->model();
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
 		PyObject *dataIndex = model->getDataIndex(fIndex);
 		QPointer<QToolButton> button = qobject_cast<QToolButton *>(sender());
 		
-		EventRunner runner(view, "onClick");
+		EventRunner runner(fView, "onClick");
 		if (runner.isValid()) {
 			runner.set("index", dataIndex, false);
 			runner.set("browsed_data", Py_None, false);
@@ -416,7 +410,7 @@ public slots:
 					data = Py_None;
 				Py_INCREF(data);
 				
-				EventRunner runner2(view, "onChange");
+				EventRunner runner2(fView, "onChange");
 				if (runner2.isValid()) {
 					runner2.set("index", dataIndex, false);
 					runner2.set("value", data, false);
