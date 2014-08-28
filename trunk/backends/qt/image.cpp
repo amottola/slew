@@ -5,7 +5,7 @@
 
 
 Image_Impl::Image_Impl()
-	: QWidget(), WidgetInterface()
+	: QWidget(), WidgetInterface(), fOpacity(1.0)
 {
 }
 
@@ -29,8 +29,10 @@ Image_Impl::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
 	
-	if (!fPixmap.isNull())
+	if (!fPixmap.isNull()) {
+		painter.setOpacity(fOpacity);
 		painter.drawPixmap(0, 0, fPixmap.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+	}
 }
 
 
@@ -39,6 +41,14 @@ Image_Impl::setPixmap(const QPixmap& pixmap)
 {
 	fPixmap = pixmap;
 	updateGeometry();
+	update();
+}
+
+
+void
+Image_Impl::setOpacity(double opacity)
+{
+	fOpacity = qBound(0.0, opacity, 1.0);
 	update();
 }
 
@@ -53,8 +63,19 @@ SL_DEFINE_METHOD(Image, set_bitmap, {
 })
 
 
+SL_DEFINE_METHOD(Image, set_opacity, {
+	double opacity;
+	
+	if (!PyArg_ParseTuple(args, "d", &opacity))
+		return NULL;
+	
+	impl->setOpacity(opacity);
+})
+
+
 SL_START_PROXY_DERIVED(Image, Window)
 SL_METHOD(set_bitmap)
+SL_METHOD(set_opacity)
 SL_END_PROXY_DERIVED(Image, Window)
 
 
