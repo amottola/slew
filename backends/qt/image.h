@@ -18,12 +18,14 @@ public:
 	virtual QSize minimumSizeHint() const { return sizeHint(); }
 	
 	void setPixmap(const QPixmap& pixmap);
+	void setOpacity(double opacity);
 	
 protected:
 	virtual void paintEvent(QPaintEvent *event);
 	
 private:
 	QPixmap			fPixmap;
+	double			fOpacity;
 };
 
 
