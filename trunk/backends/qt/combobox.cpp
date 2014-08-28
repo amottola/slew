@@ -11,6 +11,7 @@
 ComboBox_Impl::ComboBox_Impl()
 	: QComboBox(), WidgetInterface(), fEnterTabs(true), fReadOnly(false), fPopupShown(false)
 {
+	setFocusPolicy(Qt::StrongFocus);
 	setInsertPolicy(QComboBox::NoInsert);
 	setEditable(false);
 	setDuplicatesEnabled(true);
@@ -50,8 +51,9 @@ ComboBox_Impl::isModifyEvent(QEvent *event)
 		break;
 	case QEvent::MouseButtonPress:
 	case QEvent::MouseButtonDblClick:
-	case QEvent::Wheel:
 		return isEnabled() && (!fReadOnly);
+	case QEvent::Wheel:
+		return isEnabled() && hasFocus() && (!fReadOnly);
 	default:
 		break;
 	}
@@ -92,6 +94,9 @@ ComboBox_Impl::eventFilter(QObject *obj, QEvent *event)
 			return true;
 		}
 	}
+	else if ((event->type() == QEvent::Wheel) && (!hasFocus()))
+		return true;
+	
 	if (fReadOnly) {
 		fReadOnly = false;
 		bool skip = isModifyEvent(event);
@@ -101,6 +106,8 @@ ComboBox_Impl::eventFilter(QObject *obj, QEvent *event)
 	
 	return false;
 }
+
+
 
 
 void
