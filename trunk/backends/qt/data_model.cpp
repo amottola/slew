@@ -176,7 +176,7 @@ Node::dataIndex()
 	PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
 	
 	if (fIndex == NULL) {
-		if ((fParent == NULL) || (model == Py_None)) {
+		if ((fParent == NULL) || (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type))) {
 			fIndex = Py_None;
 			Py_INCREF(fIndex);
 		}
@@ -220,7 +220,7 @@ Node::rowCount()
 	PyAutoLocker locker;
 	if (fRowCount < 0) {
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
-		if (model == Py_None) {
+		if (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type)) {
 			fRowCount = 0;
 			return 0;
 		}
@@ -257,7 +257,7 @@ Node::columnCount()
 	PyAutoLocker locker;
 	if (fColumnCount < 0) {
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
-		if (model == Py_None) {
+		if (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type)) {
 			fColumnCount = 0;
 			return 0;
 		}
@@ -289,7 +289,7 @@ Node::hasChildren()
 	PyAutoLocker locker;
 	if (fRowCount < 0) {
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
-		if (((fParent != NULL) && (fColumn > 0)) || (fModel == Py_None))
+		if (((fParent != NULL) && (fColumn > 0)) || (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type)))
 			return false;
 		PyObject *result = PyObject_CallMethod(model, "has_children", "O", dataIndex());
 		if (!result) {
@@ -465,7 +465,7 @@ Node::dataSpecifier()
 		
 		PyObject *dataSpecifier;
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
-		if (model == Py_None) {
+		if (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type)) {
 			fData->fFlags = SL_DATA_SPECIFIER_INVALID;
 			return fData;
 		}
@@ -953,7 +953,7 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 		int align;
 		PyAutoLocker locker;
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
-		if (model == Py_None)
+		if (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type))
 			return value;
 		
 		if (orientation == Qt::Horizontal)
@@ -1119,7 +1119,7 @@ DataModel_Impl::setData(const QModelIndex &index, const QVariant& value, int rol
 		}
 		
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
-		if (model != Py_None) {
+		if (PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type)) {
 			PyObject *result = PyObject_CallMethod(model, "set_data", "OO", dataIndex, spec);
 			Py_XDECREF(result);
 		}
