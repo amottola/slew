@@ -1012,7 +1012,7 @@ SL_END_PROXY(SceneItem)
 SceneView_Impl::SceneView_Impl()
 	: QGraphicsView(), WidgetInterface()
 {
-	setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform | QPainter::NonCosmeticDefaultPen);
+	setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::NonCosmeticDefaultPen);
 	setScene(new QGraphicsScene(this));
 	setDragMode(NoDrag);
 	
