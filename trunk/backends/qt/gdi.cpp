@@ -412,9 +412,9 @@ SL_DEFINE_DC_METHOD(set_antialias, {
 	QPainter::RenderHints hints = painter->renderHints();
 	
 	if (enabled)
-		hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing);
+		hints |= (QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 	else
-		hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		hints &= ~(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 	
 	painter->setRenderHints(hints);
 })
