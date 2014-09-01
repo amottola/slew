@@ -76,16 +76,16 @@ if sys.platform == 'darwin':
 					vars['qt_dir'] = qt_dir
 					vars['qt_ver'] = qt_ver
 					moc = '%(qt_dir)s/bin/moc'
-					cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtGui/%(qt_ver)s/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers -I%(qt_dir)s/lib/QtWidgets.framework/Headers -I%(qt_dir)s/lib/QtWebKitWidgets.framework/Headers -I%(qt_dir)s/lib/QtPrintSupport.framework/Headers '
+					cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtGui/%(qt_ver)s/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers -I%(qt_dir)s/lib/QtWidgets.framework/Headers -I%(qt_dir)s/lib/QtWebKitWidgets.framework/Headers -I%(qt_dir)s/lib/QtPrintSupport.framework/Headers -I%(qt_dir)s/include/QtSvg '
 					ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
 					qt5 = True
 					break
 		else:
 			vars['qt_dir'] = '/Library/Frameworks'
-			cflags = '-I/Library/Frameworks/QtCore.framework/Headers -I/Library/Frameworks/QtGui.framework/Headers -I/Library/Frameworks/QtOpenGL.framework/Headers -I/Library/Frameworks/QtWebKit.framework/Headers -I/Library/Frameworks/QtNetwork.framework/Headers '
+			cflags = '-I/Library/Frameworks/QtCore.framework/Headers -I/Library/Frameworks/QtGui.framework/Headers -I/Library/Frameworks/QtOpenGL.framework/Headers -I/Library/Frameworks/QtWebKit.framework/Headers -I/Library/Frameworks/QtNetwork.framework/Headers -I/Library/Frameworks/QtSvg.framework/Headers '
 			ldflags = ''
 	else:
-		cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers '
+		cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers -I%(qt_dir)s/lib/QtSvg.framework/Headers '
 		ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
 
 	if 'clang' in subprocess.check_output('gcc --version', stderr=subprocess.STDOUT, shell=True, universal_newlines=True):
@@ -127,7 +127,7 @@ if sys.platform == 'darwin':
 			sys.exit(1)
 	
 	cflags += '-g -mmacosx-version-min=%s -isysroot %s -Wno-write-strings -fvisibility=hidden' % (macosx_version_min, sdk)
-	ldflags += '-Wl,-syslibroot,%s -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -mmacosx-version-min=%s -headerpad_max_install_names' % (sdk, macosx_version_min)
+	ldflags += '-Wl,-syslibroot,%s -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -framework QtSvg -mmacosx-version-min=%s -headerpad_max_install_names' % (sdk, macosx_version_min)
 	if qt5:
 		ldflags += ' -framework QtWidgets -framework QtWebKitWidgets -framework QtPrintSupport'
 	data_files = []
@@ -138,22 +138,23 @@ if sys.platform == 'darwin':
 		ldflags += ' -pg'
 elif sys.platform == 'win32':
 	moc = '%(qt_dir)s\\bin\\moc.exe'
-	cflags = '/I"%(qt_dir)s\\include" /I"%(qt_dir)s\\include\\QtCore" /I"%(qt_dir)s\\include\\QtGui" /I"%(qt_dir)s\\include\\QtOpenGL" /I"%(qt_dir)s\\include\\QtWebKit" /I"%(qt_dir)s\\include\\QtNetwork" /Zc:wchar_t- /Z7'
-	ldflags = '/DEBUG /LIBPATH:"%(qt_dir)s\\lib" QtCore%(debug_prefix)s4.lib QtGui%(debug_prefix)s4.lib QtOpenGL%(debug_prefix)s4.lib QtNetwork%(debug_prefix)s4.lib QtWebKit%(debug_prefix)s4.lib user32.lib shell32.lib gdi32.lib advapi32.lib secur32.lib netapi32.lib'
+	cflags = '/I"%(qt_dir)s\\include" /I"%(qt_dir)s\\include\\QtCore" /I"%(qt_dir)s\\include\\QtGui" /I"%(qt_dir)s\\include\\QtOpenGL" /I"%(qt_dir)s\\include\\QtWebKit" /I"%(qt_dir)s\\include\\QtNetwork" /I"%(qt_dir)s\\include\\QtSvg" /Zc:wchar_t- /Z7'
+	ldflags = '/DEBUG /LIBPATH:"%(qt_dir)s\\lib" QtCore%(debug_prefix)s4.lib QtGui%(debug_prefix)s4.lib QtOpenGL%(debug_prefix)s4.lib QtNetwork%(debug_prefix)s4.lib QtWebKit%(debug_prefix)s4.lib QtSvg%(debug_prefix)s4.lib user32.lib shell32.lib gdi32.lib advapi32.lib secur32.lib netapi32.lib'
 	dlls = [
 		'%(qt_dir)s\\bin\\QtCore%(debug_prefix)s4.dll',
 		'%(qt_dir)s\\bin\\QtGui%(debug_prefix)s4.dll',
 		'%(qt_dir)s\\bin\\QtOpenGL%(debug_prefix)s4.dll',
 		'%(qt_dir)s\\bin\\QtNetwork%(debug_prefix)s4.dll',
 		'%(qt_dir)s\\bin\\QtWebKit%(debug_prefix)s4.dll',
+		'%(qt_dir)s\\bin\\QtSvg%(debug_prefix)s4.dll',
 	]
 	data_files = [ (sys.prefix + '/DLLs', [ (dll % vars) for dll in dlls ]) ]
 	if profile:
 		ldflags += ' /PROFILE'
 else:
 	moc = 'moc'
-	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4/QtNetwork -I/usr/include/qt4/QtWebKit'
-	ldflags = '-lQtCore -lQtGui -lQtOpenGL -lQtNetwork -lQtWebKit'
+	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4/QtNetwork -I/usr/include/qt4/QtWebKit -I/usr/include/qt4/QtSvg'
+	ldflags = '-lQtCore -lQtGui -lQtOpenGL -lQtNetwork -lQtWebKit -lQtSvg'
 	data_files = []
 
 

@@ -645,6 +645,43 @@ class Bitmap(DC):
 
 
 
+class Picture(DC):
+	def __init__(self, data=None, resource=None, size=None):
+		if size is None:
+			self._impl = slew.get_backend().Picture()
+		else:
+			self._impl = slew.get_backend().Picture(Vector.ensure(size))
+		if resource is not None:
+			data = slew.load_resource(resource)
+		if data is not None:
+			self.load(data)
+	
+	def load(self, data):
+		self._impl.load(data)
+	
+	def save(self):
+		return self._impl.save()
+	
+	def copy(self):
+		return self._impl.copy()
+	
+	def __getstate__(self):
+		return bytes(self._impl.save())
+	
+	def __setstate__(self, state):
+		self._impl = slew.get_backend().Picture()
+		self._impl.load(state)
+	
+	@classmethod
+	def ensure(cls, picture, allowNone=True):
+		if (picture is None) and allowNone:
+			return picture
+		if not isinstance(picture, Picture):
+			raise TypeError("expected Picture object")
+		return picture
+
+
+
 class Icon(object):
 	def __init__(self, normal, disabled=None, active=None, selected=None):
 		self.normal = Bitmap.ensure(normal, False)

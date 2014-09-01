@@ -134,6 +134,7 @@ static PyObject *sVectorType;
 static PyObject *sColorType;
 static PyObject *sFontType;
 static PyObject *sBitmapType;
+static PyObject *sPictureType;
 static PyObject *sIconType;
 static PyObject *sSerializeData = NULL;
 static PyObject *sUnserializeData = NULL;
@@ -1136,6 +1137,29 @@ convertPixmap(PyObject *object, QPixmap *value)
 
 
 int
+convertPicture(PyObject *object, QPicture *value)
+{
+	if (!object)
+		return 0;
+	if (object == Py_None) {
+		*value = QPicture();
+		return 1;
+	}
+	if (PyObject_TypeCheck(object, (PyTypeObject *)sPictureType)) {
+		DC_Proxy *proxy = (DC_Proxy *)PyObject_GetAttrString(object, "_impl");
+		if (proxy) {
+			*value = *((QPicture *)proxy->fDevice);
+			Py_DECREF(proxy);
+			return 1;
+		}
+		PyErr_Clear();
+	}
+	PyErr_SetString(PyExc_TypeError, "expected 'Picture' object");
+	return 0;
+}
+
+
+int
 convertIcon(PyObject *object, QIcon *value)
 {
 	if (!object)
@@ -1487,6 +1511,19 @@ getObjectAttr(PyObject *object, const char *name, QPixmap *value)
 
 
 bool
+getObjectAttr(PyObject *object, const char *name, QPicture *value)
+{
+	PyObject *attr;
+	attr = PyObject_GetAttrString(object, name);
+	if (!attr)
+		return false;
+	int result = convertPicture(attr, value);
+	Py_DECREF(attr);
+	return bool(result);
+}
+
+
+bool
 getObjectAttr(PyObject *object, const char *name, QIcon *value)
 {
 	PyObject *attr;
@@ -1671,6 +1708,26 @@ createBitmapObject(const QPixmap& pixmap)
 	DC_Proxy *proxy = (DC_Proxy *)PyObject_GetAttrString(object, "_impl");
 	proxy->fPainter->end();
 	*((QPixmap *)proxy->fDevice) = pixmap;
+	proxy->fPainter->begin(proxy->fDevice);
+	Py_DECREF(proxy);
+	
+	return object;
+}
+
+
+PyObject *
+createPictureObject(const QPicture& picture)
+{
+	if (picture.isNull())
+		Py_RETURN_NONE;
+	
+	PyObject *object = PyObject_CallFunctionObjArgs(sPictureType, NULL);
+	if (!object)
+		return NULL;
+	
+	DC_Proxy *proxy = (DC_Proxy *)PyObject_GetAttrString(object, "_impl");
+	proxy->fPainter->end();
+	*((QPicture *)proxy->fDevice) = picture;
 	proxy->fPainter->begin(proxy->fDevice);
 	Py_DECREF(proxy);
 	
@@ -4742,6 +4799,7 @@ init_slew()
 		(!PrintDC_type_setup(module)) ||
 		(!SceneItemDC_type_setup(module)) ||
 		(!Bitmap_type_setup(module)) ||
+		(!Picture_type_setup(module)) ||
 		(!DataModel_type_setup(module)) ||
 		(!SceneItem_type_setup(module)) ||
 		(!WebView_type_setup(module)) ||
@@ -4760,6 +4818,7 @@ init_slew()
 		PyDC_Type = PyDict_GetItemString(dict, "DC");
 		PyPrintDC_Type = PyDict_GetItemString(dict, "PrintDC");
 		sBitmapType = PyDict_GetItemString(dict, "Bitmap");
+		sPictureType = PyDict_GetItemString(dict, "Picture");
 		sIconType = PyDict_GetItemString(dict, "Icon");
 		PyDataIndex_Type = PyDict_GetItemString(dict, "DataIndex");
 		PyDataSpecifier_Type = PyDict_GetItemString(dict, "DataSpecifier");
