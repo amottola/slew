@@ -236,6 +236,7 @@ bool DC_type_setup(PyObject *module);
 bool PrintDC_type_setup(PyObject *module);
 bool SceneItemDC_type_setup(PyObject *module);
 bool Bitmap_type_setup(PyObject *module);
+bool Picture_type_setup(PyObject *module);
 bool DataModel_type_setup(PyObject *module);
 
 
