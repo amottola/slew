@@ -7,9 +7,9 @@
 #include <QPicture>
 #include <QSvgRenderer>
 
+
 extern int qt_defaultDpiX();
 extern int qt_defaultDpiY();
-
 
 
 static PyObject *
@@ -41,7 +41,7 @@ _init(DC_Proxy *self, PyObject *args, PyObject *kwds)
 	
 	self->fDevice = pict;
 	self->fPainter = new QPainter(pict);
-	self->fPainter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::NonCosmeticDefaultPen);
+// 	self->fPainter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::NonCosmeticDefaultPen);
 	
 	return 0;
 }
@@ -140,10 +140,11 @@ SL_DEFINE_DC_METHOD(load, {
 		return NULL;
 	
 	buffer.setData(bytes);
+	buffer.open(QIODevice::ReadOnly);
 	if (newPict.load(&buffer)) {
 		painter->end();
-		*pict = newPict;
 		painter->begin(pict);
+		painter->drawPicture(0, 0, newPict);
 	}
 	else {
 		QSvgRenderer renderer(bytes);
@@ -157,7 +158,6 @@ SL_DEFINE_DC_METHOD(load, {
 		rect.setTopLeft(QPoint(0, 0));
 		pict->setBoundingRect(rect);
 		painter->begin(pict);
-		painter->setRenderHints(0);
 		renderer.render(painter);
 	}
 })
@@ -167,6 +167,7 @@ SL_DEFINE_DC_METHOD(save, {
 	QPicture *pict = (QPicture *)self->fDevice;
 	QByteArray bytes;
 	QBuffer buffer(&bytes);
+	buffer.open(QIODevice::WriteOnly);
 	
 	painter->end();
 	pict->save(&buffer);
