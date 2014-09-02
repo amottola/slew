@@ -863,6 +863,9 @@ DataModel_Impl::columnCount(const QModelIndex &parent) const
 QVariant
 DataModel_Impl::data(const QModelIndex &index, int role) const
 {
+	if (!Py_IsInitialized())
+		return QVariant();
+	
 	PyAutoLocker locker;
 	DataSpecifier *spec = getDataSpecifier(index);
 	
@@ -941,6 +944,9 @@ DataModel_Impl::data(const QModelIndex &index, int role) const
 QVariant
 DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) const
 {
+	if (!Py_IsInitialized())
+		return QVariant();
+	
 	QVariant value;
 	QPoint headerPos = orientation == Qt::Horizontal ? QPoint(section, -1) : QPoint(-1, section);
 	DataSpecifier *data = NULL;
@@ -1054,6 +1060,9 @@ DataModel_Impl::headerData(int section, Qt::Orientation orientation, int role) c
 Qt::ItemFlags
 DataModel_Impl::flags(const QModelIndex &index) const
 {
+	if (!Py_IsInitialized())
+		return 0;
+	
 	PyAutoLocker locker;
 	DataSpecifier *spec = getDataSpecifier(index);
 	Qt::ItemFlags flags = 0;
@@ -1081,6 +1090,9 @@ DataModel_Impl::flags(const QModelIndex &index) const
 bool
 DataModel_Impl::setData(const QModelIndex &index, const QVariant& value, int role)
 {
+	if (!Py_IsInitialized())
+		return false;
+	
 	PyAutoLocker locker;
 	Node *node = (Node *)index.internalPointer();
 	PyObject *dataIndex = node->dataIndex();
