@@ -749,7 +749,6 @@ saveSettings(PyObject *settings, QPrinter *printer)
 		if (PyErr_Occurred())
 			break;
 		
-#ifndef Q_OS_MAC
 		qreal top, right, bottom, left;
 		printer->getPageMargins(&left, &top, &right, &bottom, QPrinter::Millimeter);
 		value = PyInt_FromLong((int)(left * 10.0));
@@ -772,7 +771,6 @@ saveSettings(PyObject *settings, QPrinter *printer)
 		Py_DECREF(value);
 		if (PyErr_Occurred())
 			break;
-#endif
 		
 		valid = true;
 	} while (0);
