@@ -752,49 +752,41 @@ saveSettings(PyObject *settings, QPrinter *printer)
 		qreal top, right, bottom, left;
 		printer->getPageMargins(&left, &top, &right, &bottom, QPrinter::Millimeter);
 #ifdef Q_OS_MAC
-		if (printer->paperSize() != QPrinter::Custom) {
-			value = Py_None;
-			Py_INCREF(value);
-		}
-		else
-#endif
+		value = Py_None;
+		Py_INCREF(value);
+#else
 		value = PyInt_FromLong((int)(left * 10.0));
+#endif
 		PyObject_SetAttrString(settings, "margin_left", value);
 		Py_DECREF(value);
 		if (PyErr_Occurred())
 			break;
 #ifdef Q_OS_MAC
-		if (printer->paperSize() != QPrinter::Custom) {
-			value = Py_None;
-			Py_INCREF(value);
-		}
-		else
+		value = Py_None;
+		Py_INCREF(value);
+#else
+		value = PyInt_FromLong((int)(left * 10.0));
 #endif
-		value = PyInt_FromLong((int)(top * 10.0));
 		PyObject_SetAttrString(settings, "margin_top", value);
 		Py_DECREF(value);
 		if (PyErr_Occurred())
 			break;
 #ifdef Q_OS_MAC
-		if (printer->paperSize() != QPrinter::Custom) {
-			value = Py_None;
-			Py_INCREF(value);
-		}
-		else
+		value = Py_None;
+		Py_INCREF(value);
+#else
+		value = PyInt_FromLong((int)(left * 10.0));
 #endif
-		value = PyInt_FromLong((int)(right * 10.0));
 		PyObject_SetAttrString(settings, "margin_right", value);
 		Py_DECREF(value);
 		if (PyErr_Occurred())
 			break;
 #ifdef Q_OS_MAC
-		if (printer->paperSize() != QPrinter::Custom) {
-			value = Py_None;
-			Py_INCREF(value);
-		}
-		else
+		value = Py_None;
+		Py_INCREF(value);
+#else
+		value = PyInt_FromLong((int)(left * 10.0));
 #endif
-		value = PyInt_FromLong((int)(bottom * 10.0));
 		PyObject_SetAttrString(settings, "margin_bottom", value);
 		Py_DECREF(value);
 		if (PyErr_Occurred())
