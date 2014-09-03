@@ -663,7 +663,11 @@ loadSettings(PyObject *settings, QPrinter *printer)
 	if (PyErr_Occurred())
 		return false;
 	
-	printer->setPageMargins(left, top, right, bottom, QPrinter::Millimeter);
+	left *= 2.8346456693;
+	top *= 2.8346456693;
+	right *= 2.8346456693;
+	bottom *= 2.8346456693;
+	printer->setPageMargins(left, top, right, bottom, QPrinter::Point);
 	printer->setCreator(creator);
 	return true;
 }
