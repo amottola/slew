@@ -3741,7 +3741,7 @@ SL_DEFINE_MODULE_METHOD(get_computer_info, {
 	if (!GetUserNameW(buffer2, &count))
 		user_login_name = PyString_FromString("Unknown");
 	else
-		user_login_name = PyUnicode_FromWideChar(buffer2, count);
+		user_login_name = PyUnicode_FromWideChar(buffer2, count - 1);
 	
 	count = 32767;
 	if (!GetUserNameExW(NameDisplay, buffer2, &count)) {
