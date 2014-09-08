@@ -547,6 +547,7 @@ protected:
 	QAbstractButton				*fIcon;
 	Completer					*fCompleter;
 	int							fCursorPosition;
+	int							fCursorEndPosition;
 };
 
 

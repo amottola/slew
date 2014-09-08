@@ -955,7 +955,7 @@ getFormattedValue(const QString& input, QColor *color, Qt::Alignment *align, int
 
 FormattedLineEdit::FormattedLineEdit(QWidget *parent)
 	: QLineEdit(parent), fDataType(0), fAlign(Qt::AlignLeft), fSelectedOnFocus(true), fCapsOnly(false), fEnterTabs(true),
-		fIcon(NULL), fCompleter(NULL)
+		fIcon(NULL), fCompleter(NULL), fCursorPosition(0), fCursorEndPosition(0)
 {
 	fRegExp = QRegExp(".*");
 	fValidator = new Validator(this);
@@ -1508,6 +1508,8 @@ FormattedLineEdit::focusInEvent(QFocusEvent *event)
 	QLineEdit::focusInEvent(event);
 	
 	setCursorPosition(fCursorPosition);
+	if (fCursorPosition != fCursorEndPosition)
+		setSelection(fCursorPosition, fCursorEndPosition - fCursorPosition);
 	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
 		updateDisplay(true);
@@ -1523,6 +1525,7 @@ FormattedLineEdit::focusOutEvent(QFocusEvent *event)
 	QLineEdit::focusOutEvent(event);
 	
 	fCursorPosition = cursorPosition();
+	fCursorEndPosition = fCursorPosition + selectedText().length();
 	setCursorPosition(0);
 	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
