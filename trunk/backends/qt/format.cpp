@@ -1507,9 +1507,11 @@ FormattedLineEdit::focusInEvent(QFocusEvent *event)
 {
 	QLineEdit::focusInEvent(event);
 	
-	setCursorPosition(fCursorPosition);
-	if (fCursorPosition != fCursorEndPosition)
-		setSelection(fCursorPosition, fCursorEndPosition - fCursorPosition);
+	if (event->reason() != Qt::PopupFocusReason) {
+		setCursorPosition(fCursorPosition);
+		if (fCursorPosition != fCursorEndPosition)
+			setSelection(fCursorPosition, fCursorEndPosition - fCursorPosition);
+	}
 	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
 		updateDisplay(true);
@@ -1524,9 +1526,11 @@ FormattedLineEdit::focusOutEvent(QFocusEvent *event)
 {
 	QLineEdit::focusOutEvent(event);
 	
-	fCursorPosition = cursorPosition();
-	fCursorEndPosition = fCursorPosition + selectedText().length();
-	setCursorPosition(0);
+	if (event->reason() != Qt::PopupFocusReason) {
+		fCursorPosition = cursorPosition();
+		fCursorEndPosition = fCursorPosition + selectedText().length();
+		setCursorPosition(0);
+	}
 	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
 		setInternalValueFromEditValue(QLineEdit::text());
