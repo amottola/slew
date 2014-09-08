@@ -275,6 +275,8 @@ _set_style(TextField_Impl *impl, int style)
 		impl->setInternalValue(impl->value().toUpper());
 	impl->setEnterTabs(style & SL_TEXTFIELD_STYLE_ENTERTABS ? true : false);
 	impl->setAttribute(Qt::WA_MacShowFocusRect, style & SL_WINDOW_STYLE_NOFOCUS ? false : true);
+	if ((impl->isSelectedOnFocus()) && (impl->hasFocus()))
+		impl->selectAll();
 }
 
 
