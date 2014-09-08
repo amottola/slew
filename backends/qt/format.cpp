@@ -1507,6 +1507,8 @@ FormattedLineEdit::focusInEvent(QFocusEvent *event)
 {
 	QLineEdit::focusInEvent(event);
 	
+	setCursorPosition(fCursorPosition);
+	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
 		updateDisplay(true);
 		if (fSelectedOnFocus)
@@ -1519,6 +1521,9 @@ void
 FormattedLineEdit::focusOutEvent(QFocusEvent *event)
 {
 	QLineEdit::focusOutEvent(event);
+	
+	fCursorPosition = cursorPosition();
+	setCursorPosition(0);
 	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
 		setInternalValueFromEditValue(QLineEdit::text());
