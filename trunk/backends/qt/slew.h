@@ -546,6 +546,7 @@ protected:
 	QRegExpValidator			*fValidator;
 	QAbstractButton				*fIcon;
 	Completer					*fCompleter;
+	int							fCursorPosition;
 };
 
 
