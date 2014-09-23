@@ -20,12 +20,24 @@ public:
 	void setPixmap(const QPixmap& pixmap);
 	void setOpacity(double opacity);
 	
+	void setFit(bool fit);
+	bool fit() { return fFit; }
+	
+	void setScale(bool scale);
+	bool scale() { return fScale; }
+	
+	void setAlignment(Qt::Alignment alignment);
+	Qt::Alignment alignment() { return fAlignment; }
+	
 protected:
 	virtual void paintEvent(QPaintEvent *event);
 	
 private:
 	QPixmap			fPixmap;
 	double			fOpacity;
+	bool			fFit;
+	bool			fScale;
+	Qt::Alignment	fAlignment;
 };
 
 
