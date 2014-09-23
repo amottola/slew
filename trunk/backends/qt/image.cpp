@@ -9,7 +9,7 @@
 
 
 Image_Impl::Image_Impl()
-	: QWidget(), WidgetInterface(), fOpacity(1.0), fFit(false), fScale(true)
+	: QWidget(), WidgetInterface(), fOpacity(1.0), fFit(false), fScale(true), fAlignment(Qt::AlignCenter)
 {
 }
 
