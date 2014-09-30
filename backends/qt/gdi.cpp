@@ -319,14 +319,14 @@ SL_DEFINE_DC_METHOD(text, {
 	QString text;
 	QPointF tl, br;
 	int flags;
-	int qflags = 0;
+	int qflags = Qt::TextExpandTabs;
 	
 	if (!PyArg_ParseTuple(args, "O&O&O&i", convertString, &text, convertPointF, &tl, convertPointF, &br, &flags))
 		return NULL;
 	
 	if (flags == -1) {
 		br = QPointF(1000000000, 1000000000);
-		qflags = Qt::AlignTop | Qt::AlignLeft;
+		qflags |= Qt::AlignTop | Qt::AlignLeft;
 	}
 	else {
 		Qt::TextElideMode mode = Qt::ElideNone;
@@ -334,7 +334,7 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_DC_TEXT_ELIDE_LEFT:		mode = Qt::ElideLeft; break;
 		case SL_DC_TEXT_ELIDE_CENTER:	mode = Qt::ElideMiddle; break;
 		case SL_DC_TEXT_ELIDE_RIGHT:	mode = Qt::ElideRight; break;
-		default:						mode = Qt::ElideNone; qflags = Qt::TextWordWrap; break;
+		default:						mode = Qt::ElideNone; qflags |= Qt::TextWordWrap; break;
 		}
 		switch (flags & SL_ALIGN_HMASK) {
 		case SL_ALIGN_LEFT:				qflags |= Qt::AlignLeft; break;
@@ -347,7 +347,8 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_ALIGN_VCENTER:			qflags |= Qt::AlignVCenter; break;
 		case SL_ALIGN_BOTTOM:			qflags |= Qt::AlignBottom; break;
 		}
-		text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x() - tl.x(), qflags);
+		if (mode != Qt::ElideNone)
+			text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x() - tl.x(), qflags);
 	}
 	painter->drawText(QRectF(tl, br), qflags, text);
 })
