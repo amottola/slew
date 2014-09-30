@@ -177,7 +177,7 @@ SL_DEFINE_DC_METHOD(text, {
 	QPrinter *printer = (QPrinter *)device;
 	QString key, text;
 	QPointF tl, br;
-	int flags, qflags = 0;
+	int flags, qflags = Qt::TextExpandTabs;
 	
 	if (!PyArg_ParseTuple(args, "O&O&O&i", convertString, &text, convertPointF, &tl, convertPointF, &br, &flags))
 		return NULL;
@@ -194,7 +194,7 @@ SL_DEFINE_DC_METHOD(text, {
 	
 	if (flags == -1) {
 		br = QPointF(1000000000, 1000000000);
-		qflags = Qt::AlignTop | Qt::AlignLeft;
+		qflags |= Qt::AlignTop | Qt::AlignLeft;
 	}
 	else {
 		Qt::TextElideMode mode = Qt::ElideNone;
@@ -202,7 +202,7 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_DC_TEXT_ELIDE_LEFT:		mode = Qt::ElideLeft; break;
 		case SL_DC_TEXT_ELIDE_CENTER:	mode = Qt::ElideMiddle; break;
 		case SL_DC_TEXT_ELIDE_RIGHT:	mode = Qt::ElideRight; break;
-		default:						mode = Qt::ElideNone; qflags = Qt::TextWordWrap; break;
+		default:						mode = Qt::ElideNone; qflags |= Qt::TextWordWrap; break;
 		}
 		switch (flags & SL_ALIGN_HMASK) {
 		case SL_ALIGN_LEFT:				qflags |= Qt::AlignLeft; break;
@@ -216,7 +216,8 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_ALIGN_BOTTOM:			qflags |= Qt::AlignBottom; break;
 		}
 		br = QPoint((br.x() - tl.x()) * printer->logicalDpiX() / DPI, (br.y() - tl.y()) * printer->logicalDpiY() / DPI);
-		text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x(), qflags);
+		if (mode != Qt::ElideNone)
+			text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x(), qflags);
 	}
 	painter->drawText(QRectF(-QPointF(br) / 2.0, QPointF(br) / 2.0), qflags, text);
 // 	painter->setPen(Qt::red);
