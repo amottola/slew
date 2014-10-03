@@ -1346,6 +1346,7 @@ FormattedLineEdit::isValidInput(QKeyEvent *event, QString *output)
 		key = Qt::Key_Delete;
 	}
 	else if (event == QKeySequence::Paste) {
+		handlePasteClipboard();
 		insert = QApplication::clipboard()->text();
 		key = -1;
 	}
@@ -1710,12 +1711,22 @@ FormattedLineEdit::handleCut()
 
 
 void
+FormattedLineEdit::handlePasteClipboard()
+{
+	QString text = QApplication::clipboard()->text();
+	if (modifyClipboardOnPaste(text))
+		QApplication::clipboard()->setText(text);
+}
+
+
+void
 FormattedLineEdit::handlePaste()
 {
 	if (!canPaste()) {
 		QApplication::beep();
 	}
 	else if (canModify(this)) {
+		handlePasteClipboard();
 		paste();
 		QString text = QLineEdit::text();
 		setInternalValueFromEditValue(text);

@@ -145,6 +145,19 @@ TextField_Impl::handleContextMenu()
 }
 
 
+bool
+TextField_Impl::modifyClipboardOnPaste(QString& text)
+{
+	EventRunner runner(this, "onPaste");
+	if (runner.isValid()) {
+		runner.set("value", text);
+		if (runner.run())
+			return runner.get("value", &text);
+	}
+	return false;
+}
+
+
 SL_DEFINE_METHOD(TextField, cut, {
 	impl->cut();
 })

@@ -29,7 +29,9 @@ public:
 	
 	virtual bool isFocusOutEvent(QEvent *event);
 	virtual bool canFocusOut(QWidget *oldFocus, QWidget *newFocus);
-	
+
+	virtual bool modifyClipboardOnPaste(QString& text);
+
 	virtual QAbstractButton *createIconButton(const QIcon& icon);
 	
 	void setCancelIcon(const QIcon& icon);

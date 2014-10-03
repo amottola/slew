@@ -115,6 +115,17 @@ public:
 		return runner.run();
 	}
 	
+	virtual bool modifyClipboardOnPaste(QString& text)
+	{
+		EventRunner runner(fView, "onPaste");
+		if (runner.isValid()) {
+			runner.set("value", text);
+			if (runner.run())
+				return runner.get("value", &text);
+		}
+		return false;
+	}
+
 public slots:
 	void handleStartEditingEvent(QEvent *event = NULL)
 	{

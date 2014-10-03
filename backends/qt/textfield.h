@@ -31,6 +31,8 @@ public:
 	virtual bool isFocusOutEvent(QEvent *event);
 	virtual bool canFocusOut(QWidget *oldFocus, QWidget *newFocus);
 	
+	virtual bool modifyClipboardOnPaste(QString& text);
+
 public slots:
 	void handleTextModified(const QString& text, int completion);
 	void handleReturnPressed();
