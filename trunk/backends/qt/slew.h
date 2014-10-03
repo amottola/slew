@@ -493,6 +493,9 @@ public:
 	bool canCut();
 	bool canPaste();
 	virtual bool canModify(QWidget *widget) { return true; }
+
+	void handlePasteClipboard();
+	virtual bool modifyClipboardOnPaste(QString& text) { return false; }
 	
 	void complete() { emit doComplete(); }
 	
