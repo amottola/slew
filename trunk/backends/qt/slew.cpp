@@ -139,7 +139,6 @@ static PyObject *sIconType;
 static PyObject *sSerializeData = NULL;
 static PyObject *sUnserializeData = NULL;
 static QHash<int, TimedCall *> sTimers;
-static int sInNotify = 0;
 
 PyObject *PyDC_Type;
 PyObject *PyPrintDC_Type;
@@ -2536,10 +2535,6 @@ Application::notify(QObject *receiver, QEvent *event)
 			}
 		}
 	}
-	sInNotify++;
-	if (sInNotify == 1)
-		QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-	sInNotify--;
 	
 	if (original)
 		return QApplication::notify(original, event);
