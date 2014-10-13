@@ -2593,15 +2593,9 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			QWidget *w = qobject_cast<QWidget *>(obj);
 			Widget_Proxy *proxy;
 			if ((w) && (proxy = getSafeProxy(w)) && (!qobject_cast<SceneView_Impl *>(obj->parent()))) {
-				QScrollArea *area = qobject_cast<QScrollArea *>(proxy->fImpl);
-				if ((area) && (area->widget() != obj)) {
+				QAbstractScrollArea *area = qobject_cast<QAbstractScrollArea *>(proxy->fImpl);
+				if ((area) && (area->viewport() != obj))
 					break;
-				}
-				else {
-					QAbstractScrollArea *area = qobject_cast<QAbstractScrollArea *>(proxy->fImpl);
-					if ((area) && (area->viewport() != obj))
-						break;
-				}
 				EventRunner runner(obj, "onPaint");
 				if (runner.isValid()) {
 					QPainter painter(w);
