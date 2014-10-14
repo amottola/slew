@@ -3190,7 +3190,7 @@ Application::registerObject(QObject *object, Abstract_Proxy *proxy)
 {
 	QMutexLocker locker(fMutex);
 	object->moveToThread(thread());
-	QString name = QString("%1_%2").arg(object->metaObject()->className()).arg(fWID++);
+	QString name = QString("__slew_%1_%2").arg(object->metaObject()->className()).arg(fWID++);
 	object->setObjectName(name);
 	fWidgets[name] = (PyObject *)proxy;
 }

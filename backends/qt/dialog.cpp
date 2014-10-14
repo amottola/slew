@@ -192,6 +192,8 @@ SL_DEFINE_METHOD(Dialog, show_modal, {
 		}
 		break;
 	}
+	QApplication::sendPostedEvents();
+
 	impl->setWindowModality(qmodality);
 	impl->setReturnValue(Py_None);
 	
