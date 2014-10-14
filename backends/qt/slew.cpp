@@ -2460,88 +2460,99 @@ Application::notify(QObject *receiver, QEvent *event)
 			if (!original)
 				return true;
 		}
+		sInNotify++;
+		if (sInNotify == 1) {
+			if (original)
+				QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+		}
+		sInNotify--;
 		
-		QWidget *widget = focusWidget();
-		while ((original) && (widget)) {
-			if (widget->isEnabled()) {
-				QPointer<QWidget> oldFocus = widget;
-				impl = dynamic_cast<WidgetInterface *>(widget);
-				if (!impl) {
-					QWidget *proxy = widget;
-					while (proxy->focusProxy())
-						proxy = proxy->focusProxy();
-					oldFocus = proxy;
-					impl = dynamic_cast<WidgetInterface *>(proxy);
-				}
-				if ((impl) && (impl->isFocusOutEvent(event)) && (target) && (oldFocus)) {
-					if (Completer::eatFocus())
-						break;
-					
-// 					qDebug() << "--- focus out event" << event << oldFocus << target << target->focusPolicy();
-					switch (event->type()) {
-					case QEvent::KeyPress:
-						{
-							QKeyEvent *e = (QKeyEvent *)event;
-// 							if (((e->key() == Qt::Key_Tab) || (e->key() == Qt::Key_Backtab)) &&
-// 									((target->focusPolicy() & oldFocus->focusPolicy() & Qt::TabFocus) == Qt::TabFocus)) {
-// 							if ((target->focusPolicy() & Qt::TabFocus) == Qt::TabFocus) {
-							if (e->key() == Qt::Key_Tab)
-								target = oldFocus->nextInFocusChain();
-							else if (e->key() == Qt::Key_Backtab)
-								target = oldFocus->previousInFocusChain();
-							if ((!sModalBalloon) && (!impl->canFocusOut(oldFocus, target)))
-								return true;
-							widget = NULL;
-						}
-						break;
+		if (original) {
+			QWidget *widget = focusWidget();
+			while ((original) && (widget)) {
+				if (widget->isEnabled()) {
+					QPointer<QWidget> oldFocus = widget;
+					impl = dynamic_cast<WidgetInterface *>(widget);
+					if (!impl) {
+						QWidget *proxy = widget;
+						while (proxy->focusProxy())
+							proxy = proxy->focusProxy();
+						oldFocus = proxy;
+						impl = dynamic_cast<WidgetInterface *>(proxy);
+					}
+					if ((impl) && (impl->isFocusOutEvent(event)) && (target) && (oldFocus)) {
+						if (Completer::eatFocus())
+							break;
 						
-					case QEvent::MouseButtonPress:
-					case QEvent::MouseButtonDblClick:
-					case QEvent::TouchBegin:
-						{
-							if (Completer::isRunningOn(oldFocus)) {
-								if (!Completer::underMouse()) {
-									Completer::hide();
+	// 					qDebug() << "--- focus out event" << event << oldFocus << target << target->focusPolicy();
+						switch (event->type()) {
+						case QEvent::KeyPress:
+							{
+								QKeyEvent *e = (QKeyEvent *)event;
+	// 							if (((e->key() == Qt::Key_Tab) || (e->key() == Qt::Key_Backtab)) &&
+	// 									((target->focusPolicy() & oldFocus->focusPolicy() & Qt::TabFocus) == Qt::TabFocus)) {
+	// 							if ((target->focusPolicy() & Qt::TabFocus) == Qt::TabFocus) {
+								if (e->key() == Qt::Key_Tab)
+									target = oldFocus->nextInFocusChain();
+								else if (e->key() == Qt::Key_Backtab)
+									target = oldFocus->previousInFocusChain();
+								if ((!sModalBalloon) && (!impl->canFocusOut(oldFocus, target)))
+									return true;
+								widget = NULL;
+							}
+							break;
+							
+						case QEvent::MouseButtonPress:
+						case QEvent::MouseButtonDblClick:
+						case QEvent::TouchBegin:
+							{
+								if (Completer::isRunningOn(oldFocus)) {
+									if (!Completer::underMouse()) {
+										Completer::hide();
+									}
+									widget = NULL;
+									break;
 								}
-								widget = NULL;
-								break;
+	//  							if (target->focusPolicy() != Qt::NoFocus) {
+									if (!impl->canFocusOut(oldFocus, target))
+										return true;
+									widget = NULL;
+	// 							}
 							}
-//  							if (target->focusPolicy() != Qt::NoFocus) {
-								if (!impl->canFocusOut(oldFocus, target))
-									return true;
-								widget = NULL;
-// 							}
-						}
-						break;
+							break;
+							
+						case QEvent::Wheel:
+							{
+								if (target->focusPolicy() != Qt::NoFocus) {
+									if (!impl->canFocusOut(oldFocus, target))
+										return true;
+									widget = NULL;
+								}
+							}
+							break;
 						
-					case QEvent::Wheel:
-						{
-							if (target->focusPolicy() != Qt::NoFocus) {
-								if (!impl->canFocusOut(oldFocus, target))
-									return true;
-								widget = NULL;
-							}
+						default:
+							break;
 						}
-						break;
-					
-					default:
-						break;
 					}
 				}
-			}
-			if (widget) {
-				if (widget->isWindow())
-					break;
-				widget = widget->parentWidget();
+				if (widget) {
+					if (widget->isWindow())
+						break;
+					widget = widget->parentWidget();
+				}
 			}
 		}
 	}
-	sInNotify++;
-	if (sInNotify == 1) {
-		if (original)
-			QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+
+	if (original) {
+		sInNotify++;
+		if (sInNotify == 1) {
+			if (original)
+				QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+		}
+		sInNotify--;
 	}
-	sInNotify--;
 	
 	if (original)
 		return QApplication::notify(original, event);
