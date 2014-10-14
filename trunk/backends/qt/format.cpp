@@ -1516,7 +1516,7 @@ FormattedLineEdit::focusInEvent(QFocusEvent *event)
 	
 	if ((fState == Acceptable) && (event->reason() != Qt::PopupFocusReason)) {
 		updateDisplay(true);
-		if ((fSelectedOnFocus) && (event->reason() != Qt::ActiveWindowFocusReason))
+		if ((fSelectedOnFocus) && (!Completer::eatFocus()))
 			QMetaObject::invokeMethod(this, "selectAll", Qt::QueuedConnection);
 	}
 }
