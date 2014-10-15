@@ -380,10 +380,20 @@ SL_DEFINE_METHOD(Window, popup_message, {
 	QString text;
 	int align, buttons;
 	QPoint pos;
-	
-	if (!PyArg_ParseTuple(args, "O&ii", convertString, &text, &align, &buttons))
+	PyObject *obj;
+
+	if (!PyArg_ParseTuple(args, "Oii", &obj, &align, &buttons))
 		return NULL;
 	
+	if (obj == Py_None) {
+		hidePopupMessage();
+		Py_RETURN_NONE;
+	}
+	else if (!convertString(obj, &text)) {
+		PyErr_SetString(PyExc_ValueError, "Expected str or None object");
+		return NULL;
+	}
+
 	if ((Completer::isRunningOn(impl)) && (align == SL_BOTTOM))
 		align = SL_TOP;
 	
