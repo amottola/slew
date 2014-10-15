@@ -2493,8 +2493,8 @@ Application::notify(QObject *receiver, QEvent *event)
 		}
 		sInNotify++;
 		if (sInNotify == 1) {
-			if (original)
-				QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+			// if (original)
+			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 		}
 		sInNotify--;
 		
@@ -2579,8 +2579,8 @@ Application::notify(QObject *receiver, QEvent *event)
 	if (original) {
 		sInNotify++;
 		if (sInNotify == 1) {
-			if (original)
-				QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+			// if (original)
+			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 		}
 		sInNotify--;
 	}
