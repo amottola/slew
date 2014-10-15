@@ -497,11 +497,20 @@ SL_DEFINE_METHOD(type, popup_message, {											\
 	QString text;																\
 	int align, buttons, result;													\
 	QPoint pos;																	\
-	PyObject *object;															\
+	PyObject *textObj, *object;													\
 																				\
-	if (!PyArg_ParseTuple(args, "O&iiO", convertString, &text, &align,			\
+	if (!PyArg_ParseTuple(args, "OiiO", &textObj, &align,						\
 			&buttons, &object))													\
 		return NULL;															\
+																				\
+	if (textObj == Py_None) {													\
+		hidePopupMessage();														\
+		Py_RETURN_NONE;															\
+	}																			\
+	else if (!convertString(textObj, &text)) {									\
+		PyErr_SetString(PyExc_ValueError, "Expected str or None object");		\
+		return NULL;															\
+	}																			\
 																				\
 	DataModel_Impl *model = (DataModel_Impl *)impl->model();					\
 	QModelIndex index = model->index(object);									\

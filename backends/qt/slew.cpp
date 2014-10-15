@@ -53,10 +53,13 @@
 	#include <security.h>
 	#define strdup				_strdup
 #else
+
 	#include <unistd.h>
 	#include <dlfcn.h>
 	#include <locale.h>
 	#include <pwd.h>
+	#include <X11/XKBlib.h>
+	#include <QX11Info>
 #endif
 
 #include <QThread>
@@ -2336,6 +2339,34 @@ getKeyModifiers(Qt::KeyboardModifiers modifiers)
 		result |= SL_MODIFIER_CONTROL;
 	if (modifiers & Qt::MetaModifier)
 		result |= SL_MODIFIER_META;
+
+#ifdef Q_OS_WIN
+	if (GetKeyState(VK_CAPITAL))
+		result |= SL_MODIFIER_CAPS_LOCK;
+	if (GetKeyState(VK_NUMLOCK))
+		result |= SL_MODIFIER_NUM_LOCK;
+	if (GetKeyState(VK_SCROLL))
+		result |= SL_MODIFIER_SCROLL_LOCK;
+#elif defined(Q_OS_MAC)
+	CGEventFlags flags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
+	if (flags & kCGEventFlagMaskAlphaShift)
+		result |= SL_MODIFIER_CAPS_LOCK;
+	if (flags & kCGEventFlagMaskNumericPad)
+		result |= SL_MODIFIER_NUM_LOCK;
+	if (flags & kCGEventFlagMaskSecondaryFn)
+		result |= SL_MODIFIER_FUNCTION;
+#else
+	Display *display = QX11Info::display();
+	unsigned int n;
+	XkbGetIndicatorState(display, XkbUseCoreKbd, &n);
+	if (n & 0x1)
+		result |= SL_MODIFIER_CAPS_LOCK;
+	if (n & 0x2)
+		result |= SL_MODIFIER_NUM_LOCK;
+	if (n & 0x4)
+		result |= SL_MODIFIER_SCROLL_LOCK;
+#endif
+
 	return result;
 }
 
