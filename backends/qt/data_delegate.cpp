@@ -1157,7 +1157,7 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 			if (index == view->currentIndex())
 				return false;
 			QWidget *target = qApp->widgetAt(QCursor::pos());
-			if ((target) && ((target->focusPolicy() & Qt::ClickFocus) == 0) && (target != view->viewport()))
+			if ((target) && ((target->focusPolicy() & Qt::ClickFocus) == 0) && (!qobject_cast<QAbstractItemView *>(target->parent())))
 				return false;
 			return true;
 		}
