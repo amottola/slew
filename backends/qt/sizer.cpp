@@ -224,14 +224,16 @@ Sizer_Impl::reinsert(QObject *child, bool reparent)
 		Sizer_Impl *sizer_child = (Sizer_Impl *)child;
 		alignment = sizer_child->alignment();
 		
-		removeItem(sizer_child);
+		if (reparent)
+			removeItem(sizer_child);
 		addItem(sizer_child, cell.y(), cell.x(), span.height(), span.width(), alignment);
 	}
 	else {
 		Window_Impl *widget_child = (Window_Impl *)child;
 		alignment = qvariant_cast<Qt::Alignment>(child->property("boxAlign"));
 		
-		removeWidget(widget_child);
+		if (reparent)
+			removeWidget(widget_child);
 		addItem(new WidgetItem(widget_child), cell.y(), cell.x(), span.height(), span.width(), alignment);
 	}
 	if (reparent)
