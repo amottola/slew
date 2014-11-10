@@ -1156,6 +1156,9 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 			QModelIndex index = view->indexAt(view->viewport()->mapFromGlobal(QCursor::pos()));
 			if (index == view->currentIndex())
 				return false;
+			QWidget *target = qApp->widgetAt(QCursor::pos());
+			if ((target) && ((target->focusPolicy() & Qt::ClickFocus) == 0) && (target != view->viewport()))
+				return false;
 			return true;
 		}
 		break;
