@@ -91,7 +91,7 @@ if sys.platform == 'darwin':
 	if 'clang' in subprocess.check_output('gcc --version', stderr=subprocess.STDOUT, shell=True, universal_newlines=True):
 		cflags += '-Qunused-arguments -Wno-unused-private-field -Wno-self-assign '
 	
-	sdk = None
+	sdk = os.environ.get('SDK', None)
 	for index, arg in enumerate(sys.argv):
 		if arg == '--sdk':
 			if index + 1 >= len(sys.argv):
@@ -107,6 +107,7 @@ if sys.platform == 'darwin':
 	known_sdks = {
 		'10.5':		('/Developer/SDKs/MacOSX10.5.sdk', '10.5'),
 		'10.6':		('/Developer/SDKs/MacOSX10.6.sdk', '10.5'),
+		'10.6x':	('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk', '10.5'),
 		'10.7':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk', '10.5'),
 		'10.8':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk', '10.6'),
 		'10.9':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk', '10.7'),
