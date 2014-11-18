@@ -106,12 +106,13 @@ EventRunner::run()
 		PyErr_Clear();
 		return true;
 	}
-	
+	Py_INCREF(widget);
 	PyObject *handler = PyObject_CallMethod(widget, "get_handler", NULL);
 	if ((!handler) || (handler == Py_None)) {
 		handler = widget;
 		Py_INCREF(handler);
 	}
+	Py_DECREF(widget);
 	
 	PyObject *method = PyObject_GetAttrString(handler, fName.toUtf8());
 	if (method) {

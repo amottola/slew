@@ -174,6 +174,7 @@ Node::dataIndex()
 {
 	PyAutoLocker locker;
 	PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
+	Py_INCREF(model);
 	
 	if (fIndex == NULL) {
 		if ((fParent == NULL) || (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type))) {
@@ -190,6 +191,7 @@ Node::dataIndex()
 			}
 		}
 	}
+	Py_DECREF(model);
 	return fIndex;
 }
 
@@ -224,7 +226,9 @@ Node::rowCount()
 			fRowCount = 0;
 			return 0;
 		}
+		Py_INCREF(model);
 		PyObject *result = PyObject_CallMethod(model, "row_count", "O", dataIndex());
+		Py_DECREF(model);
 		if (result) {
 			fRowCount = PyInt_AsLong(result);
 			Py_DECREF(result);
@@ -261,7 +265,9 @@ Node::columnCount()
 			fColumnCount = 0;
 			return 0;
 		}
+		Py_INCREF(model);
 		PyObject *result = PyObject_CallMethod(model, "column_count", NULL);
+		Py_DECREF(model);
 		if (result) {
 			fColumnCount = PyInt_AsLong(result);
 			Py_DECREF(result);
@@ -291,7 +297,9 @@ Node::hasChildren()
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
 		if (((fParent != NULL) && (fColumn > 0)) || (!PyObject_TypeCheck(model, (PyTypeObject *)PyDataModel_Type)))
 			return false;
+		Py_INCREF(model);
 		PyObject *result = PyObject_CallMethod(model, "has_children", "O", dataIndex());
+		Py_DECREF(model);
 		if (!result) {
 			PyErr_Print();
 			PyErr_Clear();
