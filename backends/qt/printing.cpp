@@ -400,8 +400,10 @@ public slots:
 					page = toPage;
 				}
 				
-				if (page != toPage)
-					printer->newPage();
+				if (page != toPage) {
+					if (!printer->newPage())
+						break;
+				}
 			}
 		} while (0);
 		
@@ -425,6 +427,8 @@ private:
 
 class PageSetupDialog : public QPageSetupDialog
 {
+	Q_OBJECT
+
 public:
 	PageSetupDialog(QPrinter *printer, QWidget *parent)
 		: QPageSetupDialog(printer, parent), fEventLoop(NULL)
@@ -479,6 +483,8 @@ private:
 
 class PrintDialog : public QPrintDialog
 {
+	Q_OBJECT
+
 public:
 	PrintDialog(QPrinter *printer, QWidget *parent)
 		: QPrintDialog(printer, parent), fEventLoop(NULL)
@@ -491,6 +497,7 @@ public:
 			setAttribute(Qt::WA_ShowModal, true);
 		}
 #endif
+		setOptions(PrintDialogOptions(PrintToFile | PrintSelection | PrintPageRange | PrintShowPageSize | PrintCollateCopies | PrintCurrentPage));
 	}
 	
 	virtual ~PrintDialog()
@@ -526,7 +533,7 @@ public:
 #endif
 		QPrintDialog::setVisible(visible);
 	}
-	
+
 private:
 	QEventLoop		*fEventLoop;
 };
@@ -896,6 +903,10 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 	else if (type == SL_PRINT_PS)
 		sPrinter->setOutputFormat(QPrinter::PostScriptFormat);
 	
+	int fromPage = sPrinter->fromPage();
+	int toPage = sPrinter->toPage();
+	int copyCount = sPrinter->copyCount();
+
 	if ((settings != Py_None) && (!loadSettings(settings, sPrinter)))
 		return NULL;
 	
@@ -975,6 +986,9 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 				PrintDialog dialog(sPrinter, parentWidget);
 				if (dialog.run() == QDialog::Rejected)
 					Py_RETURN_FALSE;
+				fromPage = sPrinter->fromPage();
+				toPage = sPrinter->toPage();
+				copyCount = sPrinter->copyCount();
 				sPrinter->setFullPage(true);
 				bool valid = (settings == Py_None) || saveSettings(settings, sPrinter);
 				Py_DECREF(settings);
@@ -982,6 +996,9 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 					break;
 			}
 			sPrinter->setPageMargins(0, 0, 0, 0, QPrinter::Millimeter);
+			sPrinter->setFromTo(fromPage, toPage);
+			sPrinter->setCopyCount(copyCount);
+
 			QMetaObject::invokeMethod(handler, "print", Qt::DirectConnection, Q_ARG(QPrinter *, sPrinter));
 			
 			if (handler == &standard_handler)
