@@ -836,17 +836,17 @@ getFormattedValue(const QString& input, QColor *color, Qt::Alignment *align, int
 						fPart = "0";
 					output += dSep + fPart;
 				}
-				zero = (info->fFlags & FORMAT_BLANK_IF_ZERO) && (iPart.toULongLong() == 0) && (temp == 0);
+				zero = (iPart.toULongLong() == 0) && (temp == 0);
 			}
 			else {
-				zero = (info->fFlags & FORMAT_BLANK_IF_ZERO) && (iPart.toULongLong() == 0);
+				zero = (iPart.toULongLong() == 0);
 			}
 			
-			if (zero) {
+			if ((zero) && (info->fFlags & FORMAT_BLANK_IF_ZERO)) {
 				output = "";
 			}
 			else {
-				if ((neg) && (!(info->fFlags & FORMAT_UNSIGNED))) {
+				if ((neg) && (!(info->fFlags & FORMAT_UNSIGNED)) && (!zero)) {
 					if (info->fFlags & FORMAT_RED_IF_NEGATIVE)
 						*color = QColor(Qt::red);
 					output.prepend("-");
