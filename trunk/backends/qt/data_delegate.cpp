@@ -117,8 +117,10 @@ public:
 	
 	virtual bool modifyClipboardOnPaste(QString& text)
 	{
+		DataModel_Impl *model = (DataModel_Impl *)fView->model();
 		EventRunner runner(fView, "onPaste");
 		if (runner.isValid()) {
+			runner.set("index", model->getDataIndex(fIndex), false);
 			runner.set("value", text);
 			if (runner.run())
 				return runner.get("value", &text);
