@@ -2499,11 +2499,12 @@ Application::notify(QObject *receiver, QEvent *event)
 									widget = NULL;
 									break;
 								}
-	//  							if (target->focusPolicy() != Qt::NoFocus) {
+								if (target->focusPolicy() != Qt::NoFocus) {
+									// qDebug() << "click focus out from:target" << impl << target << target->focusPolicy();
 									if (!impl->canFocusOut(oldFocus, target))
 										return true;
 									widget = NULL;
-	// 							}
+								}
 							}
 							break;
 							

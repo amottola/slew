@@ -14,6 +14,7 @@ class ToolBarItem(slew.Widget):
 	TYPE_RADIO					= 3
 	TYPE_URL					= 4
 	TYPE_AUTOREPEAT				= 5
+	TYPE_NO_FOCUS				= 6
 	
 	MENU_DELAYED				= 0
 	MENU_BUTTON					= 1
@@ -22,7 +23,7 @@ class ToolBarItem(slew.Widget):
 	
 	
 	PROPERTIES = merge(slew.Widget.PROPERTIES, {
-		'type':					ChoiceProperty(["normal", "separator", "check", "radio", "url", "autorepeat"]),
+		'type':					ChoiceProperty(["normal", "separator", "check", "radio", "url", "autorepeat", "nofocus"]),
 		'text':					TranslatedStringProperty(),
 		'description':			TranslatedStringProperty(),
 		'checked':				BoolProperty(),
@@ -54,7 +55,7 @@ class ToolBarItem(slew.Widget):
 		return self._impl.get_type()
 	
 	def set_type(self, type):
-		if (type < ToolBarItem.TYPE_NORMAL) or (type > ToolBarItem.TYPE_AUTOREPEAT):
+		if (type < ToolBarItem.TYPE_NORMAL) or (type > ToolBarItem.TYPE_NO_FOCUS):
 			type = ToolBarItem.TYPE_NORMAL
 		self._impl.set_type(type)
 	
