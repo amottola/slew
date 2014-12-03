@@ -3258,8 +3258,11 @@ Application::getProxy(QObject *object)
 void
 Application::sendTabEvent(QObject *receiver)
 {
-	QKeyEvent *e = new QKeyEvent(QEvent::KeyPress, (keyboardModifiers() & Qt::ShiftModifier) ? Qt::Key_Backtab : Qt::Key_Tab, 0);
-	postEvent(receiver, e);
+	sendPostedEvents();
+	if (QApplication::focusWidget() == receiver) {
+		QKeyEvent *e = new QKeyEvent(QEvent::KeyPress, (keyboardModifiers() & Qt::ShiftModifier) ? Qt::Key_Backtab : Qt::Key_Tab, 0);
+		postEvent(receiver, e);
+	}
 }
 
 
