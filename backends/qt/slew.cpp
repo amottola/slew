@@ -3260,7 +3260,8 @@ void
 Application::sendTabEvent(QObject *receiver)
 {
 	sendPostedEvents();
-	if (QApplication::focusWidget() == receiver) {
+	QWidget *widget = qobject_cast<QWidget *>(receiver);
+	if ((QApplication::focusWidget() == receiver) || ((qobject_cast<QAbstractItemView *>(receiver)) && (widget->isAncestorOf(QApplication::focusWidget())))) {
 		QKeyEvent *e = new QKeyEvent(QEvent::KeyPress, (keyboardModifiers() & Qt::ShiftModifier) ? Qt::Key_Backtab : Qt::Key_Tab, 0);
 		postEvent(receiver, e);
 	}
