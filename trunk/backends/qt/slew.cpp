@@ -2470,7 +2470,7 @@ Application::notify(QObject *receiver, QEvent *event)
 						if (Completer::eatFocus())
 							break;
 						
-	// 					qDebug() << "--- focus out event" << event << oldFocus << target << target->focusPolicy();
+						// qDebug() << "--- focus out event" << event << oldFocus << target << target->focusPolicy();
 						switch (event->type()) {
 						case QEvent::KeyPress:
 							{
@@ -2499,7 +2499,7 @@ Application::notify(QObject *receiver, QEvent *event)
 									widget = NULL;
 									break;
 								}
-								if (target->focusPolicy() != Qt::NoFocus) {
+								if ((target->focusPolicy() != Qt::NoFocus) || (!qobject_cast<QAbstractButton *>(target))) {
 									// qDebug() << "click focus out from:target" << impl << target << target->focusPolicy();
 									if (!impl->canFocusOut(oldFocus, target))
 										return true;
