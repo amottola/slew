@@ -393,7 +393,8 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 		size -= (impl->frameGeometry().size() - impl->geometry().size());
 	}
 	else {
-		impl->setAttribute (Qt::WA_DontShowOnScreen, true);
+		Qt::WindowState state = impl->windowState();
+		impl->setWindowState(Qt::WindowMinimized);
 		impl->show();
 		QEventLoop EventLoop(impl);
 		for (int i = 0 ; i < 10 ; i++)
@@ -401,7 +402,7 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 				break;
 		size -= (impl->frameGeometry().size() - impl->geometry().size());
 		impl->hide();
-		impl->setAttribute (Qt::WA_DontShowOnScreen, false);
+		impl->setWindowState(state);
 	}
 // 	size -= (SL_QAPP()->shadowWindow()->frameGeometry().size() - SL_QAPP()->shadowWindow()->geometry().size());
 	
