@@ -393,7 +393,7 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 		size -= (impl->frameGeometry().size() - impl->geometry().size());
 	}
 	else {
-		Qt::WindowState state = impl->windowState();
+		Qt::WindowStates state = impl->windowState();
 		impl->setWindowState(Qt::WindowMinimized);
 		impl->show();
 		QEventLoop EventLoop(impl);
