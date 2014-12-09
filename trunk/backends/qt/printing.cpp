@@ -607,9 +607,10 @@ loadSettings(PyObject *settings, QPrinter *printer)
 	qSort(resolutions);
 	int dpi = resolutions.value((qMin(SL_PRINTER_QUALITY_HIGH, quality) * (resolutions.count() - 1)) / SL_PRINTER_QUALITY_HIGH);
 	if (dpi == 0)
+		dpi = resolutions.value(0);
+	if (dpi == 0)
 		dpi = 300;
 	printer->setResolution(dpi);
-	
 	
 	for (i = 0; kPaperSize[i].fSL != SL_PRINTER_PAPER_CUSTOM; i++) {
 		if ((kPaperSize[i].fSL == paperType) ||
@@ -618,12 +619,12 @@ loadSettings(PyObject *settings, QPrinter *printer)
 			break;
 	}
 	if (kPaperSize[i].fSL == SL_PRINTER_PAPER_CUSTOM) {
-#ifdef Q_OS_WIN
-		if (((orientation == SL_PRINTER_ORIENTATION_VERTICAL) && (paperSize.height() < paperSize.width())) ||
-			((orientation == SL_PRINTER_ORIENTATION_HORIZONTAL) && (paperSize.height() > paperSize.width()))) {
-			paperSize = QSizeF(paperSize.height(), paperSize.width());
-		}
-#endif
+// #ifdef Q_OS_WIN
+// 		if (((orientation == SL_PRINTER_ORIENTATION_VERTICAL) && (paperSize.height() < paperSize.width())) ||
+// 			((orientation == SL_PRINTER_ORIENTATION_HORIZONTAL) && (paperSize.height() > paperSize.width()))) {
+// 			paperSize = QSizeF(paperSize.height(), paperSize.width());
+// 		}
+// #endif
 		printer->setPaperSize(paperSize / 10.0, QPrinter::Millimeter);
 //		qDebug() << "Custom paper size:" << paperSize;
 	}
