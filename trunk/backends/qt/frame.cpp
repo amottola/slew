@@ -383,6 +383,15 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, get_framesize, {
 })
 
 
+#ifdef Q_OS_WIN
+#define SET_FRAMESIZE_SETUP()			Qt::WindowStates state = impl->windowState(); impl->setWindowState(Qt::WindowMinimized);
+#define SET_FRAMESIZE_CLEANUP()			impl->setWindowState(state);
+#else
+#define SET_FRAMESIZE_SETUP()			impl->setAttribute(Qt::WA_DontShowOnScreen, true);
+#define SET_FRAMESIZE_CLEANUP()			impl->setAttribute(Qt::WA_DontShowOnScreen, false);
+#endif
+
+
 SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 	QSize size, minSize = impl->minimumSize(), sizeHint = impl->sizeHint();
 	
@@ -393,8 +402,7 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 		size -= (impl->frameGeometry().size() - impl->geometry().size());
 	}
 	else {
-		Qt::WindowStates state = impl->windowState();
-		impl->setWindowState(Qt::WindowMinimized);
+		SET_FRAMESIZE_SETUP();
 		impl->show();
 		QEventLoop EventLoop(impl);
 		for (int i = 0 ; i < 10 ; i++)
@@ -402,7 +410,7 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_framesize, {
 				break;
 		size -= (impl->frameGeometry().size() - impl->geometry().size());
 		impl->hide();
-		impl->setWindowState(state);
+		SET_FRAMESIZE_CLEANUP();
 	}
 // 	size -= (SL_QAPP()->shadowWindow()->frameGeometry().size() - SL_QAPP()->shadowWindow()->geometry().size());
 	
