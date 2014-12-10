@@ -2500,7 +2500,7 @@ Application::notify(QObject *receiver, QEvent *event)
 									break;
 								}
 								if ((target->focusPolicy() != Qt::NoFocus) || (!qobject_cast<QAbstractButton *>(target))) {
-									// qDebug() << "click focus out from:target" << impl << target << target->focusPolicy();
+									// qDebug() << "click focus out from:target" << widget << target << target->focusPolicy();
 									if (!impl->canFocusOut(oldFocus, target))
 										return true;
 									widget = NULL;
