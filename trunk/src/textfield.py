@@ -93,6 +93,9 @@ class TextField(slew.Window):
 	
 	def complete(self):
 		self._impl.complete()
+
+	def get_text(self):
+		return self._impl.get_text()
 		
 	@classmethod
 	def set_default_empty_text(cls, text):

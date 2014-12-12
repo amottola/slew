@@ -251,6 +251,11 @@ SL_DEFINE_METHOD(TextField, complete, {
 })
 
 
+SL_DEFINE_METHOD(TextField, get_text, {
+	return createStringObject(impl->value(true));
+})
+
+
 SL_DEFINE_METHOD(TextField, get_style, {
 	int style = 0;
 	
@@ -481,6 +486,7 @@ SL_METHOD(is_undo_available)
 SL_METHOD(is_redo_available)
 SL_METHOD(set_completer)
 SL_METHOD(complete)
+SL_METHOD(get_text)
 
 SL_PROPERTY(style)
 SL_PROPERTY(datatype)
