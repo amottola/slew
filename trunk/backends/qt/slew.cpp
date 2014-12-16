@@ -1936,18 +1936,22 @@ bool
 openURI(const QString& uri)
 {
 	QUrl url(uri, QUrl::TolerantMode);
-	bool wasRelative = false;
-	if ((url.isRelative()) || (QFile::exists(uri))) {
-		url.setScheme("file");
-		wasRelative = true;
+	if (QFile::exists(uri)) {
+		url = QUrl::fromLocalFile(uri);
 	}
-	if ((url.scheme() == "file") && (wasRelative) && (!QFile::exists(url.toLocalFile()))) {
-		if (!uri.startsWith("http://"))
-			url = QUrl("http://" + uri);
-		else
-			url.setScheme("http");
+	else {
+		bool wasRelative = false;
+		if (url.isRelative()) {
+			url.setScheme("file");
+			wasRelative = true;
+		}
+		if ((url.scheme() == "file") && (wasRelative) && (!QFile::exists(url.toLocalFile()))) {
+			if (!uri.startsWith("http://"))
+				url = QUrl("http://" + uri);
+			else
+				url.setScheme("http");
+		}
 	}
-	
 	if (!QDesktopServices::openUrl(url)) {
 		QString text = url.errorString();
 		if (text.isEmpty())
