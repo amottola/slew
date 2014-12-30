@@ -162,7 +162,7 @@ class TimedCall : public QObject
 	
 public:
 	TimedCall(QObject *parent, PyObject *func, PyObject *args)
-		: QObject(), fFunc(func), fArgs(args), fID(-1)
+		: QObject(), fParent(parent), fFunc(func), fArgs(args), fID(-1)
 	{
 		Py_XINCREF(func);
 		Py_XINCREF(args);
@@ -183,9 +183,8 @@ public:
 		if (Py_IsInitialized()) {
 			PyAutoLocker locker;
 			
-			QObject *parent = QObject::parent();
-			if (parent) {
-				EventRunner runner(parent, "onTimer");
+			if (fParent) {
+				EventRunner runner(fParent, "onTimer");
 				if (runner.isValid()) {
 					if (fArgs)
 						runner.set("args", fArgs, false);
@@ -218,18 +217,17 @@ public slots:
 	
 	void handleDestroyed()
 	{
-		QObject *parent = QObject::parent();
-		
-		if ((parent) && (fID >= 0)) {
-			parent->killTimer(fID);
+		if ((fParent) && (fID >= 0)) {
+			fParent->killTimer(fID);
 			delete sTimers.take(fID);
 		}
 	}
 
 private:
-	PyObject		*fFunc;
-	PyObject		*fArgs;
-	int				fID;
+	QPointer<QObject>	fParent;
+	PyObject			*fFunc;
+	PyObject			*fArgs;
+	int					fID;
 };
 
 
