@@ -4,6 +4,7 @@
 #include "sizer.h"
 
 #include "constants/window.h"
+#include "constants/dialog.h"
 
 #include <QDialog>
 #include <QMainWindow>
@@ -312,13 +313,13 @@ SL_DEFINE_METHOD(Window, repaint, {
 
 SL_DEFINE_METHOD(Window, message_box, {
 	QString message, title;
-	int button, icon = SL_ICON_INFORMATION;
+	int button, icon = SL_ICON_INFORMATION, modality = SL_DIALOG_MODALITY_WINDOW;
 	PyObject *callback = NULL, *userdata = NULL, *buttons = NULL;
 	
-	if (!PyArg_ParseTuple(args, "O&O&OiOO", convertString, &message, convertString, &title, &buttons, &icon, &callback, &userdata))
+	if (!PyArg_ParseTuple(args, "O&O&OiiOO", convertString, &message, convertString, &title, &buttons, &icon, &modality, &callback, &userdata))
 		return NULL;
 	
-	messageBox(impl, title, message, buttons, icon, callback, userdata, &button);
+	messageBox(impl, title, message, buttons, icon, modality, callback, userdata, &button);
 	
 	return PyInt_FromLong(button);
 })

@@ -99,6 +99,35 @@ SL_DEFINE_METHOD(ScrollView, remove, {
 })
 
 
+SL_DEFINE_METHOD(ScrollView, get_bgcolor, {
+	QColor color;
+	color = impl->widget()->palette().window().color();
+	if (color == QApplication::palette(impl).window().color())
+		Py_RETURN_NONE;
+	return createColorObject(color);
+})
+
+
+SL_DEFINE_METHOD(ScrollView, set_bgcolor, {
+	QPalette palette(impl->widget()->palette());
+	QColor color;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertColor, &color))
+		return NULL;
+	
+	if (!color.isValid()) {
+		impl->widget()->setAutoFillBackground(false);
+		color = QApplication::palette(impl).color(QPalette::Window);
+	}
+	else {
+		impl->widget()->setAutoFillBackground(true);
+	}
+	
+	palette.setColor(QPalette::Window, color);
+	impl->widget()->setPalette(palette);
+})
+
+
 SL_DEFINE_METHOD(ScrollView, get_style, {
 	int style = 0;
 	
@@ -189,6 +218,7 @@ SL_DEFINE_METHOD(ScrollView, set_viewsize, {
 SL_START_PROXY_DERIVED(ScrollView, Window)
 SL_METHOD(insert)
 SL_METHOD(remove)
+SL_PROPERTY(bgcolor)
 
 SL_PROPERTY(style)
 SL_PROPERTY(rate)

@@ -2045,7 +2045,7 @@ decodeButton(int qbutton)
 
 
 bool
-messageBox(QWidget *window, const QString& title, const QString& message, PyObject *buttons, int icon, PyObject *callback, PyObject *userdata, int *button)
+messageBox(QWidget *window, const QString& title, const QString& message, PyObject *buttons, int icon, int modality, PyObject *callback, PyObject *userdata, int *button)
 {
 	QMessageBox::Icon qicon = QMessageBox::NoIcon;
 	QMessageBox mb(window);
@@ -2091,10 +2091,27 @@ messageBox(QWidget *window, const QString& title, const QString& message, PyObje
 	default:				qicon = QMessageBox::Information; break;
 	}
 	
-	if (window)
-		mb.setWindowModality(Qt::WindowModal);
-	else
-		mb.setWindowModality(Qt::ApplicationModal);
+	switch (modality) {
+	case SL_DIALOG_MODALITY_WINDOW:
+		{
+			mb.setWindowModality(Qt::WindowModal);
+		}
+		break;
+	case SL_DIALOG_MODALITY_APPLICATION:
+		{
+			mb.setWindowModality(Qt::ApplicationModal);
+		}
+		break;
+	default:
+		{
+			if (window)
+				mb.setWindowModality(Qt::WindowModal);
+			else
+				mb.setWindowModality(Qt::ApplicationModal);
+		}
+		break;
+	}
+
 	mb.setWindowTitle(qApp->applicationName());
 #if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
 	int diff = qMax(0, 40 - title.size());
@@ -3564,7 +3581,7 @@ SL_DEFINE_MODULE_METHOD(message_box, {
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&OiOO:message_box", kwlist, convertString, &message, convertString, &title, &buttons, &icon, &callback, &userdata))
 		return NULL;
 	
-	if (!messageBox(NULL, title, message, buttons, icon, callback, userdata, &button))
+	if (!messageBox(NULL, title, message, buttons, icon, SL_DIALOG_MODALITY_APPLICATION, callback, userdata, &button))
 		return NULL;
 	
 	return PyInt_FromLong(button);

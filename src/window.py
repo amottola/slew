@@ -183,8 +183,8 @@ class Window(Layoutable):
 	def repaint(self, topleft=None, bottomright=None):
 		self._impl.repaint(Vector.ensure(topleft), Vector.ensure(bottomright))
 	
-	def message_box(self, message, title="", buttons=slew.BUTTON_OK, icon=slew.ICON_INFORMATION, callback=None, userdata=None):
-		return self._impl.message_box(message, title, buttons, icon, callback, userdata)
+	def message_box(self, message, title="", buttons=slew.BUTTON_OK, icon=slew.ICON_INFORMATION, modality=0, callback=None, userdata=None):
+		return self._impl.message_box(message, title, buttons, icon, modality, callback, userdata)
 	
 	def map_to_local(self, coord):
 		return self._impl.map_to_local(Vector.ensure(coord))
