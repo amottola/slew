@@ -130,7 +130,6 @@ static QTranslator sTranslator;
 static QWidget *sMouseGrabber = NULL;
 static int sPyObjectMetaType;
 static QHash<QString, bool> sSkipException;
-static QSet<Shortcut *> sShortcuts;
 static InfoBalloon *sInfoBalloon = NULL;
 static bool sModalBalloon = false;
 static ResourceReader *sResourceReader = NULL;
@@ -144,6 +143,7 @@ static PyObject *sSerializeData = NULL;
 static PyObject *sUnserializeData = NULL;
 static QHash<int, TimedCall *> sTimers;
 static int sInNotify = 0;
+static QKeyEvent sShortcutTestEvent(QEvent::None, 0, Qt::NoModifier);
 
 PyObject *PyDC_Type;
 PyObject *PyPrintDC_Type;
@@ -394,8 +394,6 @@ public:
 		setContext(context);
 		connect(this, SIGNAL(activated()), this, SLOT(handleActivated()));
 		Py_INCREF(callback);
-
-		sShortcuts.insert(this);
 	}
 	
 	~Shortcut() {
@@ -403,8 +401,6 @@ public:
 			PyAutoLocker locker;
 			Py_DECREF(fCallback);
 		}
-
-		sShortcuts.remove(this);
 	}
 	
 public slots:
@@ -1889,25 +1885,14 @@ setShortcut(QWidget *widget, const QString& sequence, Qt::ShortcutContext contex
 	if (!key.isEmpty()) {
 		foreach (QObject *child, widget->children()) {
 			Shortcut *shortcut = qobject_cast<Shortcut *>(child);
-			if ((shortcut) && (shortcut->key() == key))
+			if ((shortcut) && (shortcut->key() == key)) {
 				delete shortcut;
+			}
 		}
 		if ((callback) && (callback != Py_None)) {
 			new Shortcut(widget, key, context, callback);
 		}
 	}
-}
-
-
-bool
-isShortcut(QWidget *widget, QKeyEvent *event)
-{
-	QKeySequence seq((int)event->key() + (int)event->modifiers());
-	foreach (Shortcut *shortcut, sShortcuts) {
-		if (((shortcut->context() == Qt::ApplicationShortcut) || (shortcut->parentWidget()->window()->isAncestorOf(widget))) && (shortcut->key() == seq))
-			return true;
-	}
-	return false;
 }
 
 
@@ -2478,7 +2463,17 @@ Application::notify(QObject *receiver, QEvent *event)
 		
 // 		qDebug() << "---" << current << event;
 		if (impl) {
-			if ((impl->isModifyEvent(event)) && (!impl->canModify(current)))
+			if (event->type() == QEvent::KeyPress) {
+				QKeyEvent *e = (QKeyEvent *)event;
+				sShortcutTestEvent = QKeyEvent(QEvent::KeyPress, e->key(), e->modifiers(), e->text(), e->isAutoRepeat(), e->count());
+				sShortcutTestEvent.ignore();
+				QApplication::notify(receiver, &sShortcutTestEvent);
+				bool accepted = sShortcutTestEvent.isAccepted();
+				sShortcutTestEvent = QKeyEvent(QEvent::None, 0, Qt::NoModifier);
+				if ((!accepted) && (impl->isModifyEvent(event)) && (!impl->canModify(current)))
+					return true;
+			}
+			else if ((impl->isModifyEvent(event)) && (!impl->canModify(current)))
 				return true;
 			if (!original)
 				return true;
@@ -3126,8 +3121,20 @@ Application::eventFilter(QObject *obj, QEvent *event)
 		}
 		break;
 	
+	case QEvent::Shortcut:
+		{
+			if (sShortcutTestEvent.type() != QEvent::None) {
+				sShortcutTestEvent.accept();
+				return true;
+			}
+		}
+		break;
+
 	case QEvent::KeyPress:
 		{
+			if (event == &sShortcutTestEvent)
+				return true;
+
 			QWidget *w = qobject_cast<QWidget *>(obj);
 			if ((!w) || (w->focusProxy()))
 				return false;

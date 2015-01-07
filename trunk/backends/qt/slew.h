@@ -169,7 +169,6 @@ QObject *getImpl(PyObject *object);
 QString normalizeFormat(const QHash<QString, QString>& vars, const QString& format);
 void centerWindow(QWidget *window, QWidget *parent = NULL);
 void setShortcut(QWidget *widget, const QString& sequence, Qt::ShortcutContext context, PyObject *callback);
-bool isShortcut(QWidget *widget, QKeyEvent *event);
 void setTimeout(QObject *parent, int delay, PyObject *func, PyObject *args);
 bool loadResource(const QString& resource, QByteArray& data);
 bool openURI(const QString& uri);
