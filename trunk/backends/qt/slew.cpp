@@ -1904,7 +1904,7 @@ isShortcut(QWidget *widget, QKeyEvent *event)
 {
 	QKeySequence seq((int)event->key() + (int)event->modifiers());
 	foreach (Shortcut *shortcut, sShortcuts) {
-		if (((shortcut->context() == Qt::ApplicationShortcut) || (shortcut->parentWidget()->isAncestorOf(widget))) && (shortcut->key() == seq))
+		if (((shortcut->context() == Qt::ApplicationShortcut) || (shortcut->parentWidget()->window()->isAncestorOf(widget))) && (shortcut->key() == seq))
 			return true;
 	}
 	return false;
