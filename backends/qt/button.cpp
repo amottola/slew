@@ -97,6 +97,12 @@ SL_DEFINE_METHOD(Button, get_color, {
 })
 
 
+SL_DEFINE_METHOD(Button, get_system_color, {
+	QColor color = QApplication::palette(impl).buttonText().color();
+	return createColorObject(color);
+})
+
+
 SL_DEFINE_METHOD(Button, set_color, {
 	QPalette palette(impl->palette());
 	QColor color;
@@ -117,6 +123,12 @@ SL_DEFINE_METHOD(Button, get_bgcolor, {
 	QColor color = impl->palette().button().color();
 	if (color == QApplication::palette(impl).button().color())
 		Py_RETURN_NONE;
+	return createColorObject(color);
+})
+
+
+SL_DEFINE_METHOD(Button, get_system_bgcolor, {
+	QColor color = QApplication::palette(impl).button().color();
 	return createColorObject(color);
 })
 
@@ -242,7 +254,9 @@ SL_DEFINE_METHOD(Button, set_menu, {
 SL_START_PROXY_DERIVED(Button, Window)
 SL_PROPERTY(style)
 SL_PROPERTY(color)
+SL_METHOD(get_system_color)
 SL_PROPERTY(bgcolor)
+SL_METHOD(get_system_bgcolor)
 SL_PROPERTY(label)
 SL_BOOL_PROPERTY(toggled)
 SL_BOOL_PROPERTY(default)

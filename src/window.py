@@ -318,11 +318,17 @@ class Window(Layoutable):
 	def get_color(self):
 		return self._impl.get_color()
 	
+	def get_system_color(self):
+		return self._impl.get_system_color()
+
 	def set_color(self, color):
 		self._impl.set_color(Color.ensure(color))
 	
 	def get_bgcolor(self):
 		return self._impl.get_bgcolor()
+	
+	def get_system_bgcolor(self):
+		return self._impl.get_system_bgcolor()
 	
 	def set_bgcolor(self, color):
 		self._impl.set_bgcolor(Color.ensure(color))
@@ -330,11 +336,17 @@ class Window(Layoutable):
 	def get_hicolor(self):
 		return self._impl.get_hicolor()
 	
+	def get_system_hicolor(self):
+		return self._impl.get_system_hicolor()
+	
 	def set_hicolor(self, color):
 		self._impl.set_hicolor(Color.ensure(color))
 	
 	def get_hibgcolor(self):
 		return self._impl.get_hibgcolor()
+	
+	def get_system_hibgcolor(self):
+		return self._impl.get_system_hibgcolor()
 	
 	def set_hibgcolor(self, color):
 		self._impl.set_hibgcolor(Color.ensure(color))

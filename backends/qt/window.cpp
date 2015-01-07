@@ -694,6 +694,12 @@ SL_DEFINE_METHOD(Window, get_color, {
 })
 
 
+SL_DEFINE_METHOD(Window, get_system_color, {
+	QColor color = QApplication::palette(impl).windowText().color();
+	return createColorObject(color);
+})
+
+
 SL_DEFINE_METHOD(Window, set_color, {
 	QPalette palette(impl->palette());
 	QColor color;
@@ -722,6 +728,16 @@ SL_DEFINE_METHOD(Window, get_bgcolor, {
 		if (color == QApplication::palette(impl).window().color())
 			Py_RETURN_NONE;
 	}
+	return createColorObject(color);
+})
+
+
+SL_DEFINE_METHOD(Window, get_system_bgcolor, {
+	QColor color;
+	if (qobject_cast<QAbstractScrollArea *>(impl))
+		color = QApplication::palette(impl).base().color();
+	else
+		color = QApplication::palette(impl).window().color();
 	return createColorObject(color);
 })
 
@@ -760,6 +776,12 @@ SL_DEFINE_METHOD(Window, get_hicolor, {
 })
 
 
+SL_DEFINE_METHOD(Window, get_system_hicolor, {
+	QColor color = QApplication::palette(impl).highlightedText().color();
+	return createColorObject(color);
+})
+
+
 SL_DEFINE_METHOD(Window, set_hicolor, {
 	QPalette palette(impl->palette());
 	QColor color;
@@ -780,6 +802,12 @@ SL_DEFINE_METHOD(Window, get_hibgcolor, {
 	QColor color = impl->palette().highlight().color();
 	if (color == QApplication::palette(impl).highlight().color())
 		Py_RETURN_NONE;
+	return createColorObject(color);
+})
+
+
+SL_DEFINE_METHOD(Window, get_system_hibgcolor, {
+	QColor color = QApplication::palette(impl).highlight().color();
 	return createColorObject(color);
 })
 
@@ -994,6 +1022,10 @@ SL_METHOD(set_shortcut)
 SL_METHOD(set_timeout)
 SL_METHOD(fit)
 SL_METHOD(render)
+SL_METHOD(get_system_color)
+SL_METHOD(get_system_bgcolor)
+SL_METHOD(get_system_hicolor)
+SL_METHOD(get_system_hibgcolor)
 
 SL_PROPERTY(datatype)
 SL_PROPERTY(style)

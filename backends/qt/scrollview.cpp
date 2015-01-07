@@ -108,6 +108,12 @@ SL_DEFINE_METHOD(ScrollView, get_bgcolor, {
 })
 
 
+SL_DEFINE_METHOD(ScrollView, get_system_bgcolor, {
+	QColor color = QApplication::palette(impl).window().color();
+	return createColorObject(color);
+})
+
+
 SL_DEFINE_METHOD(ScrollView, set_bgcolor, {
 	QPalette palette(impl->widget()->palette());
 	QColor color;
@@ -219,6 +225,7 @@ SL_START_PROXY_DERIVED(ScrollView, Window)
 SL_METHOD(insert)
 SL_METHOD(remove)
 SL_PROPERTY(bgcolor)
+SL_METHOD(get_system_bgcolor)
 
 SL_PROPERTY(style)
 SL_PROPERTY(rate)
