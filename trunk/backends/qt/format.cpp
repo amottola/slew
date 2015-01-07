@@ -1424,7 +1424,7 @@ FormattedLineEdit::isValidInput(QKeyEvent *event, QString *output)
 		break;
 	default:
 		{
-			if ((!insert.isEmpty()) && ((key == -1) || (insert.at(0).isPrint()))) {
+			if ((!insert.isEmpty()) && ((key == -1) || (insert.at(0).isPrint())) && (!isShortcut(this, event))) {
 				if (start >= 0) {
 					text = text.remove(start, len);
 					pos = start;

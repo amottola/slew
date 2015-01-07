@@ -117,6 +117,7 @@
 class ResourceReader;
 class InfoBalloon;
 class TimedCall;
+class Shortcut;
 
 static PyObject *sApplication = NULL;
 static bool sIsRunning = false;
@@ -129,6 +130,7 @@ static QTranslator sTranslator;
 static QWidget *sMouseGrabber = NULL;
 static int sPyObjectMetaType;
 static QHash<QString, bool> sSkipException;
+static QSet<Shortcut *> sShortcuts;
 static InfoBalloon *sInfoBalloon = NULL;
 static bool sModalBalloon = false;
 static ResourceReader *sResourceReader = NULL;
@@ -392,6 +394,8 @@ public:
 		setContext(context);
 		connect(this, SIGNAL(activated()), this, SLOT(handleActivated()));
 		Py_INCREF(callback);
+
+		sShortcuts.insert(this);
 	}
 	
 	~Shortcut() {
@@ -399,6 +403,8 @@ public:
 			PyAutoLocker locker;
 			Py_DECREF(fCallback);
 		}
+
+		sShortcuts.remove(this);
 	}
 	
 public slots:
@@ -1893,6 +1899,18 @@ setShortcut(QWidget *widget, const QString& sequence, Qt::ShortcutContext contex
 }
 
 
+bool
+isShortcut(QWidget *widget, QKeyEvent *event)
+{
+	QKeySequence seq((int)event->key() + (int)event->modifiers());
+	foreach (Shortcut *shortcut, sShortcuts) {
+		if (((shortcut->context() == Qt::ApplicationShortcut) || (shortcut->parentWidget()->isAncestorOf(widget))) && (shortcut->key() == seq))
+			return true;
+	}
+	return false;
+}
+
+
 void
 setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 {
@@ -2620,6 +2638,10 @@ Application::eventFilter(QObject *obj, QEvent *event)
 	// 				painter.setPen(QPen(QColor(rand() % 256, rand() % 256, rand() % 256)));
 	// 				painter.drawRect(0, 0, w->width() - 1, w->height() - 1);
 					runner.set("dc", createDCObject(&painter));
+					if (area)
+						runner.set("offset", createVectorObject(QPoint(area->horizontalScrollBar()->value(), area->verticalScrollBar()->value())));
+					else
+						runner.set("offset", createVectorObject(QPoint(0,0)));
 					runner.run();
 				}
 			}
