@@ -296,7 +296,7 @@ FoldPanel_Impl::focusInEvent(QFocusEvent *event)
 void
 FoldPanel_Impl::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	if (event->y() < fontMetrics().height() + 6)
+	if ((!fFlat) && (event->y() < fontMetrics().height() + 6))
 		toggleExpand();
 	else
 		QWidget::mouseDoubleClickEvent(event);
