@@ -16,9 +16,8 @@ class MenuItem_Impl : public QAction, public WidgetInterface
 public:
 #ifdef Q_OS_MAC
 	SL_DECLARE_OBJECT(MenuItem, {
-		QList<QWidget *> list = associatedWidgets();
-		if (!list.isEmpty()) {
-			QMenu *menu = qobject_cast<QMenu *>(list.first());
+		foreach (QWidget *parent, associatedWidgets()) {
+			QMenu *menu = qobject_cast<QMenu *>(parent);
 			if (menu)
 				helper_clear_menu_previous_action(menu);
 		}

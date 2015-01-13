@@ -7,6 +7,13 @@
 #include <QPalette>
 
 
+#ifndef Q_OS_MAC
+static void
+helper_clear_menu_previous_action(QMenu *menu)
+{
+}
+#endif
+
 
 class WidgetAction : public QWidgetAction
 {
@@ -154,6 +161,7 @@ SL_DEFINE_METHOD(Menu, remove, {
 	else if (isMenuItem(object)) {
 		MenuItem_Impl *widget = (MenuItem_Impl *)child;
 		impl->removeAction(widget);
+		helper_clear_menu_previous_action(impl);
 	}
 	else if (isWindow(object)) {
 		QList<QAction *> list = impl->actions();

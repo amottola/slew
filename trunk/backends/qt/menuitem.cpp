@@ -42,9 +42,9 @@ SL_DEFINE_METHOD(MenuItem, set_type, {
 	impl->setMenuRole(role);
 	impl->setSeparator(type == SL_MENU_ITEM_TYPE_SEPARATOR ? true : false);
 	
-	QList<QWidget *> list = impl->associatedWidgets();
-	if (!list.isEmpty())
-		relinkActions(list.first());
+	foreach (QWidget *parent, impl->associatedWidgets()) {
+		relinkActions(parent);
+	}
 })
 
 
