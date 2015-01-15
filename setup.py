@@ -104,24 +104,26 @@ if sys.platform == 'darwin':
 			sdk = arg[6:].strip()
 			del sys.argv[index]
 			break
-	known_sdks = {
-		'10.5':		('/Developer/SDKs/MacOSX10.5.sdk', '10.5'),
-		'10.6':		('/Developer/SDKs/MacOSX10.6.sdk', '10.5'),
-		'10.6x':	('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk', '10.5'),
-		'10.7':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk', '10.5'),
-		'10.8':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk', '10.6'),
-		'10.9':		('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk', '10.7'),
-	}
-	if sdk is not None:
-		if (sdk in known_sdks) and (os.path.exists(known_sdks[sdk][0])):
-			sdk, macosx_version_min = known_sdks[sdk]
+
+	def find_sdk(version):
+		for root in ('/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs', '/Developer/SDKs'):
+			path = os.path.join(root, 'MacOSX%s.sdk' % version)
+			if os.path.exists(path):
+				break
 		else:
+			return (None, None)
+		version_min = '10.%d' % (max(5, int(version.split('.')[-1]) - 2))
+		return (path, version_min)
+
+	if sdk is not None:
+		sdk, macosx_version_min = find_sdk(sdk)
+		if sdk is None:
 			print 'Error: unknown SDK:', sdk
 			sys.exit(1)
 	else:
-		for sdk in sorted(known_sdks.keys(), reverse=True):
-			if os.path.exists(known_sdks[sdk][0]):
-				sdk, macosx_version_min = known_sdks[sdk]
+		for version in ('10.5', '10.6', '10.7', '10.8', '10.9', '10.10'):
+			sdk, macosx_version_min = find_sdk(version)
+			if sdk is not None:
 				break
 		else:
 			print 'Error: no valid SDK found!'
