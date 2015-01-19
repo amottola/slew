@@ -835,8 +835,11 @@ ItemDelegate::eventFilter(QObject *editor, QEvent *event)
 				QKeyEvent *e = (QKeyEvent *)event;
 				if ((e->key() == Qt::Key_Return) || (e->key() == Qt::Key_Enter)) {
 					if (view->editTriggers() == QAbstractItemView::AllEditTriggers) {
+						event->ignore();
 						QKeyEvent keyEvent(QEvent::KeyPress, e->modifiers() & Qt::ShiftModifier ? Qt::Key_Backtab : Qt::Key_Tab, e->modifiers() & ~Qt::ShiftModifier);
-						return QItemDelegate::eventFilter(editor, &keyEvent);
+						QItemDelegate::eventFilter(editor, &keyEvent);
+						QApplication::sendPostedEvents();
+						return true;
 					}
 				}
 			}
