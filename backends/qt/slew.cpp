@@ -2440,11 +2440,22 @@ Application::~Application()
 }
 
 
+class NotifyCounter
+{
+public:
+	NotifyCounter() { sInNotify++; }
+	~NotifyCounter() { sInNotify--; }
+
+	bool IsRoot() { return sInNotify == 1; }
+};
+
+
 bool
 Application::notify(QObject *receiver, QEvent *event)
 {
 	QPointer<QObject> original = receiver;
 	QPointer<QWidget> target = qobject_cast<QWidget *>(receiver);
+	NotifyCounter notifyCounter;
 	
 	if (target) {
 		if ((sInfoBalloon) && (sInfoBalloon->isAncestorOf(target)))
@@ -2478,12 +2489,10 @@ Application::notify(QObject *receiver, QEvent *event)
 			if (!original)
 				return true;
 		}
-		sInNotify++;
-		if (sInNotify == 1) {
+		if (notifyCounter.IsRoot()) {
 			// if (original)
 			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 		}
-		sInNotify--;
 		
 		if (original) {
 			QWidget *widget = focusWidget();
@@ -2565,12 +2574,9 @@ Application::notify(QObject *receiver, QEvent *event)
 	}
 
 	if (original) {
-		sInNotify++;
-		if (sInNotify == 1) {
-			// if (original)
+		if (notifyCounter.IsRoot()) {
 			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 		}
-		sInNotify--;
 	}
 	
 	if (original)
@@ -3398,8 +3404,10 @@ SL_DEFINE_MODULE_METHOD(exit, {
 SL_DEFINE_MODULE_METHOD(process_events, {
 	Py_BEGIN_ALLOW_THREADS
 	
-	QApplication::sendPostedEvents();
-	QApplication::processEvents();
+	if (sInNotify == 1) {
+		QApplication::sendPostedEvents();
+		QApplication::processEvents();
+	}
 	
 	Py_END_ALLOW_THREADS
 })
