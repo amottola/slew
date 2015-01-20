@@ -44,6 +44,9 @@ class ScrollView(slew.Window):
 	
 	def set_viewsize(self, viewsize):
 		self._impl.set_viewsize(Vector.ensure(viewsize, False))
+
+	def get_viewport_size(self):
+		return self._impl.get_viewport_size()
 	
 	rate = DeprecatedDescriptor('rate')
 	scroll = DeprecatedDescriptor('scroll')

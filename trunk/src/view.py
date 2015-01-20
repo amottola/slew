@@ -39,6 +39,9 @@ class View(slew.Window):
 	
 	def set_scroll_rate(self, pos):
 		self._impl.set_scroll_rate(Vector.ensure(pos, False))
+
+	def get_viewport_size(self):
+		return self._impl.get_viewport_size()
 	
 	@deprecated
 	def show_item(self, index):
