@@ -705,6 +705,9 @@ SL_DEFINE_METHOD(type, set_scroll_rate, {										\
 	impl->horizontalScrollBar()->setSingleStep(rate.x());						\
 	impl->verticalScrollBar()->setSingleStep(rate.y());							\
 })																				\
+SL_DEFINE_METHOD(type, get_viewport_size, {										\
+	return createVectorObject(impl->viewport()->size());						\
+})																				\
 SL_DEFINE_METHOD(type, has_focus, {												\
 	QWidget *window = impl->window();											\
 	if (!window)																\
@@ -730,6 +733,7 @@ SL_METHOD(get_scroll_pos)														\
 SL_METHOD(set_scroll_pos)														\
 SL_METHOD(get_scroll_rate)														\
 SL_METHOD(set_scroll_rate)														\
+SL_METHOD(get_viewport_size)													\
 SL_METHOD(has_focus)
 
 #define SL_END_VIEW_PROXY(type)													\

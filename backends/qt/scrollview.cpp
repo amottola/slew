@@ -220,12 +220,17 @@ SL_DEFINE_METHOD(ScrollView, set_viewsize, {
 })
 
 
+SL_DEFINE_METHOD(ScrollView, get_viewport_size, {
+	return createVectorObject(impl->viewport()->size());
+})
+
 
 SL_START_PROXY_DERIVED(ScrollView, Window)
 SL_METHOD(insert)
 SL_METHOD(remove)
 SL_PROPERTY(bgcolor)
 SL_METHOD(get_system_bgcolor)
+SL_METHOD(get_viewport_size)
 
 SL_PROPERTY(style)
 SL_PROPERTY(rate)
