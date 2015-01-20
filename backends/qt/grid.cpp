@@ -511,6 +511,7 @@ void
 Grid_Impl::restartEdit(const QModelIndex& index, int position)
 {
 	setCurrentIndex(index);
+	scrollTo(index);
 	edit(index, AllEditTriggers, NULL);
 	FormattedLineEdit *editor = qobject_cast<FormattedLineEdit *>(indexWidget(index));
 	if ((editor) && (position >= 0)) {
