@@ -142,6 +142,7 @@ static PyObject *sIconType;
 static PyObject *sSerializeData = NULL;
 static PyObject *sUnserializeData = NULL;
 static QHash<int, TimedCall *> sTimers;
+static int sInNotify = 0;
 static QKeyEvent sShortcutTestEvent(QEvent::None, 0, Qt::NoModifier);
 
 PyObject *PyDC_Type;
@@ -2445,12 +2446,8 @@ public:
 	NotifyCounter() { sInNotify++; }
 	~NotifyCounter() { sInNotify--; }
 
-	static bool IsRoot() { return sInNotify == 1; }
-
-private:
-	static int sInNotify;
+	bool IsRoot() { return sInNotify == 1; }
 };
-int NotifyCounter::sInNotify = 0;
 
 
 bool
@@ -2492,8 +2489,9 @@ Application::notify(QObject *receiver, QEvent *event)
 			if (!original)
 				return true;
 		}
-		if ((NotifyCounter::IsRoot()) && (original)) {
-			QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+		if (notifyCounter.IsRoot()) {
+			// if (original)
+			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 		}
 		
 		if (original) {
@@ -2575,8 +2573,10 @@ Application::notify(QObject *receiver, QEvent *event)
 		}
 	}
 
-	if ((NotifyCounter::IsRoot()) && (original)) {
-		QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+	if (original) {
+		if (notifyCounter.IsRoot()) {
+			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+		}
 	}
 	
 	if (original)
@@ -3405,7 +3405,7 @@ SL_DEFINE_MODULE_METHOD(exit, {
 SL_DEFINE_MODULE_METHOD(process_events, {
 	Py_BEGIN_ALLOW_THREADS
 	
-	if (NotifyCounter::IsRoot()) {
+	if (sInNotify == 1) {
 		QApplication::sendPostedEvents();
 		QApplication::processEvents();
 	}
