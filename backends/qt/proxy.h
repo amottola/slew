@@ -530,7 +530,8 @@ SL_DEFINE_METHOD(type, popup_message, {											\
 		case SL_TOP:	pos = QPoint(rect.width()/2, 0); break;					\
 		default:		pos = QPoint(rect.width()/2, rect.height()-1); break;	\
 		}																		\
-		result = showPopupMessage(impl, editor, text,							\
+		rect.moveTopLeft(impl->viewport()->mapToParent(rect.topLeft()));		\
+		result = showPopupMessage(impl, editor, text, rect,						\
 			impl->viewport()->mapToGlobal(rect.topLeft() + pos),				\
 			align, buttons);													\
 	}																			\
@@ -541,8 +542,8 @@ SL_DEFINE_METHOD(type, popup_message, {											\
 		case SL_TOP:	pos = QPoint(impl->width()/2, 0); break;				\
 		default:		pos = QPoint(impl->width()/2, impl->height()-1); break;	\
 		}																		\
-		result = showPopupMessage(impl, NULL, text, impl->mapToGlobal(pos),		\
-			align, buttons);													\
+		result = showPopupMessage(impl, NULL, text, QRect(),					\
+			impl->mapToGlobal(pos), align, buttons);							\
 	}																			\
 	return PyInt_FromLong(result);												\
 })																				\
