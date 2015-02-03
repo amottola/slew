@@ -219,6 +219,7 @@ public slots:
 	
 	void handleDestroyed()
 	{
+		PyAutoLocker locker;
 		if ((fParent) && (fID >= 0)) {
 			fParent->killTimer(fID);
 			delete sTimers.take(fID);
@@ -3332,6 +3333,7 @@ Application::sendTabEvent(QObject *receiver)
 void
 Application::startTimedCall(QObject *parent, QObject *object, int delay)
 {
+	PyAutoLocker locker;
 	int id;
 	TimedCall *timedCall = (TimedCall *)object;
 	
