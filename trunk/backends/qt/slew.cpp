@@ -63,6 +63,7 @@
 
 #include <QThread>
 #include <QThreadPool>
+#include <QAtomicInt>
 #include <QRunnable>
 #include <QSemaphore>
 #include <QPointer>
@@ -142,7 +143,6 @@ static PyObject *sIconType;
 static PyObject *sSerializeData = NULL;
 static PyObject *sUnserializeData = NULL;
 static QHash<int, TimedCall *> sTimers;
-static int sInNotify = 0;
 static QKeyEvent sShortcutTestEvent(QEvent::None, 0, Qt::NoModifier);
 
 PyObject *PyDC_Type;
@@ -429,11 +429,16 @@ class InfoBalloon : public QWidget
 public:
 	static void fade() { if (sInfoBalloon) sInfoBalloon->fadeOut(); }
 	
-	InfoBalloon(QWidget *parent, QWidget *editor, const QString& text, const QPoint& hotspot, int where = SL_TOP, int buttons = 0)
+	InfoBalloon(QWidget *parent, QWidget *editor, const QString& text, const QRect& rect, const QPoint& hotspot, int where = SL_TOP, int buttons = 0)
 		: QWidget(parent->window(), Qt::ToolTip), fEditor(editor ? editor : parent), fButtonBox(NULL), fWhere(where)
 	{
 		delete sInfoBalloon;
 		sInfoBalloon = this;
+
+		if (rect.isValid())
+			fRect = rect;
+		else
+			fRect = fEditor->rect();
 		
 		fContent = new QWidget(this);
 		QVBoxLayout *layout = new QVBoxLayout(fContent);
@@ -476,8 +481,8 @@ public:
 			return;
 		}
 		QPoint hotspot;
-		QPoint pos, editorPos = fEditor->mapToGlobal(QPoint(0, 0));
-		QSize size, editorSize = fEditor->size();
+		QPoint pos, editorPos = fEditor->mapToGlobal(fRect.topLeft());
+		QSize size, editorSize = fRect.size();
 		QRect drect = QApplication::desktop()->availableGeometry();
 		int diff, where = fWhere;
 		
@@ -742,6 +747,7 @@ private:
 	QDialogButtonBox		*fButtonBox;
 	QWidget					*fContent;
 	QEventLoop				*fEventLoop;
+	QRect					fRect;
 	int						fWhere;
 };
 
@@ -2175,9 +2181,9 @@ messageBox(QWidget *window, const QString& title, const QString& message, PyObje
 
 
 int
-showPopupMessage(QWidget *parent, QWidget *editor, const QString& text, const QPoint& hotspot, int where, int buttons)
+showPopupMessage(QWidget *parent, QWidget *editor, const QString& text, const QRect& rect, const QPoint& hotspot, int where, int buttons)
 {
-	InfoBalloon *b = new InfoBalloon(parent, editor, text, hotspot, where, buttons);
+	InfoBalloon *b = new InfoBalloon(parent, editor, text, rect, hotspot, where, buttons);
 	return b->exec();
 }
 
@@ -2443,11 +2449,15 @@ Application::~Application()
 class NotifyCounter
 {
 public:
-	NotifyCounter() { sInNotify++; }
-	~NotifyCounter() { sInNotify--; }
+	NotifyCounter() { sInNotify.ref(); }
+	~NotifyCounter() { sInNotify.deref(); }
 
-	bool IsRoot() { return sInNotify == 1; }
+	static bool IsRoot() { return sInNotify == 1; }
+
+private:
+	static QAtomicInt sInNotify;
 };
+QAtomicInt NotifyCounter::sInNotify;
 
 
 bool
@@ -2489,10 +2499,9 @@ Application::notify(QObject *receiver, QEvent *event)
 			if (!original)
 				return true;
 		}
-		if (notifyCounter.IsRoot()) {
-			// if (original)
-			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-		}
+		// if ((NotifyCounter::IsRoot()) && (original)) {
+		// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+		// }
 		
 		if (original) {
 			QWidget *widget = focusWidget();
@@ -2573,11 +2582,9 @@ Application::notify(QObject *receiver, QEvent *event)
 		}
 	}
 
-	if (original) {
-		if (notifyCounter.IsRoot()) {
-			// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-		}
-	}
+	// if ((NotifyCounter::IsRoot()) && (original)) {
+	// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+	// }
 	
 	if (original)
 		return QApplication::notify(original, event);
@@ -3314,7 +3321,6 @@ Application::getProxy(QObject *object)
 void
 Application::sendTabEvent(QObject *receiver)
 {
-	sendPostedEvents();
 	QWidget *widget = qobject_cast<QWidget *>(receiver);
 	if ((QApplication::focusWidget() == receiver) || ((qobject_cast<QAbstractItemView *>(receiver)) && (widget->isAncestorOf(QApplication::focusWidget())))) {
 		QKeyEvent *e = new QKeyEvent(QEvent::KeyPress, (keyboardModifiers() & Qt::ShiftModifier) ? Qt::Key_Backtab : Qt::Key_Tab, 0);
@@ -3405,9 +3411,9 @@ SL_DEFINE_MODULE_METHOD(exit, {
 SL_DEFINE_MODULE_METHOD(process_events, {
 	Py_BEGIN_ALLOW_THREADS
 	
-	if (sInNotify == 1) {
+	if (NotifyCounter::IsRoot()) {
 		QApplication::sendPostedEvents();
-		QApplication::processEvents();
+		// QApplication::processEvents();
 	}
 	
 	Py_END_ALLOW_THREADS

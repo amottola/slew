@@ -405,7 +405,7 @@ SL_DEFINE_METHOD(Window, popup_message, {
 	default:		pos = QPoint(impl->width() / 2, impl->height() - 1); break;
 	}
 	
-	return PyInt_FromLong(showPopupMessage(impl, NULL, text, impl->mapToGlobal(pos), align, buttons));
+	return PyInt_FromLong(showPopupMessage(impl, NULL, text, QRect(), impl->mapToGlobal(pos), align, buttons));
 })
 
 
