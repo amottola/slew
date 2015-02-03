@@ -237,8 +237,8 @@ SL_DEFINE_DC_METHOD(text_extent, {
 	QSizeF size = QFontMetricsF(painter->fontMetrics()).boundingRect(QRect(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
 	// size.rwidth()--;
 	
-	size.rwidth() = floor((size.width() * DPI / printer->logicalDpiX()) + 0.5);
-	size.rheight() = floor((size.height() * DPI / printer->logicalDpiY()) + 0.5);
+	size.rwidth() = ceil(size.width() * DPI / printer->logicalDpiX());
+	size.rheight() = ceil(size.height() * DPI / printer->logicalDpiY());
 	
 	return createVectorObject(size);
 })
