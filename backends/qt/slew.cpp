@@ -183,6 +183,8 @@ public:
 	void execute()
 	{
 		if (Py_IsInitialized()) {
+			// QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+
 			PyAutoLocker locker;
 			
 			if (fParent) {
@@ -438,8 +440,10 @@ public:
 
 		if (rect.isValid())
 			fRect = rect;
-		else
-			fRect = fEditor->rect();
+		else {
+			fRect = parent->rect();
+			fRect.moveTopLeft(parent->mapToGlobal(fRect.topLeft()));
+		}
 		
 		fContent = new QWidget(this);
 		QVBoxLayout *layout = new QVBoxLayout(fContent);
@@ -482,7 +486,7 @@ public:
 			return;
 		}
 		QPoint hotspot;
-		QPoint pos, editorPos = fEditor->mapToGlobal(fRect.topLeft());
+		QPoint pos, editorPos = fRect.topLeft();
 		QSize size, editorSize = fRect.size();
 		QRect drect = QApplication::desktop()->availableGeometry();
 		int diff, where = fWhere;

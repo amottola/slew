@@ -1133,10 +1133,6 @@ ItemDelegate::isFocusOutEvent(QEvent *event)
 					return false;
 				return true;
 #endif
-			case Qt::Key_Enter:
-			case Qt::Key_Return:
-				if (Completer::isRunningOn(editor))
-					return false;
 			case Qt::Key_Tab:
 			case Qt::Key_Backtab:
 				if (e->count() == 0)

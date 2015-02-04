@@ -530,7 +530,7 @@ SL_DEFINE_METHOD(type, popup_message, {											\
 		case SL_TOP:	pos = QPoint(rect.width()/2, 0); break;					\
 		default:		pos = QPoint(rect.width()/2, rect.height()-1); break;	\
 		}																		\
-		rect.moveTopLeft(impl->viewport()->mapToParent(rect.topLeft()));		\
+		rect.moveTopLeft(impl->viewport()->mapToGlobal(rect.topLeft()));		\
 		result = showPopupMessage(impl, editor, text, rect,						\
 			impl->viewport()->mapToGlobal(rect.topLeft() + pos),				\
 			align, buttons);													\
