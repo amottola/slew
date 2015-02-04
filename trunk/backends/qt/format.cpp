@@ -121,6 +121,8 @@ public:
 		FormattedLineEdit *widget = (FormattedLineEdit *)parent();
 		if (widget->isCapsOnly())
 			input = input.toUpper();
+		if (input.isEmpty())
+			return Acceptable;
 		return QRegExpValidator::validate(input, pos);
 	}
 };

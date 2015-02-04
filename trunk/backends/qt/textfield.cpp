@@ -58,8 +58,6 @@ TextField_Impl::isFocusOutEvent(QEvent *event)
 			QKeyEvent *e = (QKeyEvent *)event;
 			if ((e->key() == Qt::Key_Tab) || (e->key() == Qt::Key_Backtab))
 				return true;
-			if (((e->key() == Qt::Key_Return) || (e->key() == Qt::Key_Enter)) && (isEnterTabs()))
-				return true;
 		}
 		break;
 	case QEvent::MouseButtonPress:
@@ -116,7 +114,7 @@ TextField_Impl::handleReturnPressed()
 	EventRunner(this, "onEnter").run();
 	
 	if (isEnterTabs())
-		QMetaObject::invokeMethod(qApp, "sendTabEvent", Qt::QueuedConnection, Q_ARG(QObject *, this));
+		SL_QAPP()->sendTabEvent(this);
 }
 
 
