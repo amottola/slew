@@ -1,5 +1,8 @@
 #include "slew.h"
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QGuiApplication>
+#endif
 #include <QEventLoop>
 
 #include "frame.h"

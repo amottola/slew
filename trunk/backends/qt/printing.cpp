@@ -902,7 +902,14 @@ printDocument(int type, const QString& title, PyObject *callback, bool prompt, P
 	if (type == SL_PRINT_PDF)
 		sPrinter->setOutputFormat(QPrinter::PdfFormat);
 	else if (type == SL_PRINT_PS)
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+		{
+			PyErr_SetString(PyExc_RuntimeError, "Postscript output not supported by Qt5");
+			return NULL;
+		}
+#else
 		sPrinter->setOutputFormat(QPrinter::PostScriptFormat);
+#endif
 	
 	int fromPage = sPrinter->fromPage();
 	int toPage = sPrinter->toPage();
