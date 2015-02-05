@@ -1917,7 +1917,11 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 		int id = qvariant_cast<int>(object->property("old_timed_call_id"));
 		if (id) {
 			object->killTimer(id);
-			delete sTimers.take(id);
+			timedCall = sTimers.take(id);
+			if (timedCall) {
+				timedCall->setId(0);
+				delete timedCall;
+			}
 		}
 	}
 	
