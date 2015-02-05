@@ -60,7 +60,8 @@ public slots:
 	void stopEdit();
 	virtual void reset();
 	virtual void resetColumns();
-	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
+	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
+	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight) { dataChanged(topLeft, bottomRight, QVector<int>()); }
 	void resizeColumns();
 	
 	QStyleOptionViewItem initOptionView() { return viewOptions(); }

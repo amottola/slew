@@ -57,7 +57,15 @@ distutils.ccompiler.new_compiler = slew_compiler
 sources = []
 
 qt_dir = os.environ.get('QTDIR')
-qt5 = False
+is_qt5 = False
+qt_libs = [
+	'QtCore',
+	'QtGui',
+	'QtOpenGL',
+	'QtNetwork',
+	'QtWebKit',
+	'QtSvg',
+]
 
 vars = {
 	'qt_dir':			qt_dir,
@@ -65,28 +73,35 @@ vars = {
 }
 
 if sys.platform == 'darwin':
-	moc = 'moc'
 	if qt_dir is None:
-		home = os.environ['HOME']
-		for path in os.listdir(home):
-			if path.startswith('Qt5.'):
-				qt_ver = path[2:]
-				if os.path.exists(os.path.join(home, path, qt_ver)):
-					qt_dir = os.path.join(home, path, qt_ver, 'clang_64')
-					vars['qt_dir'] = qt_dir
-					vars['qt_ver'] = qt_ver
-					moc = '%(qt_dir)s/bin/moc'
-					cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtGui/%(qt_ver)s/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers -I%(qt_dir)s/lib/QtWidgets.framework/Headers -I%(qt_dir)s/lib/QtWebKitWidgets.framework/Headers -I%(qt_dir)s/lib/QtPrintSupport.framework/Headers -I%(qt_dir)s/include/QtSvg '
-					ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
-					qt5 = True
-					break
-		else:
-			vars['qt_dir'] = '/Library/Frameworks'
-			cflags = '-I/Library/Frameworks/QtCore.framework/Headers -I/Library/Frameworks/QtGui.framework/Headers -I/Library/Frameworks/QtOpenGL.framework/Headers -I/Library/Frameworks/QtWebKit.framework/Headers -I/Library/Frameworks/QtNetwork.framework/Headers -I/Library/Frameworks/QtSvg.framework/Headers '
-			ldflags = ''
+		# home = os.environ['HOME']
+		# for path in os.listdir(home):
+		# 	if path.startswith('Qt5.'):
+		# 		qt_ver = path[2:]
+		# 		if os.path.exists(os.path.join(home, path, qt_ver)):
+		# 			qt_dir = os.path.join(home, path, qt_ver, 'clang_64')
+		# 			vars['qt_dir'] = qt_dir
+		# 			vars['qt_ver'] = qt_ver
+		# 			moc = '%(qt_dir)s/bin/moc'
+		# 			cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtGui/%(qt_ver)s/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers -I%(qt_dir)s/lib/QtWidgets.framework/Headers -I%(qt_dir)s/lib/QtWebKitWidgets.framework/Headers -I%(qt_dir)s/lib/QtPrintSupport.framework/Headers -I%(qt_dir)s/include/QtSvg '
+		# 			ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
+		# 			qt5 = True
+		# 			break
+		# else:
+
+		vars['qt_dir'] = '/Library/Frameworks'
+		moc = 'moc'
+		is_qt5 = os.path.exists('/Library/Frameworks/QtWidgets.framework')
+		ldflags = ''
 	else:
-		cflags = '-I%(qt_dir)s/include -I%(qt_dir)s/include/QtCore -I%(qt_dir)s/include/QtGui -I%(qt_dir)s/include/QtOpenGL -I%(qt_dir)s/lib/QtWebKit.framework/Headers -I%(qt_dir)s/lib/QtNetwork.framework/Headers -I%(qt_dir)s/lib/QtSvg.framework/Headers '
-		ldflags = '-F%(qt_dir)s/lib -F%(qt_dir)s '
+		vars['qt_dir'] = os.path.join(qt_dir, 'lib')
+		moc = '%s/bin/moc' % qt_dir
+		is_qt5 = os.path.exists('%s/lib/QtWidgets.framework' % qt_dir)
+		ldflags = '-F%s/lib -F%s ' % (qt_dir, qt_dir)
+
+	if is_qt5:
+		qt_libs += [ 'QtWidgets', 'QtWebKitWidgets', 'QtPrintSupport' ]
+	cflags = (' '.join([ ('-I%%(qt_dir)s/%s.framework/Headers' % path) for path in qt_libs ])) + ' -F%(qt_dir)s '
 
 	if 'clang' in subprocess.check_output('gcc --version', stderr=subprocess.STDOUT, shell=True, universal_newlines=True):
 		cflags += '-Qunused-arguments -Wno-unused-private-field -Wno-self-assign '
@@ -131,7 +146,7 @@ if sys.platform == 'darwin':
 	
 	cflags += '-g -mmacosx-version-min=%s -isysroot %s -Wno-write-strings -fvisibility=hidden' % (macosx_version_min, sdk)
 	ldflags += '-Wl,-syslibroot,%s -framework QtCore -framework QtGui -framework QtOpenGL -framework QtWebKit -framework QtSvg -mmacosx-version-min=%s -headerpad_max_install_names' % (sdk, macosx_version_min)
-	if qt5:
+	if is_qt5:
 		ldflags += ' -framework QtWidgets -framework QtWebKitWidgets -framework QtPrintSupport'
 	data_files = []
 	if develop:

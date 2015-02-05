@@ -304,9 +304,13 @@ Grid_Impl::edit(const QModelIndex& index, EditTrigger trigger, QEvent *event)
 
 
 void
-Grid_Impl::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+Grid_Impl::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	QAbstractItemView::dataChanged(topLeft, bottomRight, roles);
+#else
 	QAbstractItemView::dataChanged(topLeft, bottomRight);
+#endif
 	if (fEditIndex.isValid()) {
 		ItemDelegate *delegate = qobject_cast<Grid_Delegate *>(itemDelegate());
 		QWidget *editor = indexWidget(fEditIndex);

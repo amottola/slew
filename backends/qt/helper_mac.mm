@@ -1,19 +1,4 @@
-#include "slew.h"
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-#define HAS_COCOA
-#include <QtGuiVersion>
-#include <QtGui/QGuiApplication>
-#include "qpa/qplatformmenu.h"
-#include "qpa/qplatformnativeinterface.h"
-#else
-extern void qt_mac_set_dock_menu(QMenu *);
-#ifdef QT_MAC_USE_COCOA
-#define HAS_COCOA
-#endif
-#endif
-
-
+#include <Carbon/Carbon.h>
 struct CPSProcessSerNum
 {
 	UInt32 lo;
@@ -26,9 +11,22 @@ extern "C" {
 }
 
 
-#ifdef HAS_COCOA
-#include <Cocoa/Cocoa.h>
+#include "slew.h"
 
+
+extern void qt_mac_set_dock_menu(QMenu *);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define HAS_COCOA
+#include <QtGuiVersion>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QWindow>
+#else
+#ifdef QT_MAC_USE_COCOA
+#define HAS_COCOA
+#endif
+#endif
+
+#ifdef HAS_COCOA
 #include <QTimer>
 
 class DelayedResizer : public QObject
@@ -45,6 +43,11 @@ private:
 	QWidget		*fWidget;
 	bool		fEnabled;
 };
+
+
+#undef slots
+#include <Cocoa/Cocoa.h>
+
 
 
 #if !defined(MAC_OS_X_VERSION_10_8) || (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_8)
@@ -119,7 +122,7 @@ qt_mac_window_for(const QWidget *w)
 	QWindow *window = w->window()->windowHandle();
 	if (!window)
 		return NULL;
-	return static_cast<NSWindow*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("nswindow", window));
+	return reinterpret_cast<NSWindow*>(window->winId());
 }
 #else
 extern OSWindowRef qt_mac_window_for(const QWidget *w);
@@ -257,11 +260,7 @@ helper_clear_menu_previous_action(QMenu *menu)
 #ifdef HAS_COCOA
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-	QPlatformNativeInterface::NativeResourceForIntegrationFunction function = QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration("qmenutonsmenu");
-	if (!function)
-		return;
-	typedef void* (*QMenuToNSMenuFunction)(QPlatformMenu *platformMenu);
-	NSMenu *nsmenu = reinterpret_cast<NSMenu *>(reinterpret_cast<QMenuToNSMenuFunction>(function)(menu->platformMenu()));
+	NSMenu *nsmenu = menu->toNSMenu();
 #else
 	NSMenu *nsmenu = static_cast<NSMenu *>(menu->macMenu());
 #endif
@@ -275,15 +274,7 @@ helper_clear_menu_previous_action(QMenu *menu)
 void
 helper_set_dock_menu(QMenu *menu)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-	QPlatformNativeInterface::NativeResourceForIntegrationFunction function = QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration("setdockmenu");
-	if (!function)
-		return;
-	typedef void (*SetDockMenuFunction)(QPlatformMenu *platformMenu);
-	reinterpret_cast<SetDockMenuFunction>(function)(menu->platformMenu());
-#else
 	qt_mac_set_dock_menu(menu);
-#endif
 }
 
 
