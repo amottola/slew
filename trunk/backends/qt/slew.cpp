@@ -1910,7 +1910,11 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 	TimedCall *timedCall;
 	
 	if (object) {
-		timedCall = object->findChild<TimedCall *>("", Qt::FindDirectChildrenOnly);
+		foreach (QObject *child, object->children()) {
+			timedCall = qobject_cast<TimedCall *>(child);
+			if (timedCall)
+				break;
+		}
 		if (timedCall)
 			timedCall->deleteLater();
 	}
