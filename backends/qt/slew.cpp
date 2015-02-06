@@ -1088,11 +1088,15 @@ convertFont(PyObject *object, QFont *value)
 		case SL_FONT_FAMILY_SCRIPT:			hint = QFont::Decorative;		family = "cursive"; break;
 		case SL_FONT_FAMILY_SANS_SERIF:		hint = QFont::SansSerif;		family = "sans-serif"; break;
 		case SL_FONT_FAMILY_FIXED_PITCH:
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+		case SL_FONT_FAMILY_TELETYPE:		hint = QFont::TypeWriter;		family = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
+											strategy = QFont::PreferBitmap;	break;
+#else
 		case SL_FONT_FAMILY_TELETYPE:		hint = QFont::TypeWriter;		family = "monospace";
 											strategy = QFont::PreferBitmap;	break;
+#endif
 		default:							hint = QFont::System;			break;
 		}
-		
 		font.setStyleHint(hint, QFont::StyleStrategy(strategy | QFont::PreferMatch));
 	}
 	if (!face.isEmpty())
