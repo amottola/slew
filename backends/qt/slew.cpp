@@ -2453,7 +2453,7 @@ public:
 	NotifyCounter() { sInNotify.ref(); }
 	~NotifyCounter() { sInNotify.deref(); }
 
-	static bool IsRoot() { return sInNotify == 1; }
+	static bool IsRoot() { return sInNotify.load() == 1; }
 
 private:
 	static QAtomicInt sInNotify;

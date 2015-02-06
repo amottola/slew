@@ -91,7 +91,11 @@ void
 helper_set_resizeable(QWidget *widget, bool enabled)
 {
 	Window window = (Window)widget->winId();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	Display *display = QX11Info::display();
+#else
 	Display *display = widget->x11Info().display();
+#endif
 	
 	MWMHints mwmHints = GetMWMHints(display, window);
 	const bool wasFuncResize = mwmHints.functions & MWM_FUNC_RESIZE;

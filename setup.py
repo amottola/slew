@@ -171,8 +171,16 @@ elif sys.platform == 'win32':
 		ldflags += ' /PROFILE'
 else:
 	moc = 'moc'
-	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I/usr/include/qt4 -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4/QtNetwork -I/usr/include/qt4/QtWebKit -I/usr/include/qt4/QtSvg'
-	ldflags = '-lQtCore -lQtGui -lQtOpenGL -lQtNetwork -lQtWebKit -lQtSvg'
+	if os.path.exists('/usr/include/qt5'):
+		qt_include = 'qt5'
+		qt_libs += [ 'QtWidgets', 'QtWebKitWidgets', 'QtPrintSupport', 'QtX11Extras' ]
+		qt_libs = [ name.replace('Qt', 'Qt5') for name in qt_libs ]
+	else:
+		qt_include = 'qt4'
+
+	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I/usr/include/%s ' % qt_include
+	cflags += ' '.join([ ('-I/usr/include/%s/%s' % (qt_include, name.replace('Qt5', 'Qt'))) for name in qt_libs ])
+	ldflags = ' '.join([ ('-l%s' % name) for name in qt_libs ])
 	data_files = []
 
 

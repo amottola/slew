@@ -466,7 +466,12 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 	QStyle *style = QApplication::style();
 	DataModel_Impl *model = (DataModel_Impl *)view->model();
 	DataSpecifier *spec = model->getDataSpecifier(index);
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+	QStyleOptionViewItem opt, backOpt;
+	opt = backOpt = setOptions(option);
+#else
 	QStyleOptionViewItem opt(option), backOpt(option);
+#endif
 	
 	delegate->fCurrentSpec = spec;
 	
