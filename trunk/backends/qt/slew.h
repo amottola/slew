@@ -417,7 +417,6 @@ public:
 	
 public slots:
 	void sendTabEvent(QObject *receiver);
-	void startTimedCall(QObject *parent, QObject *timedCall, int delay);
 
 private:
 	QMainWindow						*fShadowWindow;

@@ -142,7 +142,6 @@ static PyObject *sPictureType;
 static PyObject *sIconType;
 static PyObject *sSerializeData = NULL;
 static PyObject *sUnserializeData = NULL;
-static QHash<int, TimedCall *> sTimers;
 static QKeyEvent sShortcutTestEvent(QEvent::None, 0, Qt::NoModifier);
 
 PyObject *PyDC_Type;
@@ -164,7 +163,7 @@ class TimedCall : public QObject
 	
 public:
 	TimedCall(QObject *parent, PyObject *func, PyObject *args)
-		: QObject(), fParent(parent), fFunc(func), fArgs(args), fID(-1)
+		: QObject(), fParent(parent), fFunc(func), fArgs(args)
 	{
 		Py_XINCREF(func);
 		Py_XINCREF(args);
@@ -179,7 +178,7 @@ public:
 			Py_XDECREF(fArgs);
 		}
 	}
-	
+
 	void execute()
 	{
 		if (Py_IsInitialized()) {
@@ -210,8 +209,6 @@ public:
 		}
 	}
 	
-	void setId(int id) { fID = id; }
-	
 public slots:
 	void executeAndDelete()
 	{
@@ -219,20 +216,15 @@ public slots:
 		deleteLater();
 	}
 	
-	void handleDestroyed()
-	{
-		PyAutoLocker locker;
-		if ((fParent) && (fID >= 0)) {
-			fParent->killTimer(fID);
-			delete sTimers.take(fID);
-		}
-	}
+	void start(int delay) {
 
+		startTimer(delay);
+	}
+	
 private:
 	QPointer<QObject>	fParent;
 	PyObject			*fFunc;
 	PyObject			*fArgs;
-	int					fID;
 };
 
 
@@ -1914,27 +1906,19 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 	TimedCall *timedCall;
 	
 	if (object) {
-		int id = qvariant_cast<int>(object->property("old_timed_call_id"));
-		if (id) {
-			object->killTimer(id);
-			timedCall = sTimers.take(id);
-			if (timedCall) {
-				timedCall->setId(0);
-				delete timedCall;
-			}
-		}
+		timedCall = object->findChild<TimedCall *>("", Qt::FindDirectChildrenOnly);
+		if (timedCall)
+			timedCall->deleteLater();
 	}
 	
 	timedCall = new TimedCall(object, func, args);
 	timedCall->moveToThread(QApplication::instance()->thread());
 	timedCall->setParent(object);
-	if (object)
-		QObject::connect(object, SIGNAL(destroyed()), timedCall, SLOT(handleDestroyed()));
 	if (delay == 0) {
 		QMetaObject::invokeMethod(timedCall, "executeAndDelete", Qt::QueuedConnection);
 	}
 	else {
-		QMetaObject::invokeMethod(qApp, "startTimedCall", Qt::AutoConnection, Q_ARG(QObject *, object), Q_ARG(QObject *, timedCall), Q_ARG(int, delay));
+		QMetaObject::invokeMethod(timedCall, "start", Qt::AutoConnection, Q_ARG(int, delay));
 	}
 }
 
@@ -2626,17 +2610,9 @@ Application::eventFilter(QObject *obj, QEvent *event)
 	
 	case QEvent::Timer:
 		{
-			PyAutoLocker locker;
-			QTimerEvent *e = (QTimerEvent *)event;
-			TimedCall *timedCall = sTimers.take(e->timerId());
-			if (timedCall) {
-				timedCall->execute();
-				QObject *parent = timedCall->parent();
-				if (!parent)
-					parent = this;
-				parent->killTimer(e->timerId());
-				delete timedCall;
-			}
+			TimedCall *timedCall = qobject_cast<TimedCall *>(obj);
+			if (timedCall)
+				timedCall->executeAndDelete();
 		}
 		break;
 	
@@ -3335,24 +3311,6 @@ Application::sendTabEvent(QObject *receiver)
 		QKeyEvent *e = new QKeyEvent(QEvent::KeyPress, (keyboardModifiers() & Qt::ShiftModifier) ? Qt::Key_Backtab : Qt::Key_Tab, 0);
 		postEvent(receiver, e);
 	}
-}
-
-
-void
-Application::startTimedCall(QObject *parent, QObject *object, int delay)
-{
-	PyAutoLocker locker;
-	int id;
-	TimedCall *timedCall = (TimedCall *)object;
-	
-	if (parent) {
-		id = parent->startTimer(delay);
-		parent->setProperty("old_timed_call_id", QVariant::fromValue(id));
-	}
-	else
-		id = qApp->startTimer(delay);
-	timedCall->setId(id);
-	sTimers[id] = timedCall;
 }
 
 
