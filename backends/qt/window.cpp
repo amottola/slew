@@ -227,6 +227,12 @@ SL_DEFINE_METHOD(Window, remove, {
 })
 
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define UPDATE_BACKING_STORE()		qApp->postEvent(impl->window(), new QEvent(QEvent::UpdateRequest));
+#else
+#define UPDATE_BACKING_STORE()
+#endif
+
 SL_DEFINE_METHOD(Window, set_updates_enabled, {
 	bool enabled;
 	
@@ -238,8 +244,11 @@ SL_DEFINE_METHOD(Window, set_updates_enabled, {
 	if (enabled) {
 		if (count > 0) {
 			count--;
-			if (count == 0)
+			if (count == 0) {
 				impl->setUpdatesEnabled(true);
+
+				UPDATE_BACKING_STORE();
+			}
 		}
 	}
 	else {
