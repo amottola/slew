@@ -2455,9 +2455,9 @@ public:
 
 	static bool IsRoot() {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-		return sInNotify.load() == 1;
+		return sInNotify.load() <= 1;
 #else
-		return int(sInNotify) == 1;
+		return int(sInNotify) <= 1;
 #endif
 	}
 
@@ -3393,10 +3393,10 @@ SL_DEFINE_MODULE_METHOD(exit, {
 SL_DEFINE_MODULE_METHOD(process_events, {
 	Py_BEGIN_ALLOW_THREADS
 	
-	if (NotifyCounter::IsRoot()) {
+	// if (NotifyCounter::IsRoot()) {
 		QApplication::sendPostedEvents();
 		// QApplication::processEvents();
-	}
+	// }
 	
 	Py_END_ALLOW_THREADS
 })
