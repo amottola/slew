@@ -2453,7 +2453,13 @@ public:
 	NotifyCounter() { sInNotify.ref(); }
 	~NotifyCounter() { sInNotify.deref(); }
 
-	static bool IsRoot() { return int(sInNotify) == 1; }
+	static bool IsRoot() {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+		return sInNotify.load() == 1;
+#else
+		return int(sInNotify) == 1;
+#endif
+	}
 
 private:
 	static QAtomicInt sInNotify;
