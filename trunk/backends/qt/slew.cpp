@@ -2455,9 +2455,9 @@ public:
 
 	static bool IsRoot() {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-		return sInNotify.load() <= 1;
+		return sInNotify.load() == 1;
 #else
-		return int(sInNotify) <= 1;
+		return int(sInNotify) == 1;
 #endif
 	}
 
