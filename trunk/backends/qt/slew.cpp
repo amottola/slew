@@ -163,7 +163,7 @@ class TimedCall : public QObject
 	
 public:
 	TimedCall(QObject *parent, PyObject *func, PyObject *args)
-		: QObject(), fParent(parent), fFunc(func), fArgs(args)
+		: QObject(), fFunc(func), fArgs(args)
 	{
 		Py_XINCREF(func);
 		Py_XINCREF(args);
@@ -186,8 +186,9 @@ public:
 
 			PyAutoLocker locker;
 			
-			if (fParent) {
-				EventRunner runner(fParent, "onTimer");
+			QObject *widget = parent();
+			if (widget) {
+				EventRunner runner(widget, "onTimer");
 				if (runner.isValid()) {
 					if (fArgs)
 						runner.set("args", fArgs, false);
@@ -222,7 +223,6 @@ public slots:
 	}
 	
 private:
-	QPointer<QObject>	fParent;
 	PyObject			*fFunc;
 	PyObject			*fArgs;
 };
