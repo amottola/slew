@@ -167,7 +167,7 @@ ToolBarItem_Impl::update()
 #endif
 	button->setPopupMode(fMenuMode);
 	button->setMenu(fMenu);
-	button->setFocusPolicy(type == SL_TOOLBAR_ITEM_TYPE_NO_FOCUS ? Qt::NoFocus : Qt::ClickFocus);
+	button->setFocusPolicy(((type == SL_TOOLBAR_ITEM_TYPE_NO_FOCUS) || (type == SL_TOOLBAR_ITEM_TYPE_NO_FOCUS)) ? Qt::NoFocus : Qt::ClickFocus);
 }
 
 
