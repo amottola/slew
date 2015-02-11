@@ -338,7 +338,7 @@ class Font(object):
 		return Font(self.family, self.face, self.size, self.style, self.spacing)
 	
 	def text_extent(self, text, max_width=None):
-		return slew.get_backend().get_font_text_extent(self, text, max_width or 0)
+		return slew.get_backend().get_font_text_extent(self, text, float(max_width or 0))
 	
 	@classmethod
 	def ensure(cls, value, **kwargs):
@@ -505,7 +505,7 @@ class DC(object):
 		self._impl.text(text, Vector.ensure(tl, False), Vector.ensure(br), flags)
 		
 	def text_extent(self, text, max_width=None):
-		return self._impl.text_extent(text, int(max_width or -1))
+		return self._impl.text_extent(text, float(max_width or 0))
 
 	def blit(self, dc, pos, size=None, source_pos=None, source_size=None, repeat=False):
 		dc._impl.blit(self, Vector.ensure(pos, False), Vector.ensure(size), Vector.ensure(source_pos), Vector.ensure(source_size), repeat)

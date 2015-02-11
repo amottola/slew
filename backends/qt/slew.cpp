@@ -4677,18 +4677,26 @@ SL_DEFINE_MODULE_METHOD(get_backend_info, {
 })
 
 
+#ifdef Q_OS_LINUX
+#define FIXUP_SIZE(size)		size.rwidth()--;
+#else
+#define FIXUP_SIZE(size)
+#endif
+
+
 SL_DEFINE_MODULE_METHOD(get_font_text_extent, {
 	static char *kwlist[] = { "font", "text", "max_width", NULL };
 	QFont font;
 	QString text;
-	int max_width;
+	double maxWidth;
 	
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&i:get_font_text_extent", kwlist, convertFont, &font, convertString, &text, &max_width))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&d:get_font_text_extent", kwlist, convertFont, &font, convertString, &text, &maxWidth))
 		return NULL;
 	
-	QFontMetrics fm(font);
-	QRect rect = fm.boundingRect(0, 0, max_width <= 0 ? 1000000000 : max_width, 1000000000, Qt::AlignTop | Qt::AlignLeft | (max_width <= 0 ? 0 : Qt::TextWordWrap), text);
-	return createVectorObject(rect.size());
+	QFontMetricsF fm(font);
+	QSizeF size = fm.boundingRect(QRectF(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
+	FIXUP_SIZE(size);
+	return createVectorObject(size);
 })
 
 
