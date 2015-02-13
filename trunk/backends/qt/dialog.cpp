@@ -266,10 +266,14 @@ SL_DEFINE_METHOD(Dialog, get_style, {
 })
 
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define NO_BUTTONS_FLAGS	0
+#else
 #ifdef Q_OS_LINUX
 #define NO_BUTTONS_FLAGS	Qt::WindowSystemMenuHint
 #else
 #define NO_BUTTONS_FLAGS	Qt::FramelessWindowHint
+#endif
 #endif
 
 SL_DEFINE_METHOD(Dialog, set_style, {
