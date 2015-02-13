@@ -172,6 +172,9 @@ Node::resetData()
 PyObject *
 Node::dataIndex()
 {
+	if (!Py_IsInitialized())
+		return NULL;
+
 	PyAutoLocker locker;
 	PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
 	Py_INCREF(model);
@@ -219,6 +222,9 @@ Node::child(int row, int column)
 int
 Node::rowCount()
 {
+	if (!Py_IsInitialized())
+		return 0;
+
 	PyAutoLocker locker;
 	if (fRowCount < 0) {
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
@@ -258,6 +264,9 @@ Node::rowCount()
 int
 Node::columnCount()
 {
+	if (!Py_IsInitialized())
+		return 0;
+
 	PyAutoLocker locker;
 	if (fColumnCount < 0) {
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
@@ -292,6 +301,9 @@ Node::columnCount()
 bool
 Node::hasChildren()
 {
+	if (!Py_IsInitialized())
+		return false;
+
 	PyAutoLocker locker;
 	if (fRowCount < 0) {
 		PyObject *model = fModel ? PyWeakref_GetObject(fModel) : Py_None;
@@ -463,6 +475,9 @@ Node::changeColumns(int pos, int count)
 DataSpecifier *
 Node::dataSpecifier()
 {
+	if (!Py_IsInitialized())
+		return NULL;
+
 	if (!fData) {
 		PyAutoLocker locker;
 		PyObject *index = dataIndex();
