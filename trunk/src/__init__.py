@@ -208,6 +208,7 @@ DATATYPE_STRING						= 9
 sApplication = None
 sArchiveDict = None
 sTranslationsDict = {}
+sTranslationsCallback = None
 
 
 
@@ -923,8 +924,17 @@ def set_translations_dict(d):
 
 
 
-def translate(text, lang='it'):
-	return sTranslationsDict.get(text, text)
+def set_translations_callback(callback):
+	global set_translations_callback
+	sTranslationsCallback = callback
+
+
+
+def translate(text):
+	if sTranslationsCallback is None:
+		return sTranslationsDict.get(text, text)
+	else:
+		return sTranslationsCallback(text)
 
 
 
