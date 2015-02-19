@@ -19,7 +19,9 @@ Frame_Impl::Frame_Impl()
 	setCentralWidget(new QWidget);
 	centralWidget()->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setAttribute(Qt::WA_QuitOnClose);
-// 	setUnifiedTitleAndToolBarOnMac(true);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	setUnifiedTitleAndToolBarOnMac(true);
+#endif
 // 	setAnimated(false);
 }
 
