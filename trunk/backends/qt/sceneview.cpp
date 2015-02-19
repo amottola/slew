@@ -1016,13 +1016,6 @@ SceneView_Impl::SceneView_Impl()
 	setScene(new QGraphicsScene(this));
 	setDragMode(NoDrag);
 	
-	QWidget *corner = new QWidget;
-	QPalette palette;
-	palette.setColor(QPalette::Base, QApplication::palette(this).color(QPalette::Base));
-	corner->setAutoFillBackground(true);
-	corner->setPalette(palette);
-	setCornerWidget(corner);
-	
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(handleScrollBars()));
 	connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(handleScrollBars()));
 	connect(scene(), SIGNAL(selectionChanged()), this, SLOT(handleSelectionChanged()));
@@ -1077,6 +1070,25 @@ SceneView_Impl::paintEvent(QPaintEvent *event)
 {
 	PyAutoLocker locker;
 	QGraphicsView::paintEvent(event);
+
+	QWidget *corner = cornerWidget();
+	bool hasBothScrollbars = (horizontalScrollBar() && horizontalScrollBar()->isVisible() && verticalScrollBar() && verticalScrollBar()->isVisible());
+	if (hasBothScrollbars) {
+		if (!corner) {
+			corner = new QWidget;
+			QPalette palette;
+			palette.setColor(QPalette::Base, QApplication::palette().color(QPalette::Base));
+			corner->setAutoFillBackground(true);
+			corner->setPalette(palette);
+			setCornerWidget(corner);
+		}
+	}
+	else {
+		if (corner) {
+			corner->deleteLater();
+			setCornerWidget(NULL);
+		}
+	}
 }
 
 
@@ -1332,7 +1344,6 @@ SL_DEFINE_METHOD(SceneView, set_bgcolor, {
 	
 	palette.setColor(QPalette::Base, color);
 	impl->setPalette(palette);
-	impl->cornerWidget()->setPalette(palette);
 })
 
 
