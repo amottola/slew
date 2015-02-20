@@ -215,7 +215,7 @@ SL_DEFINE_DC_METHOD(text, {
 		case SL_ALIGN_VCENTER:			qflags |= Qt::AlignVCenter; break;
 		case SL_ALIGN_BOTTOM:			qflags |= Qt::AlignBottom; break;
 		}
-		br = QPoint((br.x() - tl.x()) * printer->logicalDpiX() / DPI, (br.y() - tl.y()) * printer->logicalDpiY() / DPI);
+		br = QPoint((br.x() - tl.x() + 1) * printer->logicalDpiX() / DPI, (br.y() - tl.y() + 1) * printer->logicalDpiY() / DPI);
 		if (mode != Qt::ElideNone)
 			text = QFontMetricsF(painter->fontMetrics()).elidedText(text, mode, br.x(), qflags);
 	}
