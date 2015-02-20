@@ -354,10 +354,14 @@ SL_DEFINE_DC_METHOD(text, {
 })
 
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#define FIXUP_SIZE(size)
+#else
 #ifdef Q_OS_LINUX
 #define FIXUP_SIZE(size)		size.rwidth()--;
 #else
 #define FIXUP_SIZE(size)
+#endif
 #endif
 
 SL_DEFINE_DC_METHOD(text_extent, {
