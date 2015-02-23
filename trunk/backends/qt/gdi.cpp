@@ -354,16 +354,6 @@ SL_DEFINE_DC_METHOD(text, {
 })
 
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-#define FIXUP_SIZE(size)
-#else
-#ifdef Q_OS_LINUX
-#define FIXUP_SIZE(size)		size.rwidth()--;
-#else
-#define FIXUP_SIZE(size)
-#endif
-#endif
-
 SL_DEFINE_DC_METHOD(text_extent, {
 	QString text;
 	double maxWidth;
@@ -372,7 +362,6 @@ SL_DEFINE_DC_METHOD(text_extent, {
 		return NULL;
 	
 	QSizeF size = QFontMetricsF(painter->fontMetrics()).boundingRect(QRectF(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
-	FIXUP_SIZE(size);
 	return createVectorObject(size);
 })
 
