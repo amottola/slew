@@ -999,6 +999,7 @@ from datacontainer import DataItem, ListDataItem, ListDataModel
 from frame import Frame
 from dialog import Dialog
 from popupwindow import PopupWindow
+from splashscreen import SplashScreen
 from menubar import MenuBar
 from menu import Menu
 from menuitem import MenuItem
