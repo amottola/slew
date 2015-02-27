@@ -171,15 +171,21 @@ elif sys.platform == 'win32':
 		ldflags += ' /PROFILE'
 else:
 	moc = 'moc'
-	if os.path.exists('/usr/include/qt5'):
-		qt_include = 'qt5'
-		qt_libs += [ 'QtWidgets', 'QtWebKitWidgets', 'QtPrintSupport', 'QtX11Extras' ]
-		qt_libs = [ name.replace('Qt', 'Qt5') for name in qt_libs ]
+	qt5_paths = (
+		'/usr/include/qt5',
+		'/usr/include/x86_64-linux-gnu/qt5',
+		'/usr/include/i386-linux-gnu/qt5',
+	)
+	for qt_include in qt5_paths:
+		if os.path.exists(qt_include):
+			qt_libs += [ 'QtWidgets', 'QtWebKitWidgets', 'QtPrintSupport', 'QtX11Extras' ]
+			qt_libs = [ name.replace('Qt', 'Qt5') for name in qt_libs ]
+			break
 	else:
-		qt_include = 'qt4'
+		qt_include = '/usr/include/qt4'
 
-	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I/usr/include/%s ' % qt_include
-	cflags += ' '.join([ ('-I/usr/include/%s/%s' % (qt_include, name.replace('Qt5', 'Qt'))) for name in qt_libs ])
+	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I%s ' % qt_include
+	cflags += ' '.join([ ('-I%s/%s' % (qt_include, name.replace('Qt5', 'Qt'))) for name in qt_libs ])
 	ldflags = ' '.join([ ('-l%s' % name) for name in qt_libs ])
 	data_files = []
 
