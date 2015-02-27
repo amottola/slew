@@ -4812,6 +4812,7 @@ init_slew()
 		(!Frame_type_setup(module)) ||
 		(!Dialog_type_setup(module)) ||
 		(!PopupWindow_type_setup(module)) ||
+		(!SplashScreen_type_setup(module)) ||
 		(!MenuBar_type_setup(module)) ||
 		(!Menu_type_setup(module)) ||
 		(!MenuItem_type_setup(module)) ||
