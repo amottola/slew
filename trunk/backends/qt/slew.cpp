@@ -2356,6 +2356,29 @@ relinkActions(QWidget *widget)
 }
 
 
+void
+reinsertActions(QWidget *parent)
+{
+#ifdef Q_OS_LINUX
+	QWidget *win = parent;
+
+	while ((win) && (!qobject_cast<Frame_Impl *>(win)))
+		win = win->parentWidget();
+
+	if (!win)
+		return;
+	QList<QAction *> actions;
+	foreach (QAction *action, parent->actions()) {
+		if (action->menu()) {
+			actions.append(action);
+			reinsertActions(action->menu());
+		}
+	}
+	win->addActions(actions);
+#endif
+}
+
+
 int
 getKeyCode(int key)
 {

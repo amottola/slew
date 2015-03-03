@@ -115,6 +115,7 @@ SL_DEFINE_METHOD(Menu, insert, {
 		else
 			before = NULL;
 		impl->insertAction(before, widget->menuAction());
+		reinsertActions(impl);
 	}
 	else if (isMenuItem(object)) {
 		MenuItem_Impl *widget = (MenuItem_Impl *)child;
@@ -126,6 +127,7 @@ SL_DEFINE_METHOD(Menu, insert, {
 		else
 			before = NULL;
 		impl->insertAction(before, widget);
+		reinsertActions(impl);
 	}
 	else if (isWindow(object)) {
 		QWidget *widget = (QWidget *)child;

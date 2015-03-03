@@ -139,6 +139,7 @@ SL_DEFINE_METHOD(Frame, insert, {
 	if (isMenuBar(object)) {
 		MenuBar_Impl *child = (MenuBar_Impl *)widget;
 		impl->setMenuBar(child);
+		reinsertActions(impl);
 	}
 	else if (isStatusBar(object)) {
 		StatusBar_Impl *child = (StatusBar_Impl *)widget;

@@ -33,6 +33,7 @@ SL_DEFINE_METHOD(MenuBar, insert, {
 		else
 			before = NULL;
 		impl->insertAction(before, widget->menuAction());
+		reinsertActions(impl);
 		Py_RETURN_NONE;
 	}
 	

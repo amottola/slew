@@ -183,6 +183,7 @@ PyObject *mimeDataToObject(const QMimeData *mimeData, const QString& mimeType=""
 bool objectToMimeData(PyObject *object, QMimeData *mimeData);
 
 void relinkActions(QWidget *widget);
+void reinsertActions(QWidget *parent);
 
 int getKeyModifiers(Qt::KeyboardModifiers modifiers);
 int getKeyCode(int code);
