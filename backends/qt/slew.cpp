@@ -113,6 +113,7 @@
 #include <QEventLoop>
 #include <QNetworkProxyFactory>
 #include <QDrag>
+#include <QSessionManager>
 
 
 class ResourceReader;
@@ -2437,6 +2438,8 @@ Application::Application(int& argc, char **argv)
 	
 	installEventFilter(this);
 	QNetworkProxyFactory::setUseSystemConfiguration(true);
+
+	connect(this, SIGNAL(commitDataRequest(QSessionManager&)), SLOT(commitData(QSessionManager&)));
 }
 
 
@@ -2444,6 +2447,38 @@ Application::~Application()
 {
 	delete fShadowWindow;
 	delete fMutex;
+}
+
+
+void
+Application::commitData(QSessionManager& manager)
+{
+	if (manager.allowsInteraction()) {
+		if (!canQuit())
+			manager.cancel();
+	}
+}
+
+
+bool
+Application::canQuit()
+{
+	bool success;
+	PyAutoLocker locker;
+	PyObject *method = PyString_FromString("close");
+	PyObject *result = PyObject_CallMethodObjArgs(sApplication, method, NULL);
+	Py_DECREF(method);
+	
+	if (result) {
+		success = ((result == Py_None) || (PyObject_IsTrue(result)));
+		Py_DECREF(result);
+	}
+	else {
+		success = false;
+		PyErr_Print();
+		PyErr_Clear();
+	}
+	return success;
 }
 
 
@@ -2654,16 +2689,30 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			}
 		}
 		break;
-
+		
 	case QEvent::Close:
 		{
 			if (obj == this) {
-				quit();
-				return true;
+				if (canQuit()) {
+					quit();
+					return true;
+				}
+				else {
+					foreach (QWidget *widget, topLevelWidgets()) {
+						widget->setProperty("skip_close", QVariant::fromValue(true));
+					}
+				}
+			}
+			else {
+				if (obj->property("skip_close").toBool()) {
+					obj->setProperty("skip_close", QVariant());
+					event->setAccepted(false);
+					return true;
+				}
 			}
 		}
 		break;
-		
+
 	case QEvent::WindowActivate:
 		{
 			if (qobject_cast<Frame_Impl *>(obj) || qobject_cast<Dialog_Impl *>(obj)) {

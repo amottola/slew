@@ -415,9 +415,12 @@ public:
 	void newProxy(Abstract_Proxy *proxy);
 	void deallocProxy(Abstract_Proxy *proxy);
 	QObject *replaceProxyObject(Abstract_Proxy *proxy, QObject *object);
+
+	bool canQuit();
 	
 public slots:
 	void sendTabEvent(QObject *receiver);
+	void commitData(QSessionManager& manager);
 
 private:
 	QMainWindow						*fShadowWindow;
