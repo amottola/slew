@@ -224,6 +224,8 @@ class Application(object):
 		pass
 	def run(self):
 		raise NotImplementedError("Application.run()")
+	def close(self):
+		pass
 	def exit(self):
 		exit()
 	def open_file(self, file):
