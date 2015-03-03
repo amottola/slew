@@ -2654,6 +2654,15 @@ Application::eventFilter(QObject *obj, QEvent *event)
 			}
 		}
 		break;
+
+	case QEvent::Close:
+		{
+			if (obj == this) {
+				quit();
+				return true;
+			}
+		}
+		break;
 		
 	case QEvent::WindowActivate:
 		{
