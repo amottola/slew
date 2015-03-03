@@ -233,8 +233,8 @@ SL_DEFINE_METHOD(Dialog, close, {
 		}
 		else {
 			impl->close();
-			impl->hide();
 		}
+		impl->hide();
 	}
 })
 
