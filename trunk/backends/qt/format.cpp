@@ -1511,6 +1511,9 @@ FormattedLineEdit::focusInEvent(QFocusEvent *event)
 	QLineEdit::focusInEvent(event);
 	
 	if (event->reason() != Qt::PopupFocusReason) {
+		QString text = QLineEdit::text();
+		fCursorPosition = qMin(fCursorPosition, text.size());
+		fCursorEndPosition = qMin(fCursorEndPosition, text.size());
 		setCursorPosition(fCursorPosition);
 		if (fCursorPosition != fCursorEndPosition)
 			setSelection(fCursorPosition, fCursorEndPosition - fCursorPosition);
