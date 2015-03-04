@@ -159,10 +159,12 @@ SL_DEFINE_METHOD(Menu, remove, {
 	if (isMenu(object)) {
 		Menu_Impl *widget = (Menu_Impl *)child;
 		impl->removeAction(widget->menuAction());
+		removeActions(impl);
 	}
 	else if (isMenuItem(object)) {
 		MenuItem_Impl *widget = (MenuItem_Impl *)child;
 		impl->removeAction(widget);
+		removeActions(impl);
 		helper_clear_menu_previous_action(impl);
 	}
 	else if (isWindow(object)) {
