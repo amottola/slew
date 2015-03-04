@@ -335,10 +335,15 @@ SL_DEFINE_METHOD(TextField, set_selection, {
 	if ((start < 0) && (end < 0))
 		impl->selectAll();
 	else {
+		QString text = impl->QLineEdit::text();
 		if (start < 0)
 			start = 0;
+		else
+			start = qMin(start, text.size());
 		if (end < 0)
-			end = 32767;
+			end = text.size();
+		else
+			end = qMin(end, text.size());
 		impl->setSelection(start, end - start);
 	}
 })
