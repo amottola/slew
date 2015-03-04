@@ -54,6 +54,7 @@ SL_DEFINE_METHOD(MenuBar, remove, {
 	if (isMenu(object)) {
 		Menu_Impl *widget = (Menu_Impl *)child;
 		impl->removeAction(widget->menuAction());
+		removeActions(impl);
 		Py_RETURN_NONE;
 	}
 	

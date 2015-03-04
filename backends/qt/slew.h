@@ -184,6 +184,7 @@ bool objectToMimeData(PyObject *object, QMimeData *mimeData);
 
 void relinkActions(QWidget *widget);
 void reinsertActions(QWidget *parent);
+void removeActions(QWidget *parent);
 
 int getKeyModifiers(Qt::KeyboardModifiers modifiers);
 int getKeyCode(int code);

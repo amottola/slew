@@ -181,6 +181,7 @@ SL_DEFINE_METHOD(Frame, remove, {
 			proxy->fImpl->addAction(action);
 		}
 		impl->setMenuBar(NULL);
+		removeActions(impl);
 	}
 	else if (isStatusBar(object)) {
 		StatusBar_Impl *child = (StatusBar_Impl *)widget;

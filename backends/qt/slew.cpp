@@ -2359,6 +2359,7 @@ relinkActions(QWidget *widget)
 void
 reinsertActions(QWidget *parent)
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #ifdef Q_OS_LINUX
 	QWidget *win = parent;
 
@@ -2375,6 +2376,30 @@ reinsertActions(QWidget *parent)
 		}
 	}
 	win->addActions(actions);
+#endif
+#endif
+}
+
+
+void
+removeActions(QWidget *parent)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#ifdef Q_OS_LINUX
+	QWidget *win = parent;
+
+	while ((win) && (!qobject_cast<Frame_Impl *>(win)))
+		win = win->parentWidget();
+
+	if (!win)
+		return;
+	foreach (QAction *action, parent->actions()) {
+		if (action->menu()) {
+			removeActions(action->menu());
+			win->removeAction(action);
+		}
+	}
+#endif
 #endif
 }
 
