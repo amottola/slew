@@ -447,6 +447,35 @@ private:
 };
 
 
+static QRect
+getCheckRect(const QStyleOptionViewItem& o, DataSpecifier *spec, QSize *checkSize = NULL)
+{
+	QStyle *style = QApplication::style();
+	QStyleOptionButton ob;
+	ob.QStyleOption::operator=(o);
+	Qt::Alignment alignment;
+	if (spec->fText.isEmpty())
+		alignment = spec->fAlignment;
+	else
+		alignment = Qt::AlignLeft | Qt::AlignVCenter;
+	QRect rect = style->subElementRect(QStyle::SE_ViewItemCheckIndicator, &ob);
+	if (checkSize)
+		*checkSize = rect.size();
+	QRect bounding(ob.rect);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	int margin = style->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
+	if (alignment & Qt::AlignLeft) {
+		bounding.setRect(bounding.x() + margin, bounding.y(), rect.width(), bounding.height());
+		alignment = (alignment & Qt::AlignVertical_Mask) | Qt::AlignHCenter;
+	}
+	else if (alignment & Qt::AlignRight) {
+		bounding.setRect(bounding.x() + bounding.width() - rect.width() - margin, bounding.y(), rect.width(), bounding.height());
+		alignment = (alignment & Qt::AlignVertical_Mask) | Qt::AlignHCenter;
+	}
+#endif
+	return QStyle::alignedRect(o.direction, alignment, rect.size(), bounding);
+}
+
 
 ItemDelegate::ItemDelegate(QObject *parent)
 	: QItemDelegate(parent), fCurrentSpec(NULL), fTabEvent(NULL)
@@ -466,13 +495,14 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 	QStyle *style = QApplication::style();
 	DataModel_Impl *model = (DataModel_Impl *)view->model();
 	DataSpecifier *spec = model->getDataSpecifier(index);
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-	QStyleOptionViewItem opt, backOpt;
-	opt = backOpt = setOptions(index, option);
-#else
 	QStyleOptionViewItem opt(option), backOpt(option);
+#if defined(Q_OS_MAC)
+	if (view->window()->isActiveWindow()) {
+		opt.state |= QStyle::State_Active;
+		backOpt.state |= QStyle::State_Active;
+	}
 #endif
-	
+
 	delegate->fCurrentSpec = spec;
 	
 	painter->save();
@@ -490,22 +520,22 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 	}
 	else if (spec->isCheckBox()) {
 		QStyleOptionViewItem o(opt);
-		
+		QSize checkSize;
+		QRect checkRect = getCheckRect(o, spec, &checkSize);
+
 		o.state = opt.state | (spec->fSelection < 0 ? QStyle::State_NoChange : (spec->fSelection > 0 ? QStyle::State_On : QStyle::State_Off));
 		QString text = spec->fText;
 		if (text.isEmpty()) {
-			o.rect = QStyle::alignedRect(opt.direction, spec->fAlignment, style->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt).size(), opt.rect);
+			o.rect = checkRect;
 			if (spec->isReadOnly())
 				o.state &= ~QStyle::State_Enabled;
-			
+
 			style->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &o, painter, NULL);
 		}
 		else {
 			if (spec->fFont != painter->font())
 				painter->setFont(spec->fFont);
 			
-			QSize checkSize = style->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt).size();
-			QRect checkRect = QStyle::alignedRect(opt.direction, spec->fAlignment, checkSize, QRect(opt.rect.left(), opt.rect.top(), checkSize.width(), opt.rect.height()));
 			QRect textRect = opt.rect.adjusted(checkSize.width() + QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin), 0, 0, 0);
 			
 			Qt::CheckState state;
@@ -524,6 +554,7 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 		DataModel_Impl *comboModel = (DataModel_Impl *)getImpl(spec->fModel);
 		
 		o.QStyleOption::operator=(opt);
+		o.state = option.state;
 		if (spec->isReadOnly())
 			o.state &= ~QStyle::State_Enabled;
 		if (!comboModel) {
@@ -537,7 +568,18 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 				o.iconSize = o.currentIcon.availableSizes().first();
 		}
 		
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+		if (!(option.state & QStyle::State_Active)) {
+			painter->save();
+			painter->translate(option.rect.topLeft());
+		}
+#endif
 		style->drawComplexControl(QStyle::CC_ComboBox, &o, painter, NULL);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+		if (!(option.state & QStyle::State_Active)) {
+			painter->restore();
+		}
+#endif
 #ifdef Q_OS_WIN32
 		// Workaround for Windows as label needs a real QComboBox to exist to properly adjust margins; we do it manually here...
 // 		o.rect.adjust(3, 3, -19, -3);
@@ -589,7 +631,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 	QPalette::ColorGroup cg = option.state & QStyle::State_Enabled ? QPalette::Normal : QPalette::Disabled;
 	if (cg == QPalette::Normal && !(option.state & QStyle::State_Active))
 		cg = QPalette::Inactive;
-	
+
 	if (option.state & QStyle::State_Selected) {
 		color = option.palette.color(cg, QPalette::HighlightedText);
 		painter->fillRect(rect, option.palette.brush(cg, QPalette::Highlight));
@@ -720,7 +762,6 @@ ItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *abstractModel, cons
 		
 		PyAutoLocker locker;
 		DataSpecifier *spec = model->getDataSpecifier(index);
-		QStyle *style = view->style();
 		
 		if ((!spec) || (spec->isCustom()))
 			return true;
@@ -728,15 +769,7 @@ ItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *abstractModel, cons
 		editingEvent = new QMouseEvent(type, e->pos(), e->globalPos(), e->button(), e->buttons(), e->modifiers());
 		
 		if (spec->isCheckBox()) {
-			QStyleOptionButton o;
-			o.QStyleOption::operator=(option);
-			Qt::Alignment alignment;
-			if (spec->fText.isEmpty())
-				alignment = spec->fAlignment;
-			else
-				alignment = Qt::AlignLeft | Qt::AlignVCenter;
-			QRect rect = QStyle::alignedRect(o.direction, alignment, style->subElementRect(QStyle::SE_ViewItemCheckIndicator, &o).size(), o.rect);
-			if (rect.contains(e->pos())) {
+			if (getCheckRect(option, spec).contains(e->pos())) {
 				modified = true;
 			}
 			else {
@@ -908,7 +941,14 @@ ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem& 
 		PyAutoLocker locker;
 		DataModel_Impl *model = (DataModel_Impl *)index.model();
 		DataSpecifier *spec = model->getDataSpecifier(index);
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 		o.rect = QStyle::alignedRect(o.direction, (Qt::Alignment)spec->fAlignment, QApplication::style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &o).size(), o.rect);
+#else
+		QRect checkRect = getCheckRect(o, spec);
+		editor->setGeometry(checkRect);
+		return;
+#endif
 	}
 	QItemDelegate::updateEditorGeometry(editor, o, index);
 }

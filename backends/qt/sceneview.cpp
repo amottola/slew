@@ -1235,7 +1235,7 @@ SL_DEFINE_METHOD(SceneView, repaint, {
 		scene->update();
 	}
 	else {
-		scene->update(impl->mapToScene(QRect(tl, br)).boundingRect());
+		scene->update(impl->mapToScene(QRect(tl, br).adjusted(-1, -1, 1, 1)).boundingRect());
 	}
 })
 
