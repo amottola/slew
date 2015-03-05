@@ -212,6 +212,8 @@ SL_DEFINE_METHOD(Frame, set_focus, {
 	
 	if (focus) {
 		SET_FOCUS()
+		if (!impl->isVisible())
+			impl->show();
 		impl->activateWindow();
 		impl->raise();
 	}
