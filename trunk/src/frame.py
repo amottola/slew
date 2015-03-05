@@ -1,6 +1,7 @@
 import slew
 
 from utils import *
+from gdi import *
 
 
 @factory
@@ -76,6 +77,9 @@ class Frame(slew.Window):
 	
 	def alert(self, timeout=0):
 		self._impl.alert(timeout)
+
+	def set_mask(self, mask):
+		self._impl.set_mask(Bitmap.ensure(mask, False))
 	
 	@deprecated
 	def destroy(self):

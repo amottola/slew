@@ -4,6 +4,7 @@
 #include <QGuiApplication>
 #endif
 #include <QEventLoop>
+#include <QBitmap>
 
 #include "frame.h"
 #include "dialog.h"
@@ -277,6 +278,24 @@ SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, restore_geometry, {
 })
 
 
+SL_DEFINE_ABSTRACT_METHOD(Frame, QWidget, set_mask, {
+	PyObject *object;
+
+	if (!PyArg_ParseTuple(args, "O", &object))
+		return NULL;
+	
+	if (object == Py_None) {
+		impl->clearMask();
+	}
+	else {
+		QPixmap pixmap;
+		if (!convertPixmap(object, &pixmap))
+			return NULL;
+		impl->setMask(pixmap.mask());
+	}
+})
+
+
 SL_DEFINE_METHOD(Frame, get_style, {
 	int style = 0;
 	Qt::WindowFlags flags = impl->windowFlags();
@@ -456,6 +475,7 @@ SL_METHOD(is_minimized)
 SL_METHOD(is_active)
 SL_METHOD(save_geometry)
 SL_METHOD(restore_geometry)
+SL_METHOD(set_mask)
 
 SL_PROPERTY(style)
 SL_PROPERTY(title)
