@@ -313,7 +313,7 @@ TreeView_Impl::setModel(QAbstractItemModel *model)
 	
 	if (qobject_cast<DataModel_Impl *>(model)) {
 		connect(model, SIGNAL(configureHeader(const QPoint&, Qt::TextElideMode)), this, SLOT(handleConfigureHeader(const QPoint&, Qt::TextElideMode)));
-		connect(model, SIGNAL(modelReset()), this, SLOT(resetColumns()));
+		connect(model, SIGNAL(modelReset()), this, SLOT(resetColumns()), Qt::QueuedConnection);
 		connect(model, SIGNAL(layoutChanged()), this, SLOT(handleResizeToContents()), Qt::QueuedConnection);
 	}
 	

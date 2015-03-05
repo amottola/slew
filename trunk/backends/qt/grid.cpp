@@ -342,7 +342,7 @@ Grid_Impl::setModel(QAbstractItemModel *model)
 		connect(model, SIGNAL(rowsInserted(QModelIndex, int, int)), this, SLOT(resizeColumns()));
 		connect(model, SIGNAL(rowsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)), Qt::QueuedConnection);
 		connect(model, SIGNAL(columnsRemoved(QModelIndex, int, int)), this, SLOT(handleRowsColsRemoved(QModelIndex, int, int)));
-		connect(model, SIGNAL(modelReset()), this, SLOT(resetColumns()));
+		connect(model, SIGNAL(modelReset()), this, SLOT(resetColumns()), Qt::QueuedConnection);
 	}
 	
 	stopEdit();
