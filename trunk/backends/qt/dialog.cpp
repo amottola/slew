@@ -234,7 +234,7 @@ SL_DEFINE_METHOD(Dialog, close, {
 		else {
 			impl->close();
 		}
-		impl->hide();
+		QMetaObject::invokeMethod(impl, "hide", Qt::QueuedConnection);
 	}
 })
 
