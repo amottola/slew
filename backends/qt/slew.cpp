@@ -1908,7 +1908,7 @@ void
 setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 {
 	PyAutoLocker locker;
-	TimedCall *timedCall;
+	TimedCall *timedCall = NULL;
 	
 	if (object) {
 		foreach (QObject *child, object->children()) {
@@ -1917,7 +1917,7 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 				break;
 		}
 		if (timedCall)
-			timedCall->deleteLater();
+			delete timedCall;
 	}
 	
 	timedCall = new TimedCall(object, func, args);
@@ -2589,6 +2589,7 @@ Application::notify(QObject *receiver, QEvent *event)
 			if (!original)
 				return true;
 		}
+
 		// if ((NotifyCounter::IsRoot()) && (original)) {
 		// 	QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 		// }
@@ -3499,10 +3500,10 @@ SL_DEFINE_MODULE_METHOD(exit, {
 SL_DEFINE_MODULE_METHOD(process_events, {
 	Py_BEGIN_ALLOW_THREADS
 	
-	if (NotifyCounter::IsRoot()) {
+	// if (NotifyCounter::IsRoot()) {
 		QApplication::sendPostedEvents();
 		// QApplication::processEvents();
-	}
+	// }
 	
 	Py_END_ALLOW_THREADS
 })
