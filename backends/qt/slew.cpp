@@ -3510,10 +3510,10 @@ SL_DEFINE_MODULE_METHOD(exit, {
 SL_DEFINE_MODULE_METHOD(process_events, {
 	Py_BEGIN_ALLOW_THREADS
 	
-	// if (NotifyCounter::IsRoot()) {
+	if (NotifyCounter::IsRoot()) {
 		QApplication::sendPostedEvents();
 		// QApplication::processEvents();
-	// }
+	}
 	
 	Py_END_ALLOW_THREADS
 })
