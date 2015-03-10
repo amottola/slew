@@ -164,7 +164,7 @@ class TimedCall : public QObject
 	
 public:
 	TimedCall(QObject *parent, PyObject *func, PyObject *args)
-		: QObject(), fFunc(func), fArgs(args)
+		: QObject(), fFunc(func), fArgs(args), fID(0)
 	{
 		Py_XINCREF(func);
 		Py_XINCREF(args);
@@ -220,12 +220,19 @@ public slots:
 	
 	void start(int delay) {
 
-		startTimer(delay);
+		fID = startTimer(delay);
+	}
+
+	void stop()
+	{
+		if (fID)
+			killTimer(fID);
 	}
 	
 private:
 	PyObject			*fFunc;
 	PyObject			*fArgs;
+	int					fID;
 };
 
 
@@ -1916,8 +1923,11 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 			if (timedCall)
 				break;
 		}
-		if (timedCall)
-			delete timedCall;
+		if (timedCall) {
+			timedCall->stop();
+			timedCall->setParent(NULL);
+			timedCall->deleteLater();
+		}
 	}
 	
 	timedCall = new TimedCall(object, func, args);
