@@ -20,6 +20,14 @@ public:
 		setParent(calendar);
 		calendar->setStyle(this);
 	}
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	virtual QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0, const QWidget *widget = 0) const
+	{
+		Style *style = (Style *)this;
+		return style->standardIconImplementation(standardIcon, option, widget);
+	}
+#endif
 	
 protected slots:
 	QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option = 0, const QWidget * widget = 0)
