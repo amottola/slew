@@ -1924,8 +1924,8 @@ setTimeout(QObject *object, int delay, PyObject *func, PyObject *args)
 				break;
 		}
 		if (timedCall) {
-//			timedCall->stop();
-//			timedCall->setParent(NULL);
+			timedCall->stop();
+			timedCall->setParent(NULL);
 			timedCall->deleteLater();
 		}
 	}
