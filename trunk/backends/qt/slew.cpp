@@ -226,8 +226,10 @@ public slots:
 
 	void stop()
 	{
-		if (fID)
+		if (fID) {
 			killTimer(fID);
+			fID = 0;
+		}
 	}
 	
 private:
