@@ -214,6 +214,7 @@ public:
 public slots:
 	void executeAndDelete()
 	{
+		stop();
 		execute();
 		deleteLater();
 	}
