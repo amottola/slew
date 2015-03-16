@@ -5,11 +5,12 @@
 #include "constants/widget.h"
 
 #include <QStaticText>
+#include <QTextLayout>
 #include <QTextOption>
 
 
 Label_Impl::Label_Impl()
-	: QLabel(), WidgetInterface()
+	: QLabel(), WidgetInterface(), fElided(false)
 {
 	fStaticText.setTextFormat(Qt::PlainText);
 	fStaticText.setTextWidth(0);
@@ -17,6 +18,24 @@ Label_Impl::Label_Impl()
 	setTextInteractionFlags(Qt::NoTextInteraction);
 	setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 	connect(this, SIGNAL(linkActivated(const QString&)), this, SLOT(handleLinkActivated(const QString&)));
+}
+
+
+void
+Label_Impl::setText(const QString& text)
+{
+	fOriginalText = text;
+	QLabel::setText(text);
+	elideText();
+}
+
+
+void
+Label_Impl::setElided(bool elided)
+{
+	fElided = elided;
+	updateGeometry();
+	update();
 }
 
 
@@ -56,11 +75,53 @@ Label_Impl::paintEvent(QPaintEvent *event)
 }
 
 
+QSize
+Label_Impl::sizeHint() const
+{
+	QSize size = qvariant_cast<QSize>(property("explicitSize"));
+	QSize tsize = QLabel::sizeHint();
+	if (size.width() <= 0)
+		size.rwidth() = tsize.width();
+	if (size.height() <= 0)
+		size.rheight() = tsize.height();
+	if (fElided)
+		size.setWidth(50);
+	return size;
+}
+
+
+QSize
+Label_Impl::minimumSizeHint() const
+{
+	QSize size = QLabel::minimumSizeHint();
+	if (fElided)
+		size.setWidth(50);
+	else
+		size.setWidth(qMax(size.width(), 50));
+	return size;
+}
+
+
 void
 Label_Impl::resizeEvent(QResizeEvent *event)
 {
+	elideText();
 	QLabel::resizeEvent(event);
 	setIndent(-1);
+}
+
+
+void
+Label_Impl::elideText()
+{
+	if (fElided) {
+		setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+		QFontMetrics fontMetrics = this->fontMetrics();
+		QString text = fontMetrics.elidedText(fOriginalText, Qt::ElideRight, width());
+		QLabel::setText(text);
+	}
+	else
+		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
 
@@ -88,6 +149,8 @@ SL_DEFINE_METHOD(Label, get_style, {
 		style |= SL_LABEL_STYLE_FOLLOW_LINKS;
 	if (impl->wordWrap())
 		style |= SL_LABEL_STYLE_WRAP;
+	if (impl->elided())
+		style |= SL_LABEL_STYLE_ELIDE;
 	return PyInt_FromLong(style);
 })
 
@@ -108,6 +171,7 @@ SL_DEFINE_METHOD(Label, set_style, {
 		flags |= Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard;
 	impl->setTextInteractionFlags(flags);
 	impl->setWordWrap(style & SL_LABEL_STYLE_WRAP ? true : false);
+	impl->setElided(style & SL_LABEL_STYLE_ELIDE ? true : false);
 })
 
 

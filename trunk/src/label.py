@@ -13,6 +13,7 @@ class Label(slew.Window):
 	STYLE_SELECTABLE			= 0x00020000
 	STYLE_FOLLOW_LINKS			= 0x00040000
 	STYLE_WRAP					= 0x00080000
+	STYLE_ELIDE					= 0x00100000
 	#}
 	
 	
@@ -22,6 +23,7 @@ class Label(slew.Window):
 									'selectable':	STYLE_SELECTABLE,
 									'links':		STYLE_FOLLOW_LINKS,
 									'wrap':			STYLE_WRAP,
+									'elide':		STYLE_ELIDE,
 								})),
 		'text':					TranslatedStringProperty(True),
 		'align':				BitsProperty({	'top':		slew.ALIGN_TOP,
