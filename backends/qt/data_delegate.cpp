@@ -21,6 +21,7 @@
 #include <QHeaderView>
 
 
+
 class Base_Editor
 {
 public:
@@ -484,6 +485,8 @@ ItemDelegate::ItemDelegate(QObject *parent)
 	fInvalidPattern.fill(Qt::transparent);
 	QPainter painter(&fInvalidPattern);
 	painter.fillRect(fInvalidPattern.rect(), QBrush(Qt::gray, Qt::Dense5Pattern));
+
+	fTextDocumentsCache.setMaxCost(5000);
 }
 
 
@@ -504,6 +507,7 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 #endif
 
 	delegate->fCurrentSpec = spec;
+	delegate->fCurrentIndex = index;
 	
 	painter->save();
 	painter->setClipping(false);
@@ -680,11 +684,17 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 		painter->setFont(fCurrentSpec->fFont);
 	
 	if (fCurrentSpec->isHTML()) {
-		QTextDocument doc;
-		doc.setHtml(value);
-		doc.setDocumentMargin(0);
+		QTextDocument *doc = fTextDocumentsCache.object(fCurrentIndex);
+		if (!doc) {
+			ItemDelegate *delegate = (ItemDelegate *)this;
+			doc = new QTextDocument();
+			doc->setHtml(value);
+			doc->setDocumentMargin(0);
+			delegate->fTextDocumentsCache.insert(fCurrentIndex, doc);
+		}
+		doc->setTextWidth(textRect.width());
 		if (option.state & QStyle::State_Selected) {
-			for (QTextBlock block = doc.firstBlock(); block.isValid(); block = block.next()) {
+			for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
 				QTextCursor cursor(block);
 				QTextCharFormat format;
 				format.setForeground(QBrush(color));
@@ -692,13 +702,12 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 				cursor.mergeCharFormat(format);
 			}
 		}
-		doc.setTextWidth(textRect.width());
 		painter->save();
 		painter->translate(textRect.topLeft());
-		int height = doc.size().height();
+		int height = doc->size().height();
 		painter->translate(0, (textRect.height() - height) / 2);
 		textRect.moveTo(0, 0);
-		doc.drawContents(painter, textRect);
+		doc->drawContents(painter, textRect);
 		painter->restore();
 	}
 	else {
@@ -1141,6 +1150,9 @@ ItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *abstractModel, c
 			model->setData(index, value, Qt::EditRole);
 		}
 	}
+
+	ItemDelegate *delegate = (ItemDelegate *)this;
+	delegate->fTextDocumentsCache.remove(index);
 }
 
 
