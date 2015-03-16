@@ -21,8 +21,17 @@ public:
 	SL_DECLARE_OBJECT(Label)
 	
 	SL_DECLARE_SET_VISIBLE(QLabel)
-	SL_DECLARE_SIZE_HINT(QLabel)
 	
+	virtual QSize sizeHint() const;
+	virtual QSize minimumSizeHint() const;
+
+	void setText(const QString& text);
+
+	void setElided(bool elided);
+	bool elided() { return fElided; }
+
+	void elideText();
+
 public slots:
 	void handleLinkActivated(const QString& url);
 	
@@ -31,6 +40,8 @@ protected:
 	virtual void resizeEvent(QResizeEvent *event);
 	
 	QStaticText		fStaticText;
+	QString			fOriginalText;
+	bool			fElided;
 };
 
 
