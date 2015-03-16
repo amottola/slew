@@ -10,6 +10,8 @@
 #include <QItemDelegate>
 #include <QCommonStyle>
 #include <QKeyEvent>
+#include <QTextDocument>
+#include <QCache>
 
 
 
@@ -175,9 +177,11 @@ protected:
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const {}
 	virtual void finishPaint(QPainter *painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {}
 	
-	DataSpecifier			*fCurrentSpec;
-	QKeyEvent				*fTabEvent;
-	QPixmap					fInvalidPattern;
+	DataSpecifier						*fCurrentSpec;
+	QKeyEvent							*fTabEvent;
+	QPixmap								fInvalidPattern;
+	QModelIndex							fCurrentIndex;
+	QCache<QModelIndex, QTextDocument>	fTextDocumentsCache;
 };
 
 
