@@ -48,8 +48,6 @@ Menu_Impl::Menu_Impl()
 	QVariant value;
 	value.setValue(&fActionGroups);
 	setProperty("action_groups", value);
-	connect(this, SIGNAL(aboutToHide()), this, SLOT(handleAboutToHide()), Qt::QueuedConnection);
-	connect(this, SIGNAL(aboutToShow()), this, SLOT(handleAboutToShow()));
 }
 
 
@@ -60,26 +58,6 @@ Menu_Impl::event(QEvent *e)
 	(void)t;
 	
 	return QMenu::event(e);
-}
-
-
-void
-Menu_Impl::handleAboutToHide()
-{
-	PyAutoLocker locker;
-	EventRunner(this, "onCollapse").run();
-	PyObject *object = getObject(this, false);
-	Py_XDECREF(object);
-}
-
-
-void
-Menu_Impl::handleAboutToShow()
-{
-	PyAutoLocker locker;
-	PyObject *object = getObject(this, false);
-	Py_XINCREF(object);
-	EventRunner(this, "onExpand").run();
 }
 
 
