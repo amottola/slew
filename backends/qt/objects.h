@@ -11,6 +11,7 @@
 #include <QCommonStyle>
 #include <QKeyEvent>
 #include <QTextDocument>
+#include <QAbstractTextDocumentLayout>
 #include <QCache>
 
 
@@ -48,6 +49,7 @@ public:
 	bool isDropTarget() { return (fFlags & SL_DATA_SPECIFIER_DROP_TARGET) != 0; }
 	bool isClickableIcon() { return (fFlags & SL_DATA_SPECIFIER_CLICKABLE_ICON) != 0; }
 	bool isHTML() { return (fFlags & SL_DATA_SPECIFIER_HTML) != 0; }
+	bool isClickableURLs() { return (fFlags & SL_DATA_SPECIFIER_CLICKABLE_URLS) != 0; }
 	bool isSeparator() { return (fFlags & SL_DATA_SPECIFIER_SEPARATOR) != 0; }
 	bool isNone() { return (fFlags & SL_DATA_SPECIFIER_INVALID) != 0; }
 	
@@ -169,6 +171,8 @@ public:
 	virtual bool canFocusOut(QWidget *oldFocus, QWidget *newFocus);
 	
 	bool isEditValid();
+
+	QTextDocument *getTextDocument(const QModelIndex& index) const { return fTextDocumentsCache.object(index); };
 	
 public slots:
 	void startEditing(const QModelIndex& index);

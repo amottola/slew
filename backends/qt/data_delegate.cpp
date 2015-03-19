@@ -689,6 +689,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 			ItemDelegate *delegate = (ItemDelegate *)this;
 			doc = new QTextDocument();
 			doc->setHtml(value);
+			doc->setDefaultFont(fCurrentSpec->fFont);
 			doc->setDocumentMargin(0);
 			delegate->fTextDocumentsCache.insert(fCurrentIndex, doc);
 		}
