@@ -760,6 +760,24 @@ SL_DEFINE_METHOD(Grid, set_column_width, {
 })
 
 
+SL_DEFINE_METHOD(Grid, is_last_column_stretching, {
+	if (impl->horizontalHeader()->stretchLastSection())
+		Py_RETURN_TRUE;
+	else
+		Py_RETURN_FALSE;
+})
+
+
+SL_DEFINE_METHOD(Grid, set_last_column_stretching, {
+	bool streching;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertBool, &streching))
+		return NULL;
+	
+	impl->horizontalHeader()->setStretchLastSection(streching);
+})
+
+
 SL_DEFINE_METHOD(Grid, get_column_pos, {
 	int column;
 	
@@ -1059,6 +1077,7 @@ SL_PROPERTY(style)
 SL_PROPERTY(row)
 SL_PROPERTY(column)
 SL_BOOL_PROPERTY(ascending)
+SL_BOOL_PROPERTY(last_column_stretching)
 SL_PROPERTY(sortby)
 SL_END_VIEW_PROXY(Grid)
 
