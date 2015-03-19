@@ -593,11 +593,6 @@ ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const
 #endif
 		style->drawControl(QStyle::CE_ComboBoxLabel, &o, painter, NULL);
 	}
-	else if (spec->fWidget) {
-		QWidget *widget = (QWidget *)getImpl(spec->fWidget);
-		widget->setEnabled(opt.state & QStyle::State_Enabled ? true : false);
-		widget->render(painter, opt.rect.topLeft());
-	}
 	else {
 		if ((spec->isBrowser()) && (view->currentIndex() == index)) {
 			opt.rect.setWidth(opt.rect.width() - opt.rect.height());
@@ -710,6 +705,14 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 		textRect.moveTo(0, 0);
 		doc->drawContents(painter, textRect);
 		painter->restore();
+	}
+	else if (fCurrentSpec->isCustom()) {
+		QWidget *widget = fCurrentSpec->getCustomWidget();
+		widget->setEnabled(option.state & QStyle::State_Enabled ? true : false);
+		QPixmap pixmap(widget->size());
+		pixmap.fill(Qt::transparent);
+		widget->render(&pixmap, QPoint(), QRegion(), 0);
+		painter->drawPixmap(QStyle::alignedRect(option.direction, alignment, pixmap.size(), option.rect), pixmap);
 	}
 	else {
 		Qt::TextElideMode mode = Qt::ElideNone;
@@ -960,6 +963,14 @@ ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem& 
 		return;
 #endif
 	}
+	else if (!dynamic_cast<Base_Editor *>(editor)) {
+		PyAutoLocker locker;
+		DataModel_Impl *model = (DataModel_Impl *)index.model();
+		DataSpecifier *spec = model->getDataSpecifier(index);
+
+		QRect rect = QStyle::alignedRect(o.direction, (Qt::Alignment)spec->fAlignment, editor->size(), o.rect);
+		editor->setGeometry(rect);
+	}
 	QItemDelegate::updateEditorGeometry(editor, o, index);
 }
 
@@ -984,6 +995,9 @@ ItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& in
 			doc.setDocumentMargin(0);
 			doc.setTextWidth(view->visualRect(index).width() - margin);
 			size = size.expandedTo(doc.size().toSize());
+		}
+		else if (spec->isCustom()) {
+			size = size.expandedTo(spec->getCustomWidget()->size());
 		}
 	}
 	return size;
@@ -1108,6 +1122,9 @@ ItemDelegate::setEditorData(QWidget *editor, const QModelIndex& index) const
 			if ((spec->isSelectedOnFocus()) && (editor->hasFocus()))
 				lineEdit->selectAll();
 		}
+	}
+	else if (spec->isCustom()) {
+		editor->setEnabled((!spec->isReadOnly()) && (spec->isEnabled()));
 	}
 }
 

@@ -53,6 +53,8 @@ public:
 	bool isSeparator() { return (fFlags & SL_DATA_SPECIFIER_SEPARATOR) != 0; }
 	bool isNone() { return (fFlags & SL_DATA_SPECIFIER_INVALID) != 0; }
 	
+	QWidget *getCustomWidget() { return fWidget ? (QWidget *)getImpl(fWidget) : NULL; }
+
 	QString					fText;
 	int						fDataType;
 	QString					fFormat;
