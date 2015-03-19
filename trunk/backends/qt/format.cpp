@@ -745,19 +745,22 @@ getFormattedValue(const QString& input, QColor *color, Qt::Alignment *align, int
 	case SL_DATATYPE_DECIMAL:
 	case SL_DATATYPE_FLOAT:
 		{
-			QString iPart, fPart;
+			QString value, iPart, fPart;
 			QChar tSep, dSep;
 			bool neg, overflow = false, zero;
 			
 			tSep = locale.groupSeparator();
 			dSep = locale.decimalPoint();
-			
-			int pos = input.indexOf('.');
+
+			value = input;
+			value = value.replace(',','.');
+
+			int pos = value.indexOf('.');
 			if (pos < 0)
-				iPart = input;
+				iPart = value;
 			else {
-				iPart = input.mid(0, pos);
-				fPart = input.mid(pos+1);
+				iPart = value.mid(0, pos);
+				fPart = value.mid(pos+1);
 			}
 			neg = (iPart[0] == '-');
 			if (neg)
