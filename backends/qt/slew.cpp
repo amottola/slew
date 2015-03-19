@@ -2289,27 +2289,33 @@ objectToMimeData(PyObject *object, QMimeData *mimeData)
 	if (convertString(object, &text)) {
 		mimeData->setText(text);
 	}
-	else if (convertColor(object, &color)) {
-		mimeData->setColorData(color);
-	}
-	else if (convertPixmap(object, &pixmap)) {
-		mimeData->setImageData(pixmap);
-	}
 	else {
 		PyErr_Clear();
-		QByteArray data;
-		PyObject *buffer;
-		buffer = PyObject_CallFunctionObjArgs(sSerializeData, object, NULL);
-		if (buffer) {
-			if (convertBuffer(buffer, &data)) {
-				mimeData->setData(SL_PYOBJECT_MIME_TYPE, data);
-			}
-			Py_DECREF(buffer);
+		if (convertColor(object, &color)) {
+			mimeData->setColorData(color);
 		}
-		if (PyErr_Occurred()) {
-			PyErr_Print();
+		else {
 			PyErr_Clear();
-			return false;
+			if (convertPixmap(object, &pixmap)) {
+				mimeData->setImageData(pixmap);
+			}
+			else {
+				PyErr_Clear();
+				QByteArray data;
+				PyObject *buffer;
+				buffer = PyObject_CallFunctionObjArgs(sSerializeData, object, NULL);
+				if (buffer) {
+					if (convertBuffer(buffer, &data)) {
+						mimeData->setData(SL_PYOBJECT_MIME_TYPE, data);
+					}
+					Py_DECREF(buffer);
+				}
+				if (PyErr_Occurred()) {
+					PyErr_Print();
+					PyErr_Clear();
+					return false;
+				}
+			}
 		}
 	}
 	PyErr_Clear();
