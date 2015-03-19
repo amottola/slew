@@ -68,6 +68,12 @@ class Grid(View):
 	def set_column_width(self, column, width):
 		return self._impl.set_column_width(column, width)
 	
+	def set_last_column_stretching(self, enabled):
+		self._impl.set_last_column_stretching(enabled)
+
+	def is_last_column_stretching(self):
+		return self._impl.is_last_column_stretching()
+
 	def get_column_pos(self, column):
 		return self._impl.get_column_pos(column)
 	
