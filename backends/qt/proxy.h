@@ -459,7 +459,13 @@ virtual bool viewportEvent(QEvent *event) {										\
 			ItemDelegate *delegate = (ItemDelegate *)itemDelegate();			\
 			QTextDocument *doc = delegate->getTextDocument(index);				\
 			if (doc) {															\
-				QString url = doc->documentLayout()->anchorAt(e->pos());		\
+				QRect rect = visualRect(index);									\
+				QPoint pos = e->pos() - rect.topLeft();							\
+				if (spec->fAlignment & Qt::AlignVCenter)						\
+					pos.ry() -= (rect.height() - doc->size().height()) / 2;		\
+				else if (spec->fAlignment & Qt::AlignBottom)					\
+					pos.ry() -= (rect.height() - doc->size().height());			\
+				QString url = doc->documentLayout()->anchorAt(pos);				\
 				if (!url.isEmpty()) {											\
 					cursor = Qt::PointingHandCursor;							\
 					if ((event->type() == QEvent::MouseButtonPress) &&			\
