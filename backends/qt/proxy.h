@@ -446,6 +446,7 @@ virtual bool viewportEvent(QEvent *event) {										\
 			if (rect.contains(e->pos())) {										\
 				cursor = Qt::PointingHandCursor;								\
 				if ((event->type() == QEvent::MouseButtonPress) &&				\
+						(((QMouseEvent *)event)->button() == Qt::LeftButton) &&	\
 						(!(index.flags() & Qt::ItemIsEditable))) {				\
 					EventRunner runner(this, "onClick");						\
 					if (runner.isValid()) {										\
@@ -469,6 +470,7 @@ virtual bool viewportEvent(QEvent *event) {										\
 				if (!url.isEmpty()) {											\
 					cursor = Qt::PointingHandCursor;							\
 					if ((event->type() == QEvent::MouseButtonPress) &&			\
+						(((QMouseEvent *)event)->button() == Qt::LeftButton) &&	\
 							(!(index.flags() & Qt::ItemIsEditable))) {			\
 						EventRunner runner(this, "onActivate");					\
 						if (runner.isValid()) {									\
