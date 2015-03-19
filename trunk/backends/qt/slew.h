@@ -14,6 +14,7 @@
 #include <QLatin1Char>
 #include <QScrollBar>
 #include <QHeaderView>
+#include <QMouseEvent>
 
 #include <QMimeData>
 #include <QMargins>
