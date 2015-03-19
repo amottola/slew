@@ -455,6 +455,26 @@ virtual bool viewportEvent(QEvent *event) {										\
 				}																\
 			}																	\
 		}																		\
+		else if ((spec) && (spec->isHTML()) && (spec->isClickableURLs())) {		\
+			ItemDelegate *delegate = (ItemDelegate *)itemDelegate();			\
+			QTextDocument *doc = delegate->getTextDocument(index);				\
+			if (doc) {															\
+				QString url = doc->documentLayout()->anchorAt(e->pos());		\
+				if (!url.isEmpty()) {											\
+					cursor = Qt::PointingHandCursor;							\
+					if ((event->type() == QEvent::MouseButtonPress) &&			\
+							(!(index.flags() & Qt::ItemIsEditable))) {			\
+						EventRunner runner(this, "onActivate");					\
+						if (runner.isValid()) {									\
+							runner.set("index", model->getDataIndex(index),		\
+								false);											\
+							runner.set("url", url);								\
+							runner.run();										\
+						}														\
+					}															\
+				}																\
+			}																	\
+		}																		\
 		setCursor(cursor);														\
 	}																			\
 	return _type::viewportEvent(event);											\
