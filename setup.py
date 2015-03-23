@@ -256,7 +256,7 @@ for py in glob.glob(os.path.join('src', '*.py')):
 
 setup(
     name = 'slew',
-    version = '0.9.3',
+    version = '0.9.4',
     
     packages = [ 'slew' ],
     package_dir = { 'slew': 'src' },
