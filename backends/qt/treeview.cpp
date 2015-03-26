@@ -517,6 +517,9 @@ TreeView_Impl::reset()
 {
 	QTreeView::reset();
 	resetColumns();
+	TreeView_Delegate *delegate = qobject_cast<TreeView_Delegate *>(itemDelegate());
+	if (delegate)
+		delegate->invalidate();
 }
 
 

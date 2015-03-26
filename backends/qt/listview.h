@@ -37,7 +37,8 @@ public slots:
 
 	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
 	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight) { dataChanged(topLeft, bottomRight, QVector<int>()); }
-	
+	virtual void reset();
+
 private:
 	bool		fWideSel;
 };
