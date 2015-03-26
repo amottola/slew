@@ -680,6 +680,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 	
 	if (fCurrentSpec->isHTML()) {
 		QTextDocument *doc = fTextDocumentsCache.object(fCurrentIndex);
+		QTextDocument *tempDoc = NULL;
 		if (!doc) {
 			ItemDelegate *delegate = (ItemDelegate *)this;
 			doc = new QTextDocument();
@@ -690,6 +691,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 		}
 		doc->setTextWidth(textRect.width());
 		if (option.state & QStyle::State_Selected) {
+			doc = tempDoc = doc->clone();
 			for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
 				QTextCursor cursor(block);
 				QTextCharFormat format;
@@ -705,6 +707,7 @@ ItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem& option,
 		textRect.moveTo(0, 0);
 		doc->drawContents(painter, textRect);
 		painter->restore();
+		delete tempDoc;
 	}
 	else if (fCurrentSpec->isCustom()) {
 		QWidget *widget = fCurrentSpec->getCustomWidget();
