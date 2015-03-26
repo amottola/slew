@@ -570,6 +570,9 @@ Grid_Impl::reset()
 {
 	QTableView::reset();
 	resetColumns();
+	Grid_Delegate *delegate = qobject_cast<Grid_Delegate *>(itemDelegate());
+	if (delegate)
+		delegate->invalidate();
 }
 
 

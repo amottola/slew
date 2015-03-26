@@ -59,6 +59,16 @@ ListView_Impl::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottom
 
 
 void
+ListView_Impl::reset()
+{
+	QListView::reset();
+	ListView_Delegate *delegate = qobject_cast<ListView_Delegate *>(itemDelegate());
+	if (delegate)
+		delegate->invalidate();
+}
+
+
+void
 ListView_Impl::setModel(QAbstractItemModel *model)
 {
 	QAbstractItemModel *oldModel = this->model();
