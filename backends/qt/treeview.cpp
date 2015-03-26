@@ -289,8 +289,10 @@ TreeView_Impl::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottom
 #else
 	QAbstractItemView::dataChanged(topLeft, bottomRight);
 #endif
+	TreeView_Delegate *delegate = qobject_cast<TreeView_Delegate *>(itemDelegate());
+	if (delegate)
+		delegate->invalidate();
 	if (fEditIndex.isValid()) {
-		ItemDelegate *delegate = qobject_cast<TreeView_Delegate *>(itemDelegate());
 		QWidget *editor = indexWidget(fEditIndex);
 		if ((delegate) && (editor))
 			delegate->setEditorData(editor, fEditIndex);

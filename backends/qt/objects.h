@@ -178,6 +178,7 @@ public:
 	
 public slots:
 	void startEditing(const QModelIndex& index);
+	void invalidate();
 	
 protected:
 	virtual void preparePaint(QStyleOptionViewItem *opt, QStyleOptionViewItem *backOpt, const QModelIndex& index) const {}

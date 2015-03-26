@@ -45,6 +45,20 @@ ListView_Impl::ListView_Impl()
 
 
 void
+ListView_Impl::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+	QAbstractItemView::dataChanged(topLeft, bottomRight, roles);
+#else
+	QAbstractItemView::dataChanged(topLeft, bottomRight);
+#endif
+	ListView_Delegate *delegate = qobject_cast<ListView_Delegate *>(itemDelegate());
+	if (delegate)
+		delegate->invalidate();
+}
+
+
+void
 ListView_Impl::setModel(QAbstractItemModel *model)
 {
 	QAbstractItemModel *oldModel = this->model();

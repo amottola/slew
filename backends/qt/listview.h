@@ -35,6 +35,9 @@ public slots:
 	void prepareDrag() { setDirtyRegion(viewport()->rect()); startAutoScroll(); }
 	void unprepareDrag() { stopAutoScroll(); setState(NoState); viewport()->update(); }
 
+	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
+	virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight) { dataChanged(topLeft, bottomRight, QVector<int>()); }
+	
 private:
 	bool		fWideSel;
 };

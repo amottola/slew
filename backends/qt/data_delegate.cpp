@@ -491,6 +491,13 @@ ItemDelegate::ItemDelegate(QObject *parent)
 
 
 void
+ItemDelegate::invalidate()
+{
+	fTextDocumentsCache.clear();
+}
+
+
+void
 ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	ItemDelegate *delegate = (ItemDelegate *)this;
