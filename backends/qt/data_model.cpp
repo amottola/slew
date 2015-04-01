@@ -746,9 +746,15 @@ DataModel_Impl::invalidateDataSpecifiers()
 	QModelIndexList from_list = persistentIndexList();
 	QModelIndexList temp = from_list;
 	QModelIndexList to_list = from_list;
+	QModelIndexList changed_list;
 	QModelIndex idx;
+	QHash<int, int> mapping;
+	int i;
 	
 	qStableSort(temp.begin(), temp.end(), indexLessThan);
+	for (i = 0; i < to_list.size(); i++) {
+		mapping[from_list.indexOf(to_list.at(i))] = i;
+	}
 	
 	fRoot->resetData();
 	for (int i = 0; i < temp.size(); i++) {
@@ -756,7 +762,10 @@ DataModel_Impl::invalidateDataSpecifiers()
 		int pos = from_list.indexOf(idx);
 		to_list[pos] = index(idx.row(), idx.column(), idx.parent());
 	}
-	changePersistentIndexList(from_list, to_list);
+	for (i = 0; i < to_list.size(); i++) {
+		changed_list.append(to_list.at(mapping[i]));
+	}
+	changePersistentIndexList(from_list, changed_list);
 	emit layoutChanged();
 	emit dataChanged(index(0, 0), index(rowCount(), columnCount() - 1));
 }
@@ -1217,6 +1226,7 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	QModelIndexList to_list;
 	QModelIndexList changed_list;
 	QModelIndex idx;
+	QHash<int, int> mapping;
 	int i;
 	
 	if (parent.isValid())
@@ -1244,6 +1254,9 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 	}
 
 	qStableSort(to_list.begin(), to_list.end(), indexLessThan);
+	for (i = 0; i < to_list.size(); i++) {
+		mapping[from_list.indexOf(to_list.at(i))] = i;
+	}
 
 	node->changeRows(row, count);
 	
@@ -1252,7 +1265,12 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 		if (changed_list.contains(idx))
 			to_list[i] = index(idx.row(), idx.column(), idx.parent());
 	}
-	changePersistentIndexList(from_list, to_list);
+	changed_list.clear();
+	for (i = 0; i < to_list.size(); i++) {
+		changed_list.append(to_list.at(mapping[i]));
+	}
+
+	changePersistentIndexList(from_list, changed_list);
 	emit layoutChanged();
 	emit dataChanged(index(row, 0, parent), index(row + count - 1, columnCount(parent) - 1, parent));
 	
@@ -1309,6 +1327,7 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 	QModelIndexList to_list;
 	QModelIndexList changed_list;
 	QModelIndex idx;
+	QHash<int, int> mapping;
 	int i;
 	
 	resetHeader();
@@ -1336,8 +1355,11 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 		if (found)
 			changed_list.append(to_list.at(i));
 	}
-	
+
 	qStableSort(to_list.begin(), to_list.end(), indexLessThan);
+	for (i = 0; i < to_list.size(); i++) {
+		mapping[from_list.indexOf(to_list.at(i))] = i;
+	}
 
 	node->changeColumns(column, count);
 	
@@ -1346,7 +1368,12 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 		if (changed_list.contains(idx))
 			to_list[i] = index(idx.row(), idx.column(), idx.parent());
 	}
-	changePersistentIndexList(from_list, to_list);
+	changed_list.clear();
+	for (i = 0; i < to_list.size(); i++) {
+		changed_list.append(to_list.at(mapping[i]));
+	}
+
+	changePersistentIndexList(from_list, changed_list);
 	emit layoutChanged();
 	emit dataChanged(index(0, column, parent), index(rowCount(parent) - 1, column + count - 1, parent));
 
