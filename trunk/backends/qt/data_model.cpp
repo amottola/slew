@@ -1243,6 +1243,8 @@ DataModel_Impl::changeRows(int row, int count, const QModelIndex& parent)
 			changed_list.append(to_list.at(i));
 	}
 
+	qStableSort(to_list.begin(), to_list.end(), indexLessThan);
+
 	node->changeRows(row, count);
 	
 	for (i = 0; i < to_list.size(); i++) {
@@ -1334,6 +1336,8 @@ DataModel_Impl::changeColumns(int column, int count, const QModelIndex& parent)
 		if (found)
 			changed_list.append(to_list.at(i));
 	}
+	
+	qStableSort(to_list.begin(), to_list.end(), indexLessThan);
 
 	node->changeColumns(column, count);
 	
