@@ -361,8 +361,7 @@ SL_DEFINE_DC_METHOD(text_extent, {
 	if (!PyArg_ParseTuple(args, "O&d", convertString, &text, &maxWidth))
 		return NULL;
 	
-	QSizeF size = QFontMetricsF(painter->fontMetrics()).boundingRect(QRectF(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
-	return createVectorObject(size);
+	return createVectorObject(getTextExtent(QFontMetricsF(painter->fontMetrics()), text, maxWidth));
 })
 
 

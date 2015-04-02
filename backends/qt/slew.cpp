@@ -2510,6 +2510,18 @@ Application::Application(int& argc, char **argv)
 }
 
 
+QSizeF
+getTextExtent(const QFontMetricsF& fm, const QString& text, double max_width)
+{
+	QSizeF size;
+	size = fm.boundingRect(QRectF(0, 0, (max_width <= 0) ? 0 : max_width, 0), ((max_width <= 0) ? 0 : Qt::TextWordWrap), text).size();
+#ifdef Q_OS_LINUX
+	size.rwidth()--;
+#endif
+	return size;
+}
+
+
 Application::~Application()
 {
 	delete fShadowWindow;
@@ -4803,13 +4815,6 @@ SL_DEFINE_MODULE_METHOD(get_backend_info, {
 })
 
 
-#ifdef Q_OS_LINUX
-#define FIXUP_SIZE(size)		size.rwidth()--;
-#else
-#define FIXUP_SIZE(size)
-#endif
-
-
 SL_DEFINE_MODULE_METHOD(get_font_text_extent, {
 	static char *kwlist[] = { "font", "text", "max_width", NULL };
 	QFont font;
@@ -4819,10 +4824,7 @@ SL_DEFINE_MODULE_METHOD(get_font_text_extent, {
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&d:get_font_text_extent", kwlist, convertFont, &font, convertString, &text, &maxWidth))
 		return NULL;
 	
-	QFontMetricsF fm(font);
-	QSizeF size = fm.boundingRect(QRectF(0, 0, (maxWidth <= 0) ? 0 : maxWidth, 0), ((maxWidth <= 0) ? 0 : Qt::TextWordWrap), text).size();
-	FIXUP_SIZE(size);
-	return createVectorObject(size);
+	return createVectorObject(getTextExtent(QFontMetricsF(font), text, maxWidth));
 })
 
 
