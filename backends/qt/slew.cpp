@@ -2515,8 +2515,10 @@ getTextExtent(const QFontMetricsF& fm, const QString& text, double max_width)
 {
 	QSizeF size;
 	size = fm.boundingRect(QRectF(0, 0, (max_width <= 0) ? 0 : max_width, 0), ((max_width <= 0) ? 0 : Qt::TextWordWrap), text).size();
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #ifdef Q_OS_LINUX
 	size.rwidth()--;
+#endif
 #endif
 	return size;
 }
