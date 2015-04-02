@@ -211,6 +211,9 @@ PyObject *printDocument(int type, const QString& title, PyObject *callback, bool
 
 void freeBitmapResources(QPainter *painter, QPaintDevice *device);
 
+QSizeF getTextExtent(const QFontMetricsF& fm, const QString& text, double max_width);
+
+
 #ifdef Q_OS_MAC
 
 void helper_bring_application_to_front();
