@@ -4776,7 +4776,7 @@ SL_DEFINE_MODULE_METHOD(get_screen_dpi, {
 		adapter++;
 	}
 	
-	if (size.isValid())
+	if (!size.isEmpty())
 		return createVectorObject(QSizeF((2.54 * (double)desktop->width()) / size.width(), (2.54 * (double)desktop->height()) / size.height()));
 	return createVectorObject(QSizeF(desktop->physicalDpiX(), desktop->physicalDpiY()));
 })
