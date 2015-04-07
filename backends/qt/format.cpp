@@ -1258,10 +1258,7 @@ FormattedLineEdit::setInternalValueFromEditValue(const QString& value)
 			}
 			if ((fState == Acceptable) && ((!date.isValid()) || (!time.isValid()))) {
 // 				fprintf(stderr, "Datetime valid ? %s/%s - flags: %04X/%04X\n", date.isValid()?"Y":"N", time.isValid()?"Y":"N", flags & FORMAT_HAS_MASK, info->fFlags & FORMAT_HAS_MASK);
-				if ((flags ^ info->fFlags) & FORMAT_HAS_MASK)
-					setState(Intermediate);
-				else
-					setState(Invalid);
+				setState(Intermediate);
 				break;
 			}
 			
