@@ -1663,9 +1663,9 @@ createColorObject(const QColor& color)
 
 
 PyObject *
-createFontObject(const QFont& font)
+createFontObject(const QFont& font, bool system)
 {
-	if (font == QApplication::font())
+	if ((font == QApplication::font()) && (!system))
 		Py_RETURN_NONE;
 	
 	int family = SL_FONT_FAMILY_DEFAULT, size, style = 0;

@@ -842,6 +842,11 @@ SL_DEFINE_METHOD(Window, get_font, {
 })
 
 
+SL_DEFINE_METHOD(Window, get_system_font, {
+	return createFontObject(QApplication::font(), true);
+})
+
+
 SL_DEFINE_METHOD(Window, set_font, {
 	QFont font;
 	
@@ -1035,6 +1040,7 @@ SL_METHOD(get_system_color)
 SL_METHOD(get_system_bgcolor)
 SL_METHOD(get_system_hicolor)
 SL_METHOD(get_system_hibgcolor)
+SL_METHOD(get_system_font)
 
 SL_PROPERTY(datatype)
 SL_PROPERTY(style)

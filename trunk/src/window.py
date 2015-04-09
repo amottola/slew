@@ -351,11 +351,14 @@ class Window(Layoutable):
 	def set_hibgcolor(self, color):
 		self._impl.set_hibgcolor(Color.ensure(color))
 	
+	def set_font(self, font):
+		self._impl.set_font(Font.ensure(font))
+
 	def get_font(self):
 		return self._impl.get_font()
 	
-	def set_font(self, font):
-		self._impl.set_font(Font.ensure(font))
+	def get_system_font(self):
+		return self._impl.get_system_font()
 	
 	datatype = DeprecatedDescriptor('datatype')
 	style = DeprecatedDescriptor('style')
