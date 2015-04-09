@@ -149,7 +149,7 @@ PyObject *createBoolObject(bool boolean);
 PyObject *createIntListObject(const QList<int>& list);
 PyObject *createStringObject(const QString& string);
 PyObject *createColorObject(const QColor& color);
-PyObject *createFontObject(const QFont& font);
+PyObject *createFontObject(const QFont& font, bool system=false);
 PyObject *createDCObject(QPainter *painter, PyObject *objectType=NULL, PyObject *proxyType=NULL, QPaintDevice *device=NULL, QTransform *baseTransform=NULL);
 PyObject *createBitmapObject(const QPixmap& pixmap);
 PyObject *createPictureObject(const QPicture& picture);

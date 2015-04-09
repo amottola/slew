@@ -20,6 +20,8 @@ fromAlign(int align)
 		alignment |= Qt::AlignRight;
 	if (align & SL_ALIGN_HCENTER)
 		alignment |= Qt::AlignHCenter;
+	if (align & SL_ALIGN_JUSTIFY)
+		alignment |= Qt::AlignJustify;
 
 	if (align & SL_ALIGN_TOP)
 		alignment |= Qt::AlignTop;
@@ -43,6 +45,8 @@ toAlign(Qt::Alignment align)
 		alignment |= SL_ALIGN_RIGHT;
 	if (align & Qt::AlignHCenter)
 		alignment |= SL_ALIGN_HCENTER;
+	if (align & Qt::AlignJustify)
+		alignment |= SL_ALIGN_JUSTIFY;
 	if (align & Qt::AlignTop)
 		alignment |= SL_ALIGN_TOP;
 	if (align & Qt::AlignBottom)

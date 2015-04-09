@@ -91,6 +91,7 @@ class EventHandler(object):
 	def onLoad(self, e):				pass
 	def onPrint(self, e):				pass
 	def onPaste(self, e):				return False
+	def onCreateObject(self, e):		pass
 
 
 for name in dir(EventHandler):

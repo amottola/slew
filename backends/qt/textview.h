@@ -11,6 +11,8 @@
 #include <QUrl>
 #include <QSyntaxHighlighter>
 #include <QMenu>
+#include <QRegExp>
+
 
 
 class TextView_Impl : public QTextBrowser, public WidgetInterface
@@ -46,7 +48,14 @@ public:
 	virtual bool isModifyEvent(QEvent *event);
 	
 	QMenu *createContextMenu();
-	
+
+	void fromValue(const QString& value);
+	QString toValue();
+
+	QTextCursor insertObject(PyObject *object, int start = -1, int length = -1);
+	QTextCursor insertObject(PyObject *object, QTextCursor& cursor);
+	void setObjectLookupRegExp(const QString& regexp) { fRegExp = QRegExp(regexp); }
+
 public slots:
 	void handleTextChanged();
 	void updateLineNumberAreaWidth();
@@ -80,6 +89,8 @@ private:
 	bool					fUndoAvailable;
 	bool					fRedoAvailable;
 	QColor					fLineHighlightColor;
+	QRegExp					fRegExp;
+	bool					fHasCustomObjects;
 };
 
 

@@ -38,6 +38,15 @@ class TextView(slew.Window):
 		'tab_width':			IntProperty(),
 		'cursor_width':			IntProperty(),
 	})
+
+	class Object(object):
+		def __init__(self, text, bitmap):
+			self.__text = text
+			self.__bitmap = bitmap
+		def get_text(self):
+			return self.__text
+		def get_bitmap(self):
+			return self.__bitmap
 	
 # methods
 	
@@ -58,6 +67,9 @@ class TextView(slew.Window):
 	
 	def insert(self, position, text):
 		self._impl.insert(position, text)
+	
+	def replace(self, text, start=-1, length=-1):
+		self._impl.replace(text, start, length)
 	
 	def is_modified(self):
 		return self._impl.is_modified()
@@ -91,6 +103,12 @@ class TextView(slew.Window):
 	
 	def select_all(self):
 		self.set_selection()
+
+	def set_object_lookup_regexp(self, regexp):
+		self._impl.set_object_lookup_regexp(regexp)
+
+	def create_object(self, text, bitmap):
+		return TextView.Object(text, bitmap)
 	
 # properties
 	
@@ -169,6 +187,30 @@ class TextView(slew.Window):
 	
 	def set_cursor_width(self, width):
 		self._impl.set_cursor_width(int(width))
+
+	def get_fragment_color(self, pos=-1):
+		return self._impl.get_fragment_color(pos)
+
+	def set_fragment_color(self, color, start=-1, length=-1):
+		self._impl.set_fragment_color(color, start, length)
+
+	def get_fragment_bgcolor(self, pos=-1):
+		return self._impl.get_fragment_bgcolor(pos)
+
+	def set_fragment_bgcolor(self, color, start=-1, length=-1):
+		self._impl.set_fragment_bgcolor(color, start, length)
+
+	def get_fragment_font(self, pos=-1):
+		return self._impl.get_fragment_font(pos)
+
+	def set_fragment_font(self, font, start=-1, length=-1):
+		self._impl.set_fragment_font(font, start, length)
+
+	def get_fragment_align(self, pos=-1):
+		return self._impl.get_fragment_align(pos)
+
+	def set_fragment_align(self, align, start=-1, length=-1):
+		self._impl.set_fragment_align(align, start, length)
 	
 	value = DeprecatedDescriptor('value')
 	length = DeprecatedDescriptor('length')

@@ -7,6 +7,43 @@
 #include <QClipboard>
 #include <QScrollBar>
 #include <QAbstractTextDocumentLayout>
+#include <QTextObjectInterface>
+
+
+
+const int kCustomObjectType = QTextFormat::UserObject + 1;
+const int kCustomObjectPixmapProp = 1;
+const int kCustomObjectTextProp = 2;
+
+
+
+#ifdef Q_MOC_RUN
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+Q_DECLARE_INTERFACE(QTextObjectInterface, "org.qt-project.Qt.QTextObjectInterface")
+#else
+Q_DECLARE_INTERFACE(QTextObjectInterface, "com.trolltech.Qt.QTextObjectInterface")
+#endif
+#endif
+
+
+class CustomObject : public QObject, public QTextObjectInterface
+{
+	Q_OBJECT
+	Q_INTERFACES(QTextObjectInterface)
+
+public:
+	QSizeF intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat& format)
+	{
+		QPixmap pixmap = qvariant_cast<QPixmap>(format.property(kCustomObjectPixmapProp));
+		return QSizeF(pixmap.size());
+	}
+
+	void drawObject(QPainter *painter, const QRectF& rect, QTextDocument *doc, int posInDocument, const QTextFormat& format)
+	{
+		QPixmap pixmap = qvariant_cast<QPixmap>(format.property(kCustomObjectPixmapProp));
+		painter->drawPixmap(rect.toRect(), pixmap);
+	}
+};
 
 
 
@@ -425,7 +462,7 @@ private:
 
 
 TextView_Impl::TextView_Impl()
-	: QTextBrowser(), WidgetInterface(), fMaxLength(-1), fValidator(NULL), fLineNumberArea(NULL), fHighlighter(NULL), fUndoAvailable(false), fRedoAvailable(false), fLineHighlightColor(QColor(Qt::yellow).lighter(160))
+	: QTextBrowser(), WidgetInterface(), fMaxLength(-1), fValidator(NULL), fLineNumberArea(NULL), fHighlighter(NULL), fUndoAvailable(false), fRedoAvailable(false), fLineHighlightColor(QColor(Qt::yellow).lighter(160)), fHasCustomObjects(false)
 {
 	connect(this, SIGNAL(textChanged()), this, SLOT(handleTextChanged()));
 	connect(this, SIGNAL(textChanged()), this, SLOT(updateLineNumberAreaWidth()));
@@ -435,10 +472,15 @@ TextView_Impl::TextView_Impl()
 	connect(this, SIGNAL(undoAvailable(bool)), this, SLOT(handleUndoAvailable(bool)));
 	connect(this, SIGNAL(redoAvailable(bool)), this, SLOT(handleRedoAvailable(bool)));
 	connect(this, SIGNAL(anchorClicked(const QUrl&)), this, SLOT(handleAnchorClicked(const QUrl&)));
+	setAcceptRichText(false);
 	setOpenLinks(false);
 	setOpenExternalLinks(false);
 	setReadOnly(false);
 	setUndoRedoEnabled(true);
+
+	QObject *customInterface = new CustomObject;
+	customInterface->setParent(this);
+	document()->documentLayout()->registerHandler(kCustomObjectType, customInterface);
 }
 
 
@@ -740,6 +782,118 @@ TextView_Impl::createContextMenu()
 }
 
 
+QTextCursor
+TextView_Impl::insertObject(PyObject *object, QTextCursor& cursor)
+{
+	QString text;
+	QPixmap pixmap;
+	PyObject *method = PyString_FromString("get_text");
+	PyObject *result = PyObject_CallMethodObjArgs(object, method, NULL);
+	Py_DECREF(method);
+	if ((!result) || (!convertString(result, &text))) {
+		Py_XDECREF(result);
+		return QTextCursor();
+	}
+	Py_DECREF(result);
+	method = PyString_FromString("get_bitmap");
+	result = PyObject_CallMethodObjArgs(object, method, NULL);
+	Py_DECREF(method);
+	if ((!result) || (!convertPixmap(result, &pixmap))) {
+		Py_XDECREF(result);
+		return QTextCursor();
+	}
+	Py_DECREF(result);
+
+	QTextCharFormat customCharFormat;
+	customCharFormat.setObjectType(kCustomObjectType);
+	customCharFormat.setProperty(kCustomObjectTextProp, text);
+	customCharFormat.setProperty(kCustomObjectPixmapProp, pixmap);
+
+	cursor.insertText(QString(QChar::ObjectReplacementCharacter), customCharFormat);
+
+	fHasCustomObjects = true;
+	return cursor;
+}
+
+
+QTextCursor
+TextView_Impl::insertObject(PyObject *object, int start, int length)
+{
+	QTextCursor cursor = textCursor();
+	if (start >= 0)
+		cursor.setPosition(start, QTextCursor::MoveAnchor);
+	if (length >= 0)
+		cursor.setPosition(start + length, QTextCursor::KeepAnchor);
+	return insertObject(object, cursor);
+}
+
+
+void
+TextView_Impl::fromValue(const QString& value)
+{
+	if (acceptRichText())
+		setHtml(value);
+	else
+		setPlainText(value);
+
+	fHasCustomObjects = false;
+	if (!fRegExp.isEmpty()) {
+		QTextDocument *doc = document();
+		QTextCursor cursor(doc);
+
+		for (;;) {
+			cursor = doc->find(fRegExp, cursor);
+			if (cursor.isNull())
+				break;
+			EventRunner runner(this, "onCreateObject");
+			runner.set("text", cursor.selectedText());
+			runner.set("object", Py_None, false);
+			if (runner.run()) {
+				PyObject *object;
+				if (!runner.get("object", &object))
+					object = Py_None;
+				if (insertObject(object, cursor).isNull())
+					PyErr_Clear();
+				else
+					fHasCustomObjects = true;
+			}
+		}
+	}
+}
+
+
+QString
+TextView_Impl::toValue()
+{
+	QString value;
+	QTextDocument *doc = document();
+
+	if (fHasCustomObjects) {
+		doc = doc->clone();
+		QTextCursor cursor(doc);
+		for (;;) {
+			cursor = doc->find(QString(QChar::ObjectReplacementCharacter), cursor);
+			if (cursor.isNull())
+				break;
+			if (cursor.charFormat().objectType() == kCustomObjectType) {
+				QString text = qvariant_cast<QString>(cursor.charFormat().property(kCustomObjectTextProp));
+				cursor.insertText(text);
+			}
+		}
+	}
+
+	if (acceptRichText())
+		value = doc->toHtml();
+	else
+		value = doc->toPlainText();
+
+	if (fHasCustomObjects)
+		delete doc;
+
+	return value;
+}
+
+
 bool
 TextView_Impl::canCut()
 {
@@ -815,7 +969,7 @@ TextView_Impl::handleTextChanged()
 {
 	EventRunner runner(this, "onChange");
 	if (runner.isValid()) {
-		runner.set("value", toPlainText());
+		runner.set("value", toValue());
 		runner.run();
 	}
 }
@@ -854,14 +1008,22 @@ SL_DEFINE_METHOD(TextView, delete, {
 
 SL_DEFINE_METHOD(TextView, insert, {
 	int pos;
+	PyObject *object;
 	QString text;
 	
-	if (!PyArg_ParseTuple(args, "iO&", &pos, convertString, &text))
+	if (!PyArg_ParseTuple(args, "iO", &pos, &object))
 		return NULL;
 	
-// 	if (pos < 0)
-// 		impl->moveCursor(QTextCursor::End);
-// 	else {
+	QTextCursor cursor = impl->insertObject(object, pos);
+	if (!cursor.isNull()) {
+		impl->setTextCursor(cursor);
+		Py_RETURN_NONE;
+	}
+
+	PyErr_Clear();
+	if (!convertString(object, &text))
+		return NULL;
+
 	if (pos >= 0) {
 		QTextCursor cursor = impl->textCursor();
 		cursor.setPosition(pos, QTextCursor::MoveAnchor);
@@ -872,6 +1034,43 @@ SL_DEFINE_METHOD(TextView, insert, {
 		impl->insertHtml(text);
 	else
 		impl->insertPlainText(text);
+})
+
+
+SL_DEFINE_METHOD(TextView, replace, {
+	int start = -1, length = -1, oldLength;
+	PyObject *object;
+	QString text;
+
+	if (!PyArg_ParseTuple(args, "Oii", &object, &start, &length))
+		return NULL;
+
+	QTextCursor cursor = impl->insertObject(object, start, length);
+	if (!cursor.isNull()) {
+		impl->setTextCursor(cursor);
+		Py_RETURN_NONE;
+	}
+
+	PyErr_Clear();
+	if (!convertString(object, &text))
+		return NULL;
+
+	cursor = impl->textCursor();
+	QTextCursor oldCursor = cursor;
+	if (start >= 0)
+		cursor.setPosition(start);
+	if (length >= 0)
+		cursor.setPosition(start + length, QTextCursor::KeepAnchor);
+	oldLength = cursor.selectedText().length();
+
+	impl->setTextCursor(cursor);
+	if (impl->acceptRichText())
+		impl->insertHtml(text);
+	else
+		impl->insertPlainText(text);
+	if (oldCursor.position() > start + length)
+		oldCursor.setPosition(oldCursor.position() + (length - oldLength));
+	impl->setTextCursor(oldCursor);
 })
 
 
@@ -1070,8 +1269,18 @@ SL_DEFINE_METHOD(TextView, get_position, {
 })
 
 
+SL_DEFINE_METHOD(TextView, set_object_lookup_regexp, {
+	QString regexp;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &regexp))
+		return NULL;
+	
+	impl->setObjectLookupRegExp(regexp);
+})
+
+
 SL_DEFINE_METHOD(TextView, get_value, {
-	return createStringObject(impl->toPlainText());
+	return createStringObject(impl->toValue());
 })
 
 
@@ -1081,10 +1290,7 @@ SL_DEFINE_METHOD(TextView, set_value, {
 	if (!PyArg_ParseTuple(args, "O&", convertString, &text))
 		return NULL;
 	
-	if (impl->acceptRichText())
-		impl->setHtml(text);
-	else
-		impl->setPlainText(text);
+	impl->fromValue(text);
 })
 
 
@@ -1270,6 +1476,160 @@ SL_DEFINE_METHOD(TextView, set_cursor_width, {
 })
 
 
+SL_DEFINE_METHOD(TextView, get_fragment_color, {
+	int pos = -1;
+
+	if (!PyArg_ParseTuple(args, "i", &pos))
+		return NULL;
+	
+	QTextCursor cursor = impl->textCursor();
+	if (pos >= 0)
+		cursor.setPosition(pos);
+
+	QTextCharFormat format = cursor.charFormat();
+	return createColorObject(format.foreground().color());
+})
+
+
+SL_DEFINE_METHOD(TextView, set_fragment_color, {
+	QColor color;
+	int start = -1, length = -1;
+	
+	if (!PyArg_ParseTuple(args, "O&ii", convertColor, &color, &start, &length))
+		return NULL;
+	
+	QTextCursor cursor = impl->textCursor();
+	if (start >= 0)
+		cursor.setPosition(start);
+	if (length >= 0)
+		cursor.setPosition(cursor.position() + length, QTextCursor::KeepAnchor);
+
+	QTextCharFormat format = cursor.charFormat();
+	if (color.isValid())
+		format.setForeground(color);
+	else
+		format.clearForeground();
+	cursor.setCharFormat(format);
+	if ((start < 0) && (length < 0))
+		impl->setTextCursor(cursor);
+})
+
+
+SL_DEFINE_METHOD(TextView, get_fragment_bgcolor, {
+	int pos = -1;
+
+	if (!PyArg_ParseTuple(args, "i", &pos))
+		return NULL;
+	
+	QTextCursor cursor = impl->textCursor();
+	if (pos >= 0)
+		cursor.setPosition(pos);
+
+	QTextCharFormat format = cursor.charFormat();
+	QColor color;
+	if (format.background().isOpaque())
+		color = format.background().color();
+	return createColorObject(color);
+})
+
+
+SL_DEFINE_METHOD(TextView, set_fragment_bgcolor, {
+	QColor color;
+	int start = -1, length = -1;
+	
+	if (!PyArg_ParseTuple(args, "O&ii", convertColor, &color, &start, &length))
+		return NULL;
+	
+	QTextCursor cursor = impl->textCursor();
+	if (start >= 0)
+		cursor.setPosition(start);
+	if (length >= 0)
+		cursor.setPosition(cursor.position() + length, QTextCursor::KeepAnchor);
+
+	QTextCharFormat format = cursor.charFormat();
+	if (color.isValid())
+		format.setBackground(color);
+	else
+		format.clearBackground();
+	cursor.setCharFormat(format);
+	if ((start < 0) && (length < 0))
+		impl->setTextCursor(cursor);
+})
+
+
+SL_DEFINE_METHOD(TextView, get_fragment_font, {
+	int pos = -1;
+
+	if (!PyArg_ParseTuple(args, "i", &pos))
+		return NULL;
+	
+	QTextCursor cursor = impl->textCursor();
+	if (pos >= 0)
+		cursor.setPosition(pos);
+
+	QTextCharFormat format = cursor.charFormat();
+	return createFontObject(format.font());
+})
+
+
+SL_DEFINE_METHOD(TextView, set_fragment_font, {
+	QFont font;
+	int start = -1, length = -1;
+	
+	if (!PyArg_ParseTuple(args, "O&ii", convertFont, &font, &start, &length))
+		return NULL;
+	
+	QTextCursor cursor = impl->textCursor();
+	if (start >= 0)
+		cursor.setPosition(start);
+	if (length >= 0)
+		cursor.setPosition(cursor.position() + length, QTextCursor::KeepAnchor);
+
+	QTextCharFormat format = cursor.charFormat();
+	format.setFont(font);
+	cursor.setCharFormat(format);
+	if ((start < 0) && (length < 0))
+		impl->setTextCursor(cursor);
+})
+
+
+SL_DEFINE_METHOD(TextView, get_fragment_align, {
+	int pos = -1;
+
+	if (!PyArg_ParseTuple(args, "i", &pos))
+		return NULL;
+	
+	QTextCursor cursor = impl->textCursor();
+	if (pos >= 0)
+		cursor.setPosition(pos);
+
+	QTextBlockFormat format = cursor.blockFormat();
+	return PyInt_FromLong(toAlign(format.alignment()));
+})
+
+
+SL_DEFINE_METHOD(TextView, set_fragment_align, {
+	int align;
+	int start = -1, length = -1;
+	
+	if (!PyArg_ParseTuple(args, "iii", &align, &start, &length))
+		return NULL;
+	
+	Qt::Alignment alignment = fromAlign(align);
+	if (alignment == (Qt::Alignment)0)
+		alignment = Qt::AlignLeft | Qt::AlignTop;
+
+	QTextCursor cursor = impl->textCursor();
+	if (start >= 0)
+		cursor.setPosition(start);
+	if (length >= 0)
+		cursor.setPosition(cursor.position() + length, QTextCursor::KeepAnchor);
+
+	QTextBlockFormat format = cursor.blockFormat();
+	format.setAlignment(alignment);
+	cursor.setBlockFormat(format);
+})
+
 
 SL_START_PROXY_DERIVED(TextView, Window)
 SL_METHOD(cut)
@@ -1277,6 +1637,7 @@ SL_METHOD(copy)
 SL_METHOD(paste)
 SL_METHOD(delete)
 SL_METHOD(insert)
+SL_METHOD(replace)
 SL_METHOD(is_modified)
 SL_METHOD(set_modified)
 SL_METHOD(undo)
@@ -1287,6 +1648,7 @@ SL_METHOD(set_highlighted_lines)
 SL_METHOD(set_syntax)
 SL_METHOD(set_color)
 SL_METHOD(get_position)
+SL_METHOD(set_object_lookup_regexp)
 
 SL_PROPERTY(style)
 SL_PROPERTY(selection)
@@ -1300,6 +1662,10 @@ SL_PROPERTY(column)
 SL_PROPERTY(current_line_color)
 SL_PROPERTY(tab_width)
 SL_PROPERTY(cursor_width)
+SL_PROPERTY(fragment_color)
+SL_PROPERTY(fragment_bgcolor)
+SL_PROPERTY(fragment_font)
+SL_PROPERTY(fragment_align)
 SL_END_PROXY_DERIVED(TextView, Window)
 
 
