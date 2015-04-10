@@ -95,13 +95,14 @@ insertWindowChild(QWidget *window, PyObject *object)
 // 			widget->setVisible(true);
 		Py_RETURN_NONE;
 	}
-	else if (isSizer(object)) {
-		Sizer_Impl *widget = (Sizer_Impl *)child;
+	else if ((isSizer(object)) || (isFlowBox(object))) {
+		AbstractSizer_Impl *sizer = (AbstractSizer_Impl *)child;
+		QLayout *layout = (QLayout *)child;
 		if (window->layout()) {
 			SL_RETURN_DUP_SIZER;
 		}
-		window->setLayout(widget);
-		Sizer_Impl::reparentChildren(widget, widget);
+		window->setLayout(layout);
+		sizer->doReparentChildren(layout, layout);
 		Py_RETURN_NONE;
 	}
 	
@@ -124,13 +125,14 @@ removeWindowChild(QWidget *window, PyObject *object)
 		widget->setParent(NULL);
 		Py_RETURN_NONE;
 	}
-	else if (isSizer(object)) {
-		Sizer_Impl *widget = (Sizer_Impl *)child;
+	else if ((isSizer(object)) || (isFlowBox(object))) {
+		AbstractSizer_Impl *sizer = (AbstractSizer_Impl *)child;
 		Sizer_Proxy *proxy = (Sizer_Proxy *)getProxy(object);
+		QLayout *clone = sizer->clone();
+
+		SL_QAPP()->replaceProxyObject((Abstract_Proxy *)proxy, clone);
 		
-		SL_QAPP()->replaceProxyObject((Abstract_Proxy *)proxy, widget->clone());
-		
-		delete widget;
+		delete child;
 		Py_RETURN_NONE;
 	}
 	
@@ -894,7 +896,7 @@ SL_DEFINE_METHOD(Window, set_margins, {
 	QVariant v;
 	v.setValue(QMargins(left, top, right, bottom));
 	impl->setProperty("boxMargins", v);
-	Sizer_Impl *parent = (Sizer_Impl *)(qvariant_cast<QObject *>(impl->property("parentLayout")));
+	QLayout *parent = (QLayout *)(qvariant_cast<QObject *>(impl->property("parentLayout")));
 	if (parent)
 		parent->invalidate();
 })
@@ -945,7 +947,7 @@ SL_DEFINE_METHOD(Window, set_boxalign, {
 	}
 	
 	impl->setProperty("boxAlign", QVariant::fromValue(alignment));
-	Sizer_Impl *parent = (Sizer_Impl *)(qvariant_cast<QObject *>(impl->property("parentLayout")));
+	QLayout *parent = (QLayout *)(qvariant_cast<QObject *>(impl->property("parentLayout")));
 	if (parent)
 		parent->setAlignment(impl, alignment);
 })
@@ -963,7 +965,7 @@ SL_DEFINE_METHOD(Window, set_cell, {
 		return NULL;
 	
 	impl->setProperty("layoutCell", QVariant::fromValue(cell));
-	Sizer_Impl *parent = (Sizer_Impl *)(qvariant_cast<QObject *>(impl->property("parentLayout")));
+	Sizer_Impl *parent = qobject_cast<Sizer_Impl *>(qvariant_cast<QObject *>(impl->property("parentLayout")));
 	if (parent)
 		parent->reinsert(impl);
 })
@@ -981,7 +983,7 @@ SL_DEFINE_METHOD(Window, set_span, {
 		return NULL;
 	
 	impl->setProperty("layoutSpan", QVariant::fromValue(span));
-	Sizer_Impl *parent = (Sizer_Impl *)(qvariant_cast<QObject *>(impl->property("parentLayout")));
+	Sizer_Impl *parent = qobject_cast<Sizer_Impl *>(qvariant_cast<QObject *>(impl->property("parentLayout")));
 	if (parent)
 		parent->reinsert(impl);
 })
@@ -999,7 +1001,7 @@ SL_DEFINE_METHOD(Window, set_prop, {
 		return NULL;
 	
 	impl->setProperty("layoutProp", QVariant::fromValue(prop));
-	Sizer_Impl *parent = (Sizer_Impl *)(qvariant_cast<QObject *>(impl->property("parentLayout")));
+	Sizer_Impl *parent = qobject_cast<Sizer_Impl *>(qvariant_cast<QObject *>(impl->property("parentLayout")));
 	if (parent) {
 		QPoint cell = qvariant_cast<QPoint>(impl->property("layoutCell"));
 		if (parent->orientation() == Qt::Horizontal) {

@@ -156,7 +156,7 @@ SL_DEFINE_METHOD(StatusBar, insert, {
 		Sizer_Impl *widget = (Sizer_Impl *)child;
 		panel = new QWidget;
 		panel->setLayout(widget);
-		Sizer_Impl::reparentChildren(widget, widget);
+		widget->doReparentChildren(widget, widget);
 		impl->insertWidget(index, panel, prop);
 		panel->show();
 	}
@@ -164,7 +164,7 @@ SL_DEFINE_METHOD(StatusBar, insert, {
 		QList<Field> *fields = impl->fields();
 		while (fields->size() <= index)
 			fields->append(Field());
-		fields->replace(index, Field(panel, prop));
+		fields->insert(index, Field(panel, prop));
 		Py_RETURN_NONE;
 	}
 	
@@ -203,7 +203,7 @@ SL_DEFINE_METHOD(StatusBar, remove, {
 		QList<Field> *fields = impl->fields();
 		for (int i = 0; i < fields->size(); i++) {
 			if (fields->at(i).fWidget == panel) {
-				fields->replace(i, Field(NULL, impl->getProp(i)));
+				fields->removeAt(i);
 				break;
 			}
 		}

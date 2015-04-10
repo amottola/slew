@@ -1010,6 +1010,7 @@ from statusbar import StatusBar
 from toolbar import ToolBar
 from toolbaritem import ToolBarItem
 from sizer import Sizer, HBox, VBox
+from flowbox import FlowBox, HFlowBox, VFlowBox
 from sizeritem import SizerItem
 from panel import Panel
 from foldpanel import FoldPanel

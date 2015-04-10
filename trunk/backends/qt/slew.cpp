@@ -4950,6 +4950,7 @@ init_slew()
 		(!ToolBar_type_setup(module)) ||
 		(!ToolBarItem_type_setup(module)) ||
 		(!Sizer_type_setup(module)) ||
+		(!FlowBox_type_setup(module)) ||
 		(!Panel_type_setup(module)) ||
 		(!FoldPanel_type_setup(module)) ||
 		(!ScrollView_type_setup(module)) ||
