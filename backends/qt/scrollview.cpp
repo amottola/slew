@@ -75,10 +75,10 @@ SL_DEFINE_METHOD(ScrollView, insert, {
 		return NULL;
 	
 	PyObject *result = insertWindowChild(impl->widget(), object);
-	if ((result) && (isSizer(object))) {
-		Sizer_Impl *sizer = (Sizer_Impl *)getImpl(object);
-		if (sizer)
-			sizer->setSizeConstraint(QLayout::SetMinAndMaxSize);
+	if ((result) && ((isSizer(object)) || (isFlowBox(object)))) {
+		QLayout *layout = (QLayout *)getImpl(object);
+		if (layout)
+			layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 	}
 	return result;
 })
@@ -90,10 +90,10 @@ SL_DEFINE_METHOD(ScrollView, remove, {
 	if (!PyArg_ParseTuple(args, "O", &object))
 		return NULL;
 	
-	if (isSizer(object)) {
-		Sizer_Impl *sizer = (Sizer_Impl *)getImpl(object);
-		if (sizer)
-			sizer->setSizeConstraint(QLayout::SetDefaultConstraint);
+	if ((isSizer(object)) || (isFlowBox(object))) {
+		QLayout *layout = (QLayout *)getImpl(object);
+		if (layout)
+			layout->setSizeConstraint(QLayout::SetDefaultConstraint);
 	}
 	return removeWindowChild(impl->widget(), object);
 })

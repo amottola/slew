@@ -2,6 +2,7 @@
 
 #include "splitview.h"
 #include "sizer.h"
+#include "flowbox.h"
 
 #include <QCursor>
 #include <QSplitterHandle>
@@ -133,12 +134,13 @@ SL_DEFINE_METHOD(SplitView, insert, {
 	if (isWindow(object)) {
 		widget = (QWidget *)child;
 	}
-	else if (isSizer(object)) {
-		Sizer_Impl *sizer = (Sizer_Impl *)child;
+	else if ((isSizer(object)) || (isFlowBox(object))) {
+		AbstractSizer_Impl *sizer = (AbstractSizer_Impl *)child;
+		QLayout *layout = (QLayout *)child;
 		widget = new QWidget(impl);
-		widget->setLayout(sizer);
-		Sizer_Impl::reparentChildren(sizer, sizer);
-		sizer->invalidate();
+		widget->setLayout(layout);
+		sizer->doReparentChildren(layout, layout);
+		layout->invalidate();
 	}
 		
 	if (widget) {
@@ -179,15 +181,15 @@ SL_DEFINE_METHOD(SplitView, remove, {
 		impl->setPolicies();
 		Py_RETURN_NONE;
 	}
-	else if (isSizer(object)) {
-		Sizer_Impl *widget = (Sizer_Impl *)child;
+	else if ((isSizer(object)) || (isFlowBox(object))) {
+		AbstractSizer_Impl *widget = (AbstractSizer_Impl *)child;
 		Sizer_Proxy *proxy = (Sizer_Proxy *)getProxy(object);
 		int i;
 		
 		SL_QAPP()->replaceProxyObject((Abstract_Proxy *)proxy, widget->clone());
 		
 		for (i = 0; i < impl->count(); i++) {
-			if (impl->widget(i)->layout() == widget) {
+			if (impl->widget(i)->layout() == (QLayout *)widget) {
 				impl->widget(i)->hide();
 				delete impl->widget(i);
 				break;
