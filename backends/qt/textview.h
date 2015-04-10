@@ -74,6 +74,7 @@ public slots:
 protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 	virtual bool canInsertFromMimeData(const QMimeData *source) const;
+	virtual void insertFromMimeData(const QMimeData *source);
 	virtual void resizeEvent(QResizeEvent *event);
 	virtual void contextMenuEvent(QContextMenuEvent *event);
 	

@@ -661,6 +661,33 @@ TextView_Impl::canInsertFromMimeData(const QMimeData *source) const
 }
 
 
+void
+TextView_Impl::insertFromMimeData(const QMimeData *source)
+{
+	if (!fRegExp.isEmpty()) {
+		QTextCursor cursor = textCursor();
+		QString text = source->text();
+		if ((!text.isEmpty()) && (fRegExp.indexIn(text) >= 0)) {
+			EventRunner runner(this, "onCreateObject");
+			runner.set("text", text);
+			runner.set("object", Py_None, false);
+			if (runner.run()) {
+				PyObject *object;
+				if (!runner.get("object", &object))
+					object = Py_None;
+				if (insertObject(object, cursor).isNull())
+					PyErr_Clear();
+				else {
+					fHasCustomObjects = true;
+					return;
+				}
+			}
+		}
+	}
+	QTextBrowser::insertFromMimeData(source);
+}
+
+
 bool
 TextView_Impl::isFocusOutEvent(QEvent *event)
 {
