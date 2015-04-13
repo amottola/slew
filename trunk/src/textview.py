@@ -14,6 +14,7 @@ class TextView(slew.Window):
 	STYLE_LINENUMS				= 0x00040000
 	STYLE_HTML					= 0x00080000
 	STYLE_TABFOCUS				= 0x00100000
+	STYLE_NOSCROLL				= 0x00200000
 	#}
 	
 	PROPERTIES = merge(slew.Window.PROPERTIES, {

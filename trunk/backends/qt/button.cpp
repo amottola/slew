@@ -15,6 +15,7 @@ Button_Impl::Button_Impl()
 	
 	connect(this, SIGNAL(clicked()), this, SLOT(handleClicked()), Qt::QueuedConnection);
 	connect(this, SIGNAL(toggled(bool)), this, SLOT(handleToggled(bool)));
+	connect(SL_QAPP(), SIGNAL(endDrag(QObject *)), this, SLOT(handleEndDrag(QObject *)));
 }
 
 
@@ -60,6 +61,14 @@ Button_Impl::handleToggled(bool toggled)
 		runner.set("value", toggled);
 		runner.run();
 	}
+}
+
+
+void
+Button_Impl::handleEndDrag(QObject *object)
+{
+	if ((object == this) && (!isCheckable()))
+		setDown(false);
 }
 
 

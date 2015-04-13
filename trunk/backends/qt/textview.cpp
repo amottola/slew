@@ -664,9 +664,18 @@ TextView_Impl::canInsertFromMimeData(const QMimeData *source) const
 void
 TextView_Impl::insertFromMimeData(const QMimeData *source)
 {
+	QString text = source->text();
+
+	EventRunner runner(this, "onPaste");
+	if (runner.isValid()) {
+		runner.set("value", text);
+		if ((!runner.run()) || (!runner.get("value", &text)))
+			return;
+		((QMimeData *)source)->setText(text);
+	}
+
 	if (!fRegExp.isEmpty()) {
 		QTextCursor cursor = textCursor();
-		QString text = source->text();
 		if ((!text.isEmpty()) && (fRegExp.indexIn(text) >= 0)) {
 			EventRunner runner(this, "onCreateObject");
 			runner.set("text", text);
@@ -835,6 +844,7 @@ TextView_Impl::insertObject(PyObject *object, QTextCursor& cursor)
 	customCharFormat.setObjectType(kCustomObjectType);
 	customCharFormat.setProperty(kCustomObjectTextProp, text);
 	customCharFormat.setProperty(kCustomObjectPixmapProp, pixmap);
+	customCharFormat.setVerticalAlignment(QTextCharFormat::AlignBaseline);
 
 	cursor.insertText(QString(QChar::ObjectReplacementCharacter), customCharFormat);
 
@@ -1201,6 +1211,8 @@ SL_DEFINE_METHOD(TextView, get_style, {
 		style |= SL_TEXTVIEW_STYLE_READONLY;
 	if (impl->document()->defaultTextOption().wrapMode() == QTextOption::NoWrap)
 		style |= SL_TEXTVIEW_STYLE_NOWRAP;
+	if (impl->horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff)
+		style |= SL_TEXTVIEW_STYLE_NOSCROLL;
 	if (impl->lineNumberAreaWidth() > 0)
 		style |= SL_TEXTVIEW_STYLE_LINENUMS;
 	if (impl->acceptRichText())
@@ -1223,6 +1235,8 @@ SL_DEFINE_METHOD(TextView, set_style, {
 	impl->setReadOnly(style & SL_TEXTVIEW_STYLE_READONLY ? true : false);
 	QTextOption option(impl->document()->defaultTextOption());
 	option.setWrapMode(style & SL_TEXTVIEW_STYLE_NOWRAP ? QTextOption::NoWrap : QTextOption::WordWrap);
+	impl->setHorizontalScrollBarPolicy(style & SL_TEXTVIEW_STYLE_NOSCROLL ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAsNeeded);
+	impl->setVerticalScrollBarPolicy(style & SL_TEXTVIEW_STYLE_NOSCROLL ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAsNeeded);
 	impl->document()->setDefaultTextOption(option);
 	impl->setLineNumberArea(style & SL_TEXTVIEW_STYLE_LINENUMS ? true : false);
 	impl->setAcceptRichText(style & SL_TEXTVIEW_STYLE_HTML ? true : false);
