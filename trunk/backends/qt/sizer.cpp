@@ -165,6 +165,28 @@ WidgetItem::sizeHint() const
 }
 
 
+bool
+WidgetItem::hasHeightForWidth() const
+{
+	if (isEmpty())
+		return false;
+	else
+		return fWidget->hasHeightForWidth();
+}
+
+
+int
+WidgetItem::heightForWidth(int width) const
+{
+	if (isEmpty())
+		return -1;
+	if (fWidget->layout())
+		return fWidget->layout()->heightForWidth(width);
+	else
+		return fWidget->heightForWidth(width);
+}
+
+
 Qt::Orientations
 WidgetItem::expandingDirections() const
 {

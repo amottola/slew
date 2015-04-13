@@ -11,6 +11,7 @@
 FlowBox_Impl::FlowBox_Impl()
 	: QLayout(), WidgetInterface(), AbstractSizerInterface(), fOrientation(Qt::Horizontal)
 {
+	setAlignment(0);
 	setContentsMargins(0, 0, 0, 0);
 }
 

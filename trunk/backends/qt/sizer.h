@@ -19,7 +19,8 @@ public:
 	virtual QRect geometry() const;
 	virtual void setGeometry(const QRect& rect);
 	
-	virtual bool hasHeightForWidth() const { return false; }
+	virtual bool hasHeightForWidth() const;
+	virtual int heightForWidth(int width) const;
 	
 	virtual QSize minimumSize() const;
 	virtual QSize maximumSize() const;
