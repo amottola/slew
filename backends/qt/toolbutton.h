@@ -31,6 +31,7 @@ protected:
 public slots:
 	void handleClicked();
 	void handleToggled(bool toggled);
+	void handleEndDrag(QObject *object);
 	
 private:
 	bool		fFlat;

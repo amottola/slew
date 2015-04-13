@@ -2960,12 +2960,16 @@ Application::eventFilter(QObject *obj, QEvent *event)
 					else
 						supportedActions = action;
 					
+					emit startDrag(obj);
+
 					Py_BEGIN_ALLOW_THREADS
 					
 // 					flush();
 					action = drag->exec(supportedActions, action);
 					
 					Py_END_ALLOW_THREADS
+
+					emit endDrag(obj);
 					
 					{
 						if (action == Qt::MoveAction)

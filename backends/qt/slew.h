@@ -424,6 +424,10 @@ public:
 	QObject *replaceProxyObject(Abstract_Proxy *proxy, QObject *object);
 
 	bool canQuit();
+
+signals:
+	void startDrag(QObject *object);
+	void endDrag(QObject *object);
 	
 public slots:
 	void sendTabEvent(QObject *receiver);
