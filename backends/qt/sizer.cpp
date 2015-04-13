@@ -171,7 +171,16 @@ WidgetItem::hasHeightForWidth() const
 	if (isEmpty())
 		return false;
 	else
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 		return fWidget->hasHeightForWidth();
+#else
+	{
+		if (fWidget->layout())
+			return fWidget->layout()->hasHeightForWidth();
+		else
+			return false;
+	}
+#endif
 }
 
 
@@ -183,7 +192,11 @@ WidgetItem::heightForWidth(int width) const
 	if (fWidget->layout())
 		return fWidget->layout()->heightForWidth(width);
 	else
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 		return fWidget->heightForWidth(width);
+#else
+		return -1;
+#endif
 }
 
 
