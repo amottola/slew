@@ -6,6 +6,7 @@
 #include "constants/window.h"
 
 #include <QKeyEvent>
+#include <QRegExpValidator>
 
 
 ComboBox_Impl::ComboBox_Impl()
@@ -258,6 +259,31 @@ SL_DEFINE_METHOD(ComboBox, set_value, {
 })
 
 
+SL_DEFINE_METHOD(ComboBox, get_filter, {
+	QString filter;
+	const QRegExpValidator *validator = qobject_cast<const QRegExpValidator *>(impl->validator());
+	if (validator)
+		filter = validator->regExp().pattern();
+	return createStringObject(filter);
+})
+
+
+SL_DEFINE_METHOD(ComboBox, set_filter, {
+	QString filter;
+	
+	if (!PyArg_ParseTuple(args, "O&", convertString, &filter))
+		return NULL;
+	
+	if (filter.isEmpty())
+		filter = ".*";
+
+	QRegExpValidator *validator = (QRegExpValidator *)qobject_cast<const QRegExpValidator *>(impl->validator());
+	delete validator;
+	validator = new QRegExpValidator(QRegExp(filter), impl);
+	impl->setValidator(validator);
+})
+
+
 
 SL_START_PROXY_DERIVED(ComboBox, Window)
 SL_METHOD(set_model)
@@ -268,6 +294,7 @@ SL_PROPERTY(style)
 SL_PROPERTY(model_column)
 SL_PROPERTY(selection)
 SL_PROPERTY(value)
+SL_PROPERTY(filter)
 SL_END_PROXY_DERIVED(ComboBox, Window)
 
 

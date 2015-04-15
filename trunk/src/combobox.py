@@ -22,6 +22,7 @@ class ComboBox(DataContainer):
 									"readonly":		STYLE_READONLY,
 									"system":		0,					# for compatibility!
 								})),
+		'filter':				StringProperty(),
 	})
 	
 # properties
@@ -41,6 +42,12 @@ class ComboBox(DataContainer):
 	
 	def set_value(self, value):
 		self._impl.set_value(value)
+	
+	def get_filter(self):
+		return self._impl.get_filter()
+	
+	def set_filter(self, filter):
+		self._impl.set_filter(filter)
 	
 	def open_popup(self):
 		self._impl.open_popup()
