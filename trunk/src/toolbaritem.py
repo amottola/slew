@@ -19,6 +19,9 @@ class ToolBarItem(slew.Widget):
 	MENU_DELAYED				= 0
 	MENU_BUTTON					= 1
 	MENU_ARROW					= 2
+
+	FLAG_FLEXIBLE				= 0x1
+	FLAG_NOFOCUS				= 0x2
 	#}
 	
 	
@@ -29,6 +32,7 @@ class ToolBarItem(slew.Widget):
 		'checked':				BoolProperty(),
 		'enabled':				BoolProperty(),
 		'flexible':				BoolProperty(),
+		'flags':				IntProperty(),
 		'bitmap':				BitmapProperty(),
 		'icon':					IconProperty(),
 		'url':					StringProperty(),
@@ -83,11 +87,20 @@ class ToolBarItem(slew.Widget):
 	def set_enabled(self, enabled):
 		self._impl.set_enabled(enabled)
 	
+	def get_flags(self):
+		return self._impl.get_flags()
+
+	def set_flags(self, flags):
+		self._impl.set_flags(flags)
+
 	def is_flexible(self):
-		return self._impl.is_flexible()
+		return self._impl.get_flags() & ToolBarItem.FLAG_FLEXIBLE
 	
 	def set_flexible(self, flexible):
-		self._impl.set_flexible(flexible)
+		if flexible:
+			self._impl.set_flags(self._impl.get_flags() | ToolBarItem.FLAG_FLEXIBLE)
+		else:
+			self._impl.set_flags(self._impl.get_flags() & ~ToolBarItem.FLAG_FLEXIBLE)
 	
 	def get_icon(self):
 		return self.__icon or self._impl.get_icon()

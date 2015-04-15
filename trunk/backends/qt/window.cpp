@@ -9,6 +9,7 @@
 #include <QDialog>
 #include <QMainWindow>
 #include <QFrame>
+#include <QComboBox>
 #include <QAbstractScrollArea>
 #include <QGraphicsOpacityEffect>
 
@@ -40,8 +41,19 @@ setWindowStyle(QWidget *window, int style)
 				frame->setFrameStyle(qstyle);
 		}
 	}
-	if (window->focusPolicy() != Qt::NoFocus)
-		window->setAttribute(Qt::WA_MacShowFocusRect, style & SL_WINDOW_STYLE_NOFOCUS ? false : true);
+	if (window->metaObject()->indexOfProperty("originalFocusPolicy") < 0) {
+		window->setProperty("originalFocusPolicy", QVariant((int)window->focusPolicy()));
+	}
+	int focusPolicy = qvariant_cast<int>(window->property("originalFocusPolicy"));
+	if (style & SL_WINDOW_STYLE_NOFOCUS) {
+		if (((focusPolicy & Qt::StrongFocus) != Qt::StrongFocus) || (qobject_cast<QComboBox *>(window)))
+			window->setFocusPolicy(Qt::NoFocus);
+		window->setAttribute(Qt::WA_MacShowFocusRect, false);
+	}
+	else {
+		window->setFocusPolicy((Qt::FocusPolicy)focusPolicy);
+		window->setAttribute(Qt::WA_MacShowFocusRect, true);
+	}
 	window->setAttribute(Qt::WA_TranslucentBackground, style & SL_WINDOW_STYLE_TRANSLUCENT ? true : false);
 	window->setAttribute(Qt::WA_TransparentForMouseEvents, style & SL_WINDOW_STYLE_NOMOUSE ? true : false);
 }

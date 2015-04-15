@@ -66,6 +66,7 @@ qt_libs = [
 	'QtWebKit',
 	'QtSvg',
 ]
+qt_includes = []
 
 vars = {
 	'qt_dir':			qt_dir,
@@ -101,7 +102,8 @@ if sys.platform == 'darwin':
 
 	if is_qt5:
 		qt_libs += [ 'QtWidgets', 'QtWebKitWidgets', 'QtPrintSupport' ]
-	cflags = (' '.join([ ('-I%%(qt_dir)s/%s.framework/Headers' % path) for path in qt_libs ])) + ' -F%(qt_dir)s '
+	qt_includes = [ ('-I%%(qt_dir)s/%s.framework/Headers' % path) for path in qt_libs ]
+	cflags = (' '.join(qt_includes)) + ' -F%(qt_dir)s '
 
 	if 'clang' in subprocess.check_output('gcc --version', stderr=subprocess.STDOUT, shell=True, universal_newlines=True):
 		cflags += '-Qunused-arguments -Wno-unused-private-field -Wno-self-assign '
@@ -184,8 +186,9 @@ else:
 	else:
 		qt_include = '/usr/include/qt4'
 
+	qt_includes = [ ('-I%s/%s' % (qt_include, name.replace('Qt5', 'Qt'))) for name in qt_libs ]
 	cflags = '-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -Wno-write-strings -fvisibility=hidden -I%s ' % qt_include
-	cflags += ' '.join([ ('-I%s/%s' % (qt_include, name.replace('Qt5', 'Qt'))) for name in qt_libs ])
+	cflags += ' '.join(qt_includes)
 	ldflags = ' '.join([ ('-l%s' % name) for name in qt_libs ])
 	data_files = []
 
@@ -197,6 +200,7 @@ defines = [
 	('NOUNCRYPT', None),
 	('UNICODE', None)
 ]
+qt_includes = [ x % vars for x in qt_includes ]
 
 
 if not os.path.exists(os.path.join('backends', 'qt', 'moc')):
@@ -210,12 +214,12 @@ if sys.platform == 'darwin':
 
 for source in sources:
 	target = '%s.moc' % os.path.splitext(os.path.split(source)[-1])[0]
-	cmd = '%s -nw -i -o %s %s' % (moc, os.path.join('backends', 'qt', 'moc', target), source)
+	cmd = '%s -nw -i %s -o %s %s' % (moc, ' '.join(qt_includes), os.path.join('backends', 'qt', 'moc', target), source)
 	os.system(cmd)
 
 for source in glob.glob(os.path.join('backends', 'qt', '*.h')):
 	target = '%s_h.moc' % os.path.split(source)[-1][:-2]
-	cmd = '%s -nw -o %s %s' % (moc, os.path.join('backends', 'qt', 'moc', target), source)
+	cmd = '%s -nw %s -o %s %s' % (moc, ' '.join(qt_includes), os.path.join('backends', 'qt', 'moc', target), source)
 	os.system(cmd)
 	
 sources += glob.glob(os.path.join('backends', 'qt', 'minizip', '*.c'))

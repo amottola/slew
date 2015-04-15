@@ -4347,6 +4347,11 @@ SL_DEFINE_MODULE_METHOD(get_fonts_list, {
 	QStringList families = QFontDatabase().families();
 	PyObject *tuple = PyTuple_New(families.size());
 	Py_ssize_t i = 0;
+
+	QFont font = QApplication::font();
+	if (families.indexOf(font.family()) < 0)
+		families.append(font.family());
+	qSort(families);
 	
 	foreach (QString family, families) {
 		PyTuple_SET_ITEM(tuple, i++, createStringObject(family));

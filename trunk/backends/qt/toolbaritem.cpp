@@ -103,7 +103,7 @@ public:
 
 
 ToolBarItem_Impl::ToolBarItem_Impl()
-	: QWidgetAction(NULL), WidgetInterface(), fSeparator(false), fFlexible(false), fMenu(NULL), fMenuMode(QToolButton::InstantPopup)
+	: QWidgetAction(NULL), WidgetInterface(), fSeparator(false), fFlexible(false), fNoFocus(false), fMenu(NULL), fMenuMode(QToolButton::InstantPopup)
 {
 }
 
@@ -167,7 +167,7 @@ ToolBarItem_Impl::update()
 #endif
 	button->setPopupMode(fMenuMode);
 	button->setMenu(fMenu);
-	button->setFocusPolicy(((type == SL_TOOLBAR_ITEM_TYPE_NO_FOCUS) || (type == SL_TOOLBAR_ITEM_TYPE_NO_FOCUS)) ? Qt::NoFocus : Qt::ClickFocus);
+	button->setFocusPolicy(((type == SL_TOOLBAR_ITEM_TYPE_NO_FOCUS) || (fNoFocus)) ? Qt::NoFocus : Qt::ClickFocus);
 }
 
 
@@ -191,6 +191,17 @@ ToolBarItem_Impl::setFlexible(bool flexible)
 		return;
 	
 	fFlexible = flexible;
+	reinsert();
+}
+
+
+void
+ToolBarItem_Impl::setNoFocus(bool nofocus)
+{
+	if (nofocus == fNoFocus)
+		return;
+	
+	fNoFocus = nofocus;
 	reinsert();
 }
 
@@ -346,18 +357,24 @@ SL_DEFINE_METHOD(ToolBarItem, set_enabled, {
 })
 
 
-SL_DEFINE_METHOD(ToolBarItem, is_flexible, {
-	return createBoolObject(impl->isFlexible());
+SL_DEFINE_METHOD(ToolBarItem, get_flags, {
+	int flags = 0;
+	if (impl->isFlexible())
+		flags |= SL_TOOLBAR_ITEM_FLAG_FLEXIBLE;
+	if (impl->isNoFocus())
+		flags |= SL_TOOLBAR_ITEM_FLAG_NOFOCUS;
+	return PyInt_FromLong(flags);
 })
 
 
-SL_DEFINE_METHOD(ToolBarItem, set_flexible, {
-	bool flexible;
+SL_DEFINE_METHOD(ToolBarItem, set_flags, {
+	int flags;
 	
-	if (!PyArg_ParseTuple(args, "O&", convertBool, &flexible))
+	if (!PyArg_ParseTuple(args, "i", &flags))
 		return NULL;
 	
-	impl->setFlexible(flexible);
+	impl->setFlexible(flags & SL_TOOLBAR_ITEM_FLAG_FLEXIBLE ? true : false);
+	impl->setNoFocus(flags & SL_TOOLBAR_ITEM_FLAG_NOFOCUS ? true : false);
 })
 
 
@@ -424,7 +441,7 @@ SL_PROPERTY(text)
 SL_PROPERTY(description)
 SL_BOOL_PROPERTY(checked)
 SL_BOOL_PROPERTY(enabled)
-SL_BOOL_PROPERTY(flexible)
+SL_PROPERTY(flags)
 SL_PROPERTY(icon)
 SL_PROPERTY(menu)
 SL_END_PROXY_DERIVED(ToolBarItem, Widget)
