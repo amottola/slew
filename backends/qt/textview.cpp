@@ -17,15 +17,6 @@ const int kCustomObjectTextProp = 2;
 
 
 
-#ifdef Q_MOC_RUN
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-Q_DECLARE_INTERFACE(QTextObjectInterface, "org.qt-project.Qt.QTextObjectInterface")
-#else
-Q_DECLARE_INTERFACE(QTextObjectInterface, "com.trolltech.Qt.QTextObjectInterface")
-#endif
-#endif
-
-
 class CustomObject : public QObject, public QTextObjectInterface
 {
 	Q_OBJECT

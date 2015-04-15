@@ -23,6 +23,9 @@ public:
 	
 	void setFlexible(bool flexible);
 	bool isFlexible() { return fFlexible; }
+
+	void setNoFocus(bool nofocus);
+	bool isNoFocus() { return fNoFocus; }
 	
 	void setMenu(QMenu *menu, QToolButton::ToolButtonPopupMode mode);
 	QMenu *menu() { return fMenu; }
@@ -37,6 +40,7 @@ private:
 	
 	bool								fSeparator;
 	bool								fFlexible;
+	bool								fNoFocus;
 	QMenu								*fMenu;
 	QToolButton::ToolButtonPopupMode	fMenuMode;
 };
