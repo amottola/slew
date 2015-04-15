@@ -1671,7 +1671,7 @@ createFontObject(const QFont& font, bool system)
 	int family = SL_FONT_FAMILY_DEFAULT, size, style = 0;
 	QString face = font.family();
 #ifndef Q_OS_MAC
-	size = int(font.pointSizeF() * 1.33333333333);
+	size = int(ceil(font.pointSizeF() * 1.33333333333));
 #else
 	size = font.pointSize();
 #endif
