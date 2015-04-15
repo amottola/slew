@@ -158,7 +158,18 @@ if sys.platform == 'darwin':
 		ldflags += ' -pg'
 elif sys.platform == 'win32':
 	moc = '%(qt_dir)s\\bin\\moc.exe'
-	cflags = '/I"%(qt_dir)s\\include" /I"%(qt_dir)s\\include\\QtCore" /I"%(qt_dir)s\\include\\QtGui" /I"%(qt_dir)s\\include\\QtOpenGL" /I"%(qt_dir)s\\include\\QtWebKit" /I"%(qt_dir)s\\include\\QtNetwork" /I"%(qt_dir)s\\include\\QtSvg" /Zc:wchar_t- /Z7'
+	includes = [
+		"include",
+		"include\\QtCore",
+		"include\\QtGui",
+		"include\\QtOpenGL",
+		"include\\QtWebKit",
+		"include\\QtNetwork",
+		"include\\QtSvg",
+	]
+	cincludes = ' '.join([ '/I"%%(qt_dir)s\\%s"' % include for include in includes ])
+	qt_includes = [ '-I"%%(qt_dir)s\\%s"' % include for include in includes ]
+	cflags = '%s /Zc:wchar_t- /Z7' % cincludes
 	ldflags = '/DEBUG /LIBPATH:"%(qt_dir)s\\lib" QtCore%(debug_prefix)s4.lib QtGui%(debug_prefix)s4.lib QtOpenGL%(debug_prefix)s4.lib QtNetwork%(debug_prefix)s4.lib QtWebKit%(debug_prefix)s4.lib QtSvg%(debug_prefix)s4.lib user32.lib shell32.lib gdi32.lib advapi32.lib secur32.lib netapi32.lib'
 	dlls = [
 		'%(qt_dir)s\\bin\\QtCore%(debug_prefix)s4.dll',
@@ -215,11 +226,13 @@ if sys.platform == 'darwin':
 for source in sources:
 	target = '%s.moc' % os.path.splitext(os.path.split(source)[-1])[0]
 	cmd = '%s -nw -i %s -o %s %s' % (moc, ' '.join(qt_includes), os.path.join('backends', 'qt', 'moc', target), source)
+	print cmd
 	os.system(cmd)
 
 for source in glob.glob(os.path.join('backends', 'qt', '*.h')):
 	target = '%s_h.moc' % os.path.split(source)[-1][:-2]
 	cmd = '%s -nw %s -o %s %s' % (moc, ' '.join(qt_includes), os.path.join('backends', 'qt', 'moc', target), source)
+	print cmd
 	os.system(cmd)
 	
 sources += glob.glob(os.path.join('backends', 'qt', 'minizip', '*.c'))
