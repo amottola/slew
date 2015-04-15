@@ -812,7 +812,7 @@ TextView_Impl::createContextMenu()
 QTextCursor
 TextView_Impl::insertObject(PyObject *object, QTextCursor& cursor)
 {
-	QString text;
+	QString text, tip;
 	QPixmap pixmap;
 	PyObject *method = PyString_FromString("get_text");
 	PyObject *result = PyObject_CallMethodObjArgs(object, method, NULL);
@@ -830,11 +830,20 @@ TextView_Impl::insertObject(PyObject *object, QTextCursor& cursor)
 		return QTextCursor();
 	}
 	Py_DECREF(result);
+	method = PyString_FromString("get_tip");
+	result = PyObject_CallMethodObjArgs(object, method, NULL);
+	Py_DECREF(method);
+	if ((!result) || (!convertString(result, &tip))) {
+		Py_XDECREF(result);
+		return QTextCursor();
+	}
+	Py_DECREF(result);
 
 	QTextCharFormat customCharFormat;
 	customCharFormat.setObjectType(kCustomObjectType);
 	customCharFormat.setProperty(kCustomObjectTextProp, text);
 	customCharFormat.setProperty(kCustomObjectPixmapProp, pixmap);
+	customCharFormat.setToolTip(tip);
 	customCharFormat.setVerticalAlignment(QTextCharFormat::AlignBaseline);
 
 	cursor.insertText(QString(QChar::ObjectReplacementCharacter), customCharFormat);
