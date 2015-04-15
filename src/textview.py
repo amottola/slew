@@ -41,13 +41,16 @@ class TextView(slew.Window):
 	})
 
 	class Object(object):
-		def __init__(self, text, bitmap):
+		def __init__(self, text, bitmap, tip=''):
 			self.__text = text
 			self.__bitmap = bitmap
+			self.__tip = tip
 		def get_text(self):
 			return self.__text
 		def get_bitmap(self):
 			return self.__bitmap
+		def get_tip(self):
+			return self.__tip
 	
 # methods
 	
@@ -108,8 +111,8 @@ class TextView(slew.Window):
 	def set_object_lookup_regexp(self, regexp):
 		self._impl.set_object_lookup_regexp(regexp)
 
-	def create_object(self, text, bitmap):
-		return TextView.Object(text, bitmap)
+	def create_object(self, text, bitmap, tip=''):
+		return TextView.Object(text, bitmap, tip)
 	
 # properties
 	
