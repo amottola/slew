@@ -103,6 +103,9 @@ if sys.platform == 'darwin':
 	if is_qt5:
 		qt_libs += [ 'QtWidgets', 'QtWebKitWidgets', 'QtPrintSupport' ]
 	qt_includes = [ ('-I%%(qt_dir)s/%s.framework/Headers' % path) for path in qt_libs ]
+	if is_qt5:
+		qt_ver = qt_dir[qt_dir.rfind('/') + 4:]
+		qt_includes += [ '-I%%(qt_dir)s/QtGui.framework/Headers/%s/QtGui' % qt_ver ]
 	cflags = (' '.join(qt_includes)) + ' -F%(qt_dir)s '
 
 	if 'clang' in subprocess.check_output('gcc --version', stderr=subprocess.STDOUT, shell=True, universal_newlines=True):

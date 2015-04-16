@@ -116,16 +116,17 @@ private:
 
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <qpa/qplatformnativeinterface.h>
 static NSWindow *
 qt_mac_window_for(const QWidget *w)
 {
 	QWindow *window = w->window()->windowHandle();
 	if (!window)
 		return NULL;
-	return reinterpret_cast<NSWindow*>(window->winId());
+	return static_cast<NSWindow *>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("nswindow", window));
 }
 #else
-extern OSWindowRef qt_mac_window_for(const QWidget *w);
+extern WindowRef qt_mac_window_for(const QWidget *w);
 #endif
 
 
