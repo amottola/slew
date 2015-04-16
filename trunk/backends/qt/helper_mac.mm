@@ -126,7 +126,7 @@ qt_mac_window_for(const QWidget *w)
 	return static_cast<NSWindow *>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("nswindow", window));
 }
 #else
-extern WindowRef qt_mac_window_for(const QWidget *w);
+extern OSWindowRef qt_mac_window_for(const QWidget *w);
 #endif
 
 
