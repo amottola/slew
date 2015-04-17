@@ -55,8 +55,12 @@ WidgetItem::setGeometry(const QRect& rect)
 		
 		if (align & Qt::AlignHorizontal_Mask)
 			size.setWidth(qMin(size.width(), pref.width()));
-		if (align & Qt::AlignVertical_Mask)
-			size.setHeight(qMin(size.height(), pref.height()));
+		if (align & Qt::AlignVertical_Mask) {
+			if (hasHeightForWidth())
+				size.setHeight(qMin(size.height(), heightForWidth(size.width())));
+			else
+				size.setHeight(qMin(size.height(), pref.height()));
+		}
 	}
 	
 	if (align & Qt::AlignRight)
@@ -187,16 +191,25 @@ WidgetItem::hasHeightForWidth() const
 int
 WidgetItem::heightForWidth(int width) const
 {
+	int h;
+
 	if (isEmpty())
 		return -1;
+
 	if (fWidget->layout())
-		return fWidget->layout()->heightForWidth(width);
+		h = fWidget->layout()->heightForWidth(width);
 	else
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-		return fWidget->heightForWidth(width);
+		h = fWidget->heightForWidth(width);
 #else
 		return -1;
 #endif
+
+	if (h > fWidget->maximumHeight())
+		h = fWidget->maximumHeight();
+	if (h < fWidget->minimumHeight())
+		h = fWidget->minimumHeight();
+	return h;
 }
 
 

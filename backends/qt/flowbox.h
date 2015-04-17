@@ -34,7 +34,8 @@ public:
 
 	virtual bool hasHeightForWidth() const { return true; }
 	virtual int heightForWidth(int width) const { return doLayout(QRect(0, 0, width, 0), true); }
-	virtual QSize sizeHint() const { return minimumSize(); }
+	virtual int minimumHeightForWidth(int w) const;
+	virtual QSize sizeHint() const;
 	virtual QSize minimumSize() const;
 	virtual void setGeometry(const QRect &rect);
 
