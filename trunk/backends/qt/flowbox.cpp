@@ -35,6 +35,31 @@ FlowBox_Impl::setGeometry(const QRect &rect)
 
 
 QSize
+FlowBox_Impl::sizeHint() const
+{
+	int left, top, right, bottom;
+	int i, count = fItems.count() > 0 ? ceil(sqrt(fItems.count() * 0.6)) : 0;
+	QSize size(0, 0);
+	
+	getContentsMargins(&left, &top, &right, &bottom);
+	for (i = 0; i < count; i++)
+		size.setWidth(size.width() + fItems[i]->minimumSize().width());
+	if (count > 0)
+		size.setHeight(heightForWidth(size.width()));
+	size += QSize(left + right, top + bottom);
+
+	return size;
+}
+
+
+int
+FlowBox_Impl::minimumHeightForWidth(int w) const
+{
+	return heightForWidth(w);
+}
+
+
+QSize
 FlowBox_Impl::minimumSize() const
 {
 	QSize size;
@@ -45,6 +70,7 @@ FlowBox_Impl::minimumSize() const
 		size = size.expandedTo(item->minimumSize());
 	}
 	size += QSize(left + right, top + bottom);
+
 	return size;
 }
 
